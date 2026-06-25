@@ -2028,9 +2028,13 @@ async function doLogin(e) {
   try {
     const login = g('f-usr').value.trim();
     const senha = g('f-pw').value;
+    // BUG3: verificar USUARIOS builtin + guias do Firebase
     const user  = USUARIOS.find(u => u.login === login && u.senha === senha);
-    if (!user) { g('lerr').textContent = 'Usuário ou senha inválidos.'; return; }
-    U = user;
+    const guia2 = !user ? (DB.guias||[]).find(g2 =>
+      g2.login === login && g2.senha === senha && g2.status === 'ativo'
+    ) : null;
+    if (!user && !guia2) { g('lerr').textContent = 'Usuário ou senha inválidos.'; return; }
+    U = user || { ...guia2, perfil: guia2.perfil || 'guia' };
     g('lerr').textContent = '';
     showLoading(true);
     await loadData();
@@ -2950,9 +2954,8 @@ function renderGuias() {
   const sfilt  = g('guia-status-filter')?.value||'';
 
   // Construir lista de guias a partir de DB.guias + USUARIOS com perfil guia/adm
-  let guias = DB.guias || [];
-
-  // Adicionar usuários ADM que não têm perfil no DB.guias
+  // BUG1: usar cópia para não contaminar DB.guias com usuários builtin
+  let guias = [...(DB.guias||[])];
   USUARIOS.filter(u=>u.perfil==='adm'||u.perfil==='guia').forEach(u=>{
     if(!guias.find(g2=>g2.login===u.login)){
       guias.push({id:u.id,nome:u.nome,login:u.login,senha:u.senha,perfil:u.perfil,cor:'#1D9E75',status:'ativo',parques:[],wa:'',bio:''});
@@ -3067,7 +3070,10 @@ async function saveGuia() {
   const item = {
     id:       editGuiaId || 'gu_'+Date.now(),
     nome, login,
-    senha:    senha || (DB.guias.find(g2=>g2.id===editGuiaId)?.senha||''),
+    // BUG4: buscar senha atual em DB.guias OU em USUARIOS (builtin)
+    senha:    senha ||
+              (DB.guias||[]).find(g2=>g2.id===editGuiaId)?.senha ||
+              USUARIOS.find(u=>u.id===editGuiaId)?.senha || '',
     perfil:   g('gm-perfil').value,
     status:   g('gm-status').value,
     cor:      g('gm-cor').value,
