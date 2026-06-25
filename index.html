@@ -1878,6 +1878,9 @@ let charts    = {};
 
 // Channel para comunicação cross-tab com Desenrola Sistema
 let _integChannel = null;
+let _editando = false;
+let _pendingRemoteUpdate = null;
+let _encSearchTimer = null;
 
 function initIntegracao() {
   try {
@@ -1892,7 +1895,7 @@ function initIntegracao() {
     };
     // Firebase listener para criações pendentes vindas do Desenrola Sistema
     if (_fbDb) {
-      _fbDb.ref('desenrola_v3/integrations/guiamento_pending').off('child_added'); // C4
+      _fbDb.ref('desenrola_v3/integrations/guiamento_pending').off('child_added');
     _fbDb.ref('desenrola_v3/integrations/guiamento_pending').on('child_added', snap => {
         const task = snap.val();
         if (task && task.tipo === 'CRIAR_GRUPO') {
@@ -2000,10 +2003,6 @@ window.desenrolaGuia = {
   versao:           '2.2'
 };
 
-let _editando = false;
-let _pendingRemoteUpdate = null;
-let _encSearchTimer = null;
-
 window.onload = () => {
   try { _fbApp = firebase.initializeApp(FB_CFG); _fbDb = firebase.database(_fbApp); } catch(e){}
   const dEl = document.getElementById('dash-date'); if(dEl) dEl.textContent = fmtDateLong(new Date());
@@ -2028,13 +2027,10 @@ async function doLogin(e) {
   try {
     const login = g('f-usr').value.trim();
     const senha = g('f-pw').value;
-    // BUG3: verificar USUARIOS builtin + guias do Firebase
     const user  = USUARIOS.find(u => u.login === login && u.senha === senha);
-    const guia2 = !user ? (DB.guias||[]).find(g2 =>
-      g2.login === login && g2.senha === senha && g2.status === 'ativo'
-    ) : null;
-    if (!user && !guia2) { g('lerr').textContent = 'Usuário ou senha inválidos.'; return; }
-    U = user || { ...guia2, perfil: guia2.perfil || 'guia' };
+    const guia2 = !user ? (DB.guias||[]).find(g2 => g2.login===login && g2.senha===senha && g2.status==='ativo') : null;
+    if (!user && !guia2) { g('lerr').textContent = 'Usuario ou senha invalidos.'; return; }
+    U = user || {...guia2, perfil: guia2?.perfil||'guia'};
     g('lerr').textContent = '';
     showLoading(true);
     await loadData();
@@ -2085,22 +2081,34 @@ function loadLocal() { try { return JSON.parse(localStorage.getItem(LS_KEY)); } 
 function saveLocal()  { try { localStorage.setItem(LS_KEY, JSON.stringify(DB)); } catch {} }
 
 async function saveData() {
-  DB._lastSaved = Date.now();
-  saveLocal();
+  DB._lastSaved = Date.now();   // necessario para filtro do listener
+  saveLocal();                  // A2: local sempre primeiro
   setSyncStatus('sy');
   try {
     if (_fbDb) { await _fbDb.ref(FB_PATH).set(DB); setSyncStatus('ok'); }
-  } catch(e) { setSyncStatus('er'); toast('Firebase indisponível — dados salvos localmente','warn'); }
+  } catch(e) {
+    setSyncStatus('er');
+    toast('Firebase indisponivel — salvo localmente', 'warn');
+  }
+}
+
+function applyRemoteUpdate(remote) {
+  if (!remote || (remote._lastSaved||0) <= (DB._lastSaved||0)) return;
+  const data = Object.assign({}, remote);
+  delete data._lastWriter;
+  DB = Object.assign({}, DB, data);
+  saveLocal();
+  renderPage(curPage);
 }
 
 function subscribeUpdates() {
   if (!_fbDb) return;
-  _fbDb.ref(FB_PATH).off('value'); // C4
+  _fbDb.ref(FB_PATH).off('value');
   _fbDb.ref(FB_PATH).on('value', snap => {
     if (!snap.exists()) return;
     const r = snap.val();
     if ((r._lastSaved||0) > (DB._lastSaved||0) + 1000) {
-      if (_editando) { _pendingRemoteUpdate = r; return; } // C2: aguardar modal
+      if (_editando) { _pendingRemoteUpdate = r; return; } // C2
       DB = r; saveLocal();
       renderCurrentPage();
       updateDiaBadge();
@@ -2954,8 +2962,9 @@ function renderGuias() {
   const sfilt  = g('guia-status-filter')?.value||'';
 
   // Construir lista de guias a partir de DB.guias + USUARIOS com perfil guia/adm
-  // BUG1: usar cópia para não contaminar DB.guias com usuários builtin
-  let guias = [...(DB.guias||[])];
+  let guias = [...(DB.guias||[])]; // copia para nao contaminar DB.guias
+
+  // Adicionar usuários ADM que não têm perfil no DB.guias
   USUARIOS.filter(u=>u.perfil==='adm'||u.perfil==='guia').forEach(u=>{
     if(!guias.find(g2=>g2.login===u.login)){
       guias.push({id:u.id,nome:u.nome,login:u.login,senha:u.senha,perfil:u.perfil,cor:'#1D9E75',status:'ativo',parques:[],wa:'',bio:''});
@@ -3068,26 +3077,30 @@ async function saveGuia() {
   if (!DB.guias) DB.guias = [];
 
   const item = {
-    id:       editGuiaId || 'gu_'+Date.now(),
+    id:      editGuiaId || 'gu_'+Date.now(),
     nome, login,
-    // BUG4: buscar senha atual em DB.guias OU em USUARIOS (builtin)
-    senha:    senha ||
-              (DB.guias||[]).find(g2=>g2.id===editGuiaId)?.senha ||
-              USUARIOS.find(u=>u.id===editGuiaId)?.senha || '',
-    perfil:   g('gm-perfil').value,
-    status:   g('gm-status').value,
-    cor:      g('gm-cor').value,
-    wa:       g('gm-wa').value.trim(),
-    bio:      g('gm-bio').value.trim(),
+    senha:   senha ||
+             (DB.guias||[]).find(g2=>g2.id===editGuiaId)?.senha ||
+             USUARIOS.find(u=>u.id===editGuiaId)?.senha || '',
+    perfil:  g('gm-perfil').value,
+    status:  g('gm-status').value,
+    cor:     g('gm-cor').value,
+    wa:      g('gm-wa').value.trim(),
+    bio:     g('gm-bio').value.trim(),
     parques,
   };
 
-  if (editGuiaId) DB.guias = DB.guias.map(g2=>g2.id===editGuiaId?item:g2);
-  else DB.guias = [...DB.guias, item];
+  if (editGuiaId) {
+    const idx = (DB.guias||[]).findIndex(g2=>g2.id===editGuiaId);
+    if (idx >= 0) { DB.guias[idx] = item; }
+    else { DB.guias = [...(DB.guias||[]), item]; } // builtin promovido para DB.guias
+  } else {
+    DB.guias = [...(DB.guias||[]), item];
+  }
 
-  closeModal('mo-guia');
-  await saveData();
+  await saveData();   // FIX2: salvar ANTES de closeModal (evita race condition)
   toast('Guia salvo ✅');
+  closeModal('mo-guia');
   renderGuias();
   fillGuiaSelects();
 }
@@ -4231,15 +4244,15 @@ function renderChart(id, type, labels, data, colors, label='') {
 // ══════════════════════════════════════════════════════════════════════════
 function openModal(id) {
   g(id)?.classList.remove('hid');
-  if (id !== 'mo-confirm') _editando = true; // C2
+  if (id !== 'mo-confirm') _editando = true;
 }
 function closeModal(id) {
   g(id)?.classList.add('hid');
   if (!document.querySelectorAll('.mo:not(.hid):not(#mo-confirm)').length) {
     _editando = false;
     if (_pendingRemoteUpdate) {
-      const u = _pendingRemoteUpdate; _pendingRemoteUpdate = null;
-      DB = u; saveLocal(); renderPage(curPage);
+      const upd = _pendingRemoteUpdate; _pendingRemoteUpdate = null;
+      applyRemoteUpdate(upd);
     }
   }
 }
