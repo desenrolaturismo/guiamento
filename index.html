@@ -537,7 +537,7 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
     <div id="pg-guias" class="page hid">
       <div class="ph">
         <div class="pt">🧭 Guias</div>
-        <span class="tm fs12" style="padding:4px 8px;background:#f0fdf4;border-radius:6px;color:#065f46;border:1px solid #bbf7d0">✏️ Crie guias no Desenrola Sistema</span>
+        <span class="tm fs12" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:4px 10px;color:#065f46">✏️ Guias são criados no Desenrola Sistema</span>
       </div>
       <div class="pb">
         <div class="filt">
@@ -1105,28 +1105,21 @@ const FB_CFG = {
 const FB_PATH = 'desenrola_guiamento_v1';
 const LS_KEY  = 'dtr_guiamento_v1';
 
-// ── BASE UNIFICADA: carregada de /desenrola_v3/usuarios ──────────────
-// Usuários são gerenciados exclusivamente pelo Desenrola Sistema
+// ── BASE UNIFICADA — gerenciada pelo Desenrola Sistema ───────────────
 let USUARIOS_SISTEMA = []; // preenchido em loadUsuariosSistema()
 const USUARIOS_FALLBACK = [
-  { id:'u1', nome:'Thomaz', login:'Thomaz', senha:'Thbignotto', perfis:['adm'], status:'ativo' },
+  { id:'u1', nome:'Thomaz', login:'Thomaz', senha:'Thbignotto',   perfis:['adm'], status:'ativo' },
   { id:'u2', nome:'Camila', login:'Camila', senha:'CaPascholati', perfis:['adm'], status:'ativo' }
 ];
-// Helper: verificar se usuário tem um perfil
-function temPerfil(u, p) {
-  if (!u) return false;
-  if (Array.isArray(u.perfis)) return u.perfis.includes(p);
-  // backward compat: campo perfil (string)
-  return (u.perfil || '') === p;
-}
+function temPerfil(u,p){ if(!u)return false; return Array.isArray(u.perfis)?u.perfis.includes(p):(u.perfil||'')===p; }
 function isAdmUser(u)      { return temPerfil(u,'adm'); }
 function isGuiaUser(u)     { return temPerfil(u,'guia'); }
 function isMktUser(u)      { return temPerfil(u,'mkt'); }
 function isVendedorUser(u) { return temPerfil(u,'vendedor'); }
 function podeAcessarGuiamento(u) {
-  if (!u) return false;
-  const ps = Array.isArray(u.perfis) ? u.perfis : [u.perfil||''];
-  return ps.some(p => ['adm','guia','mkt'].includes(p));
+  if(!u) return false;
+  var ps = Array.isArray(u.perfis)?u.perfis:[u.perfil||''];
+  return ps.some(function(p){ return ['adm','guia','mkt'].includes(p); });
 }
 
 const PARQUES = {
@@ -1877,8 +1870,7 @@ Amanhã temos {PROXIMO_PARQUE}? Me falem que preparo tudo novamente!
 // ══════════════════════════════════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════════════════════════════════
-let DB = { grupos:[], roteiros:[], guiamentos:[], avaliacoes:[], _lastSaved:null   perfis_guias: {},
-};
+let DB = { grupos:[], roteiros:[], guiamentos:[], avaliacoes:[], templates:[], guias:[], perfis_guias:{}, encItems:[], hiddenItems:[], _lastSaved:null };
 let U  = null;
 let _fbApp, _fbDb;
 let calDate   = new Date();
@@ -1938,14 +1930,9 @@ async function criarGrupoFromSistema(dados) {
   
   // Verificar se grupo já existe (evitar duplicatas)
   const origemId = dados.origemId || null;
-  const jaExiste = (DB.grupos||[]).find(g =>
-    (origemId && g.origemId === origemId) ||
-    (!origemId && g.nome === dados.nome && g.responsavel === dados.responsavel)
-  );
-  if (jaExiste) {
-    if (_integChannel) _integChannel.postMessage({tipo:'GRUPO_JA_EXISTE',grupoId:jaExiste.id});
-    return;
-  }
+  const jaExiste = (DB.grupos||[]).find(g2 =>
+    (origemId && g2.origemId === origemId) || (!origemId && g2.nome===dados.nome && g2.responsavel===dados.responsavel));
+  if (jaExiste) { if (_integChannel) _integChannel.postMessage({tipo:'GRUPO_JA_EXISTE',grupoId:jaExiste.id}); return; }
 
   const novoGrupo = {
     id:           'g_' + Date.now(),
@@ -2019,7 +2006,7 @@ window.desenrolaGuia = {
   criarGrupo:       criarGrupoFromSistema,
   getCalendario:    getCalendarioGuias,
   getGrupos:        () => DB.grupos || [],
-  getGuias: () => USUARIOS_SISTEMA.filter(function(u){ var ps=Array.isArray(u.perfis)?u.perfis:[u.perfil||'']; return ps.includes('guia')||ps.includes('adm'); })
+  getGuias: () => USUARIOS_SISTEMA.filter(function(u){ var ps=Array.isArray(u.perfis)?u.perfis:[u.perfil||'']; return ps.includes('guia')||ps.includes('adm'); }),
   versao:           '2.2'
 };
 
@@ -2038,114 +2025,71 @@ window.onload = () => {
 // ══════════════════════════════════════════════════════════════════════════
 let _loginBusy = false;
 
-async function sha256(str){try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}catch(e){return str;}}
-async function verificarSenha(input,stored){if(!input||!stored)return false;if(input===stored)return true;return(await sha256(input))===stored;}
-
-// ── CARREGAR USUÁRIOS DO DESENROLA SISTEMA ────────────────────────────
 async function loadUsuariosSistema() {
   try {
     if (_fbDb) {
-      const timeout = new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 4000));
-      const snap = await Promise.race([
-        _fbDb.ref('desenrola_v3/usuarios').once('value'), timeout
-      ]);
+      const t = new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),4000));
+      const snap = await Promise.race([_fbDb.ref('desenrola_v3/usuarios').once('value'), t]);
       if (snap && snap.exists()) {
         const raw = snap.val();
-        // Firebase pode retornar objeto {id: {...}} ou array
-        if (Array.isArray(raw)) {
-          USUARIOS_SISTEMA = raw.filter(Boolean);
-        } else {
-          USUARIOS_SISTEMA = Object.values(raw).filter(Boolean);
-        }
-        // Garantir que todos têm campo 'perfis' como array
-        USUARIOS_SISTEMA = USUARIOS_SISTEMA.map(function(u) {
-          if (!Array.isArray(u.perfis)) {
-            u.perfis = u.perfil ? [u.perfil] : ['guia'];
-          }
+        USUARIOS_SISTEMA = (Array.isArray(raw)?raw:Object.values(raw)).filter(Boolean).map(function(u){
+          if(!Array.isArray(u.perfis)) u.perfis = u.perfil?[u.perfil]:['guia'];
           return u;
         });
         return;
       }
     }
-  } catch(e) {
-    console.warn('loadUsuariosSistema: Firebase falhou, usando fallback:', e.message);
-  }
-  // Fallback: usar lista local enquanto Desenrola Sistema não configurou
+  } catch(e) { console.warn('loadUsuariosSistema fallback:',e.message); }
   USUARIOS_SISTEMA = USUARIOS_FALLBACK.slice();
 }
+
+async function sha256(str){try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}catch(e){return str;}}
+
 async function doLogin(e) {
-  if (e && e.preventDefault) e.preventDefault();
-  if (_loginBusy) return;
+  if(e&&e.preventDefault) e.preventDefault();
+  if(_loginBusy) return;
   _loginBusy = true;
   g('lerr').textContent = '';
-
   try {
-    const loginInput = (g('f-usr').value || '').trim();
-    const senhaInput = (g('f-pw').value  || '').trim();
-    if (!loginInput || !senhaInput) {
-      g('lerr').textContent = 'Preencha login e senha.'; return;
-    }
-
+    const loginInput = (g('f-usr').value||'').trim();
+    const senhaInput = (g('f-pw').value||'').trim();
+    if(!loginInput||!senhaInput){ g('lerr').textContent='Preencha login e senha.'; return; }
     showLoading(true);
-
-    // ── Carregar usuários do Desenrola Sistema ──────────────────────
     await loadUsuariosSistema();
-
-    // ── Hash SHA-256 da senha digitada ──────────────────────────────
     const senhaHash = await sha256(senhaInput);
-
-    // ── Buscar usuário por login (case-insensitive) ─────────────────
     var found = null;
     var loginLow = loginInput.toLowerCase();
-    for (var i = 0; i < USUARIOS_SISTEMA.length; i++) {
-      var u = USUARIOS_SISTEMA[i];
-      var loginMatch = (u.login || '').trim().toLowerCase() === loginLow;
-      if (!loginMatch) continue;
-      // Verificar senha: aceita hash SHA-256 OU plaintext (legado)
-      var senhaOk = (u.senha === senhaHash) || (u.senha === senhaInput);
-      if (senhaOk) { found = u; break; }
+    for(var i=0;i<USUARIOS_SISTEMA.length;i++){
+      var u=USUARIOS_SISTEMA[i];
+      if((u.login||'').trim().toLowerCase()!==loginLow) continue;
+      if((u.senha===senhaHash)||(u.senha===senhaInput)){ found=u; break; }
     }
-
     showLoading(false);
-
-    if (!found) {
-      g('lerr').textContent = 'Usuario ou senha invalidos.'; return;
-    }
-    if ((found.status || 'ativo') !== 'ativo') {
-      g('lerr').textContent = 'Acesso desativado. Contate o administrador.'; return;
-    }
-    if (!podeAcessarGuiamento(found)) {
-      g('lerr').textContent = 'Seu perfil nao tem acesso ao Sistema de Guiamento.'; return;
-    }
-
-    U = Object.assign({}, found);
-    // Garantir perfis como array
-    if (!Array.isArray(U.perfis)) U.perfis = U.perfil ? [U.perfil] : ['guia'];
-
-    g('lerr').textContent = '';
+    if(!found){ g('lerr').textContent='Usuario ou senha invalidos.'; return; }
+    if((found.status||'ativo')!=='ativo'){ g('lerr').textContent='Acesso desativado.'; return; }
+    if(!podeAcessarGuiamento(found)){ g('lerr').textContent='Seu perfil nao tem acesso ao Sistema de Guiamento.'; return; }
+    U = Object.assign({},found);
+    if(!Array.isArray(U.perfis)) U.perfis = U.perfil?[U.perfil]:['guia'];
+    g('lerr').textContent='';
     showLoading(true);
     await loadData();
     showLoading(false);
     _loginEntrar();
-
-  } catch (err) {
-    console.error('Erro no login:', err);
-    g('lerr').textContent = 'Erro ao carregar. Tente novamente.';
+  } catch(err) {
+    console.error('Erro login:',err);
+    g('lerr').textContent='Erro ao carregar. Tente novamente.';
     showLoading(false);
-  } finally {
-    _loginBusy = false;
-  }
+  } finally { _loginBusy=false; }
 }
 
 function _loginEntrar() {
   g('login-screen').classList.add('hid');
   g('app').classList.remove('hid');
-  var av = g('sb-av'); if (av) av.textContent = (U.nome || '?').charAt(0).toUpperCase();
-  var nm = g('sb-nm'); if (nm) nm.textContent = U.nome || '';
+  var av=g('sb-av'); if(av) av.textContent=(U.nome||'?').charAt(0).toUpperCase();
+  var nm=g('sb-nm'); if(nm) nm.textContent=U.nome||'';
   fillGuiaSelects();
   applyRoleAccess();
-  var paginaInicial = isAdmUser(U) ? 'dashboard' : (isMktUser(U) ? 'agenda' : 'dia');
-  showPage(paginaInicial);
+  showPage(isAdmUser(U)?'dashboard':isMktUser(U)?'agenda':'dia');
 }
 
 function doLogout() {
@@ -2178,24 +2122,12 @@ function loadLocal() { try { return JSON.parse(localStorage.getItem(LS_KEY)); } 
 function saveLocal()  { try { localStorage.setItem(LS_KEY, JSON.stringify(DB)); } catch {} }
 
 async function saveData() {
-  DB._lastSaved = Date.now();   // necessario para filtro do listener
-  saveLocal();                  // A2: local sempre primeiro
+  DB._lastSaved = Date.now();
+  saveLocal();
   setSyncStatus('sy');
   try {
     if (_fbDb) { await _fbDb.ref(FB_PATH).set(DB); setSyncStatus('ok'); }
-  } catch(e) {
-    setSyncStatus('er');
-    toast('Firebase indisponivel — salvo localmente', 'warn');
-  }
-}
-
-function applyRemoteUpdate(remote) {
-  if (!remote || (remote._lastSaved||0) <= (DB._lastSaved||0)) return;
-  const data = Object.assign({}, remote);
-  delete data._lastWriter;
-  DB = Object.assign({}, DB, data);
-  saveLocal();
-  renderPage(curPage);
+  } catch(e) { setSyncStatus('er'); toast('Firebase indisponivel — salvo localmente','warn'); }
 }
 
 function subscribeUpdates() {
@@ -2205,7 +2137,7 @@ function subscribeUpdates() {
     if (!snap.exists()) return;
     const r = snap.val();
     if ((r._lastSaved||0) > (DB._lastSaved||0) + 1000) {
-      if (_editando) { _pendingRemoteUpdate = r; return; } // C2
+      if (_editando) { _pendingRemoteUpdate = r; return; }
       DB = r; saveLocal();
       renderCurrentPage();
       updateDiaBadge();
@@ -3013,67 +2945,34 @@ function getGrupoColor(grupoId) {
 // CONTROLE DE ACESSO POR PERFIL
 // ══════════════════════════════════════════════════════════════════════════
 function applyRoleAccess() {
-  var ps      = Array.isArray(U?.perfis) ? U.perfis : [U?.perfil||'guia'];
-  var isAdm   = ps.includes('adm');
-  var isMkt   = ps.includes('mkt') && !isAdm;
-  var isGuia  = ps.includes('guia') && !isAdm;
-  var readonly = isMkt; // MKT vê tudo mas não edita
-
-  // Elementos só para ADM
-  document.querySelectorAll('.adm-only').forEach(function(el) {
-    el.style.display = isAdm ? '' : 'none';
-  });
-  // Elementos só para guia
-  document.querySelectorAll('.guia-only').forEach(function(el) {
-    el.style.display = isGuia ? '' : 'none';
-  });
-
-  // Label no topo da sidebar
-  var admLbl = g('sb-adm-lbl');
-  if (admLbl) admLbl.style.display = isAdm ? '' : 'none';
-
-  // Sidebar: páginas visíveis por perfil
-  var paginasAdm = ['dashboard','atracoes','avaliacoes','templates','relatorios','guias'];
-  if (!isAdm) {
-    paginasAdm.forEach(function(pg) {
-      var el = document.querySelector('[data-page="' + pg + '"]');
-      if (el) el.style.display = 'none';
+  var ps = Array.isArray(U?.perfis)?U.perfis:[U?.perfil||'guia'];
+  var isAdm = ps.includes('adm');
+  var isMkt = ps.includes('mkt')&&!isAdm;
+  var isGuia= ps.includes('guia')&&!isAdm;
+  document.querySelectorAll('.adm-only').forEach(function(el){ el.style.display=isAdm?'':'none'; });
+  document.querySelectorAll('.guia-only').forEach(function(el){ el.style.display=isGuia?'':'none'; });
+  var admLbl=g('sb-adm-lbl'); if(admLbl) admLbl.style.display=isAdm?'':'none';
+  if(!isAdm){
+    ['dashboard','atracoes','avaliacoes','templates','relatorios','guias'].forEach(function(pg){
+      var el=document.querySelector('[data-page="'+pg+'"]'); if(el) el.style.display='none';
     });
   }
-
-  // MKT: esconder todos os botões de ação (salvar, excluir, novo, editar)
-  if (readonly) {
-    // Esconder botões de criação/edição/deleção
-    document.querySelectorAll(
-      '.btn-acc, .btn-red, .btn-wa, [onclick*="openGrupoModal"], [onclick*="openRoteiroModal"], ' +
-      '[onclick*="openLLModal"], [onclick*="confirmDelete"], [onclick*="saveGuia"], ' +
-      '[onclick*="openGuiaModal"], [onclick*="openAvalModal"], [onclick*="openTplModal"], ' +
-      '[onclick*="exportRoteiro"], .dia-card-actions'
-    ).forEach(function(el) {
-      el.style.display = 'none';
-    });
-    // Bloquear inputs e selects
-    document.querySelectorAll('input:not([type=hidden]), select, textarea').forEach(function(el) {
-      el.setAttribute('disabled', 'disabled');
-    });
-    // Banner de somente leitura
-    var banner = document.createElement('div');
-    banner.style.cssText = 'background:#fff7ed;border:1px solid #f97316;border-radius:8px;padding:10px 16px;' +
-      'margin:12px 16px;font-size:12px;font-weight:600;color:#c2410c;text-align:center';
-    banner.textContent = '👁️ Modo visualização — seu perfil MKT não permite edições neste sistema';
-    banner.id = 'mkt-banner';
-    if (!document.getElementById('mkt-banner')) {
-      var app = g('app'); if (app) app.prepend(banner);
+  if(isMkt){
+    if(!document.getElementById('mkt-banner')){
+      var b=document.createElement('div');
+      b.id='mkt-banner';
+      b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9999;background:#fff7ed;border-bottom:2px solid #f97316;padding:8px;text-align:center;font-size:12px;font-weight:600;color:#c2410c';
+      b.textContent='👁️ Modo Visualização — perfil MKT não permite edições';
+      document.body.prepend(b);
     }
+    document.querySelectorAll('.btn-acc,.btn-red').forEach(function(el){ el.style.display='none'; });
   }
 }
 
 
 function getGruposVisiveis() {
   const todos = DB.grupos || [];
-  if (isGuiaUser(U) && !isAdmUser(U)) {
-    return todos.filter(function(g2) { return g2.guia === U.nome; });
-  }
+  if (isGuiaUser(U)&&!isAdmUser(U)) { return todos.filter(function(g2){ return g2.guia===U.nome; }); }
   return todos;
 }
 
@@ -3083,126 +2982,74 @@ function getGruposVisiveis() {
 let editGuiaId = null;
 
 function renderGuias() {
-  const body = g('guias-body');
-  if (!body) return;
-  const search = (g('guia-search')?.value||'').toLowerCase();
-  const sfilt  = g('guia-status-filter')?.value||'';
-
-  // Fonte de guias: USUARIOS_SISTEMA com perfil 'guia' ou 'adm'
-  const perfis_guias = DB.perfis_guias || {};
-  var guias = USUARIOS_SISTEMA.filter(function(u) {
-    var ps = Array.isArray(u.perfis) ? u.perfis : [u.perfil||''];
-    return ps.includes('guia') || ps.includes('adm');
-  }).map(function(u) {
-    // Mesclar com dados de perfil do guia (bio, parques, wa, cor)
-    var perfil = perfis_guias[u.id] || {};
-    return Object.assign({}, u, perfil);
-  });
-
-  // Filtros
-  var filtered = guias.filter(function(g2) {
-    if (search && !(g2.nome||'').toLowerCase().includes(search)) return false;
-    if (sfilt && (g2.status||'ativo') !== sfilt) return false;
+  const body=g('guias-body'); if(!body) return;
+  const search=(g('guia-search')?.value||'').toLowerCase();
+  const sfilt=g('guia-status-filter')?.value||'';
+  const perfis_guias=DB.perfis_guias||{};
+  var guias=USUARIOS_SISTEMA.filter(function(u){
+    var ps=Array.isArray(u.perfis)?u.perfis:[u.perfil||''];
+    return ps.includes('guia')||ps.includes('adm');
+  }).map(function(u){ return Object.assign({},u,perfis_guias[u.id]||{}); });
+  var filtered=guias.filter(function(g2){
+    if(search&&!(g2.nome||'').toLowerCase().includes(search)) return false;
+    if(sfilt&&(g2.status||'ativo')!==sfilt) return false;
     return true;
   });
-
-  if (!filtered.length) {
-    body.innerHTML = '<div class="emp"><div class="emp-i">🧭</div><div class="emp-t">Nenhum guia encontrado</div><div class="emp-s">Crie usuários com perfil Guia no Desenrola Sistema</div></div>';
+  if(!filtered.length){
+    body.innerHTML='<div class="emp"><div class="emp-i">🧭</div><div class="emp-t">Nenhum guia</div><div class="emp-s">Crie no Desenrola Sistema</div></div>';
     return;
   }
-
-  const grupoCount = function(g2) { return (DB.grupos||[]).filter(function(gr){ return gr.guia===g2.nome; }).length; };
-  const npsAvg = function(g2) {
-    const avs = (DB.avaliacoes||[]).filter(function(a){ return a.guia===g2.nome && a.nota!=null; });
-    if (!avs.length) return '—';
-    return (avs.reduce(function(s,a){return s+(+a.nota);},0)/avs.length).toFixed(1);
-  };
-  const perfisLabel = function(u) {
-    var ps = Array.isArray(u.perfis) ? u.perfis : [u.perfil||'guia'];
-    return ps.map(function(p){
-      return {adm:'⚙️ ADM', guia:'🧭 Guia', mkt:'📊 MKT', vendedor:'🛒 Vendedor'}[p] || p;
-    }).join(' + ');
-  };
-
-  body.innerHTML = filtered.map(function(g2) {
-    var canEdit = isAdmUser(U) || (g2.id === U.id);
-    return '<div class="guia-card"' + (canEdit ? ' onclick="openGuiaModal(\'' + g2.id + '\')"' : '') + '>' +
-      '<div class="guia-av" style="background:' + (g2.cor||'#1D9E75') + '">' + (g2.nome||'?').charAt(0).toUpperCase() + '</div>' +
-      '<div class="guia-info">' +
-        '<div class="fcb">' +
-          '<div class="guia-nome">' + esc(g2.nome) + '</div>' +
-          '<span class="' + ((g2.status||'ativo')==='ativo'?'status-ativo':'status-inativo') + '">' + ((g2.status||'ativo')==='ativo'?'Ativo':'Inativo') + '</span>' +
-        '</div>' +
-        '<div class="guia-meta">' +
-          perfisLabel(g2) + ' &nbsp;·&nbsp; ' + grupoCount(g2) + ' grupo(s)' +
-          ' &nbsp;·&nbsp; ⭐ NPS ' + npsAvg(g2) +
-          (g2.wa ? ' &nbsp;·&nbsp; <a href="https://wa.me/' + waNum(g2.wa) + '" target="_blank" onclick="event.stopPropagation()">💬</a>' : '') +
-        '</div>' +
-        (g2.bio ? '<div class="fs11 tm mt8" style="font-style:italic">' + esc((g2.bio||'').slice(0,80)) + ((g2.bio||'').length>80?'…':'') + '</div>' : '') +
-        '<div class="guia-parques">' +
-          (g2.parques||[]).map(function(p){ return '<span class="pt2 pk-' + p + '">' + (PARQUES[p]?.emoji||'') + ' ' + p + '</span>'; }).join('') +
-        '</div>' +
-      '</div>' +
-    '</div>';
+  var gc=function(g2){ return (DB.grupos||[]).filter(function(gr){ return gr.guia===g2.nome; }).length; };
+  var np=function(g2){ var avs=(DB.avaliacoes||[]).filter(function(a){ return a.guia===g2.nome; }); return avs.length?(avs.reduce(function(s,a){return s+(+a.nps||0);},0)/avs.length).toFixed(1):'—'; };
+  var pl=function(u){ var ps=Array.isArray(u.perfis)?u.perfis:[u.perfil||'guia']; return ps.map(function(p){ return ({adm:'⚙️ ADM',guia:'🧭 Guia',mkt:'📊 MKT',vendedor:'🛒 Vendedor'})[p]||p; }).join(' + '); };
+  body.innerHTML=filtered.map(function(g2){
+    var ativo=(g2.status||'ativo')==='ativo';
+    var canEdit=isAdmUser(U)||(g2.id===U.id);
+    return '<div class="guia-card"'+(canEdit?' onclick="openGuiaModal(\''+g2.id+'\')"':'')+'>'+
+      '<div class="guia-av" style="background:'+(g2.cor||'#1D9E75')+'">'+(g2.nome||'?').charAt(0).toUpperCase()+'</div>'+
+      '<div class="guia-info">'+
+        '<div class="fcb"><div class="guia-nome">'+esc(g2.nome)+'</div>'+
+        '<span class="'+(ativo?'status-ativo':'status-inativo')+'">'+(ativo?'Ativo':'Inativo')+'</span></div>'+
+        '<div class="guia-meta">'+pl(g2)+' &nbsp;·&nbsp; '+gc(g2)+' grupo(s) &nbsp;·&nbsp; ⭐ '+np(g2)+
+          (g2.wa?' &nbsp;·&nbsp; <a href="https://wa.me/'+waNum(g2.wa)+'" target="_blank" onclick="event.stopPropagation()">💬</a>':'')+
+        '</div>'+
+        (g2.bio?'<div class="fs11 tm mt8" style="font-style:italic">'+esc((g2.bio||'').slice(0,80))+((g2.bio||'').length>80?'…':'')+'</div>':'')+
+        '<div class="guia-parques">'+(g2.parques||[]).map(function(p){ return '<span class="pt2 pk-'+p+'">'+(PARQUES[p]?.emoji||'')+' '+p+'</span>'; }).join('')+'</div>'+
+      '</div></div>';
   }).join('');
 }
 
 function openGuiaModal(id='') {
-  if (!id) return; // criação feita no Desenrola Sistema
-  // Apenas ADM ou o próprio guia podem abrir
-  if (!isAdmUser(U) && U.id !== id) {
-    toast('Você só pode editar seu próprio perfil','warn'); return;
-  }
-
-  // Buscar dados base do usuário em USUARIOS_SISTEMA
-  var userBase = USUARIOS_SISTEMA.find(function(u){ return u.id === id; });
-  if (!userBase) { toast('Usuário não encontrado','warn'); return; }
-
-  // Buscar dados de perfil guia em DB.perfis_guias
-  var perfis_guias = DB.perfis_guias || {};
-  var guiaPerfil = perfis_guias[id] || {};
-
-  editGuiaId = id;
-
-  g('guia-modal-title').textContent = 'Perfil: ' + (userBase.nome || '');
-  g('gm-nome').value   = userBase.nome || '';
-  g('gm-wa').value     = guiaPerfil.wa  || '';
-  g('gm-bio').value    = guiaPerfil.bio || '';
-  g('gm-login').value  = userBase.login || '';
-  g('gm-cor').value    = guiaPerfil.cor || '#3498db';
-
-  // Parques
-  var pqDiv = g('gm-parques');
-  if (pqDiv) {
-    pqDiv.innerHTML = Object.entries(PARQUES).map(function(entry) {
-      var k = entry[0], v = entry[1];
-      var checked = (guiaPerfil.parques||[]).includes(k) ? 'checked' : '';
-      return '<label style="cursor:pointer;display:flex;align-items:center;gap:4px;background:#f8f9fc;border:1px solid var(--bdr);border-radius:6px;padding:4px 8px;font-size:12px;font-weight:600">' +
-        '<input type="checkbox" name="gm-pk" value="' + k + '" ' + checked + ' style="accent-color:var(--acc)">' +
-        v.emoji + ' ' + k +
-        '</label>';
+  if(!id) return;
+  if(!isAdmUser(U)&&U.id!==id){ toast('Você só pode editar seu próprio perfil','warn'); return; }
+  var userBase=USUARIOS_SISTEMA.find(function(u){ return u.id===id; });
+  if(!userBase){ toast('Usuário não encontrado','warn'); return; }
+  var guiaPerfil=(DB.perfis_guias||{})[id]||{};
+  editGuiaId=id;
+  g('guia-modal-title').textContent='Perfil: '+(userBase.nome||'');
+  g('gm-nome').value=userBase.nome||'';
+  g('gm-wa').value=guiaPerfil.wa||'';
+  g('gm-bio').value=guiaPerfil.bio||'';
+  // campo de login — somente leitura
+  if(g('gm-login')){ g('gm-login').value=userBase.login||''; g('gm-login').readOnly=true; g('gm-login').style.background='#f3f4f6'; }
+  // campo senha — oculto (gerenciado pelo Desenrola Sistema)
+  var senhaRow=g('gm-senha')?.closest('.fr'); if(senhaRow) senhaRow.style.display='none';
+  g('gm-cor').value=guiaPerfil.cor||'#3498db';
+  var pqDiv=g('gm-parques');
+  if(pqDiv){
+    pqDiv.innerHTML=Object.entries(PARQUES).map(function(entry){
+      var k=entry[0],v=entry[1];
+      return '<label style="cursor:pointer;display:flex;align-items:center;gap:4px;background:#f8f9fc;border:1px solid var(--bdr);border-radius:6px;padding:4px 8px;font-size:12px;font-weight:600">'+
+        '<input type="checkbox" name="gm-pk" value="'+k+'" '+(((guiaPerfil.parques||[]).includes(k))?'checked':'')+' style="accent-color:var(--acc)">'+
+        v.emoji+' '+k+'</label>';
     }).join('');
   }
-
-  // Color picker
-  var corAtual = guiaPerfil.cor || '#3498db';
+  var corAtual=guiaPerfil.cor||'#3498db';
   document.querySelectorAll('#gm-color-picker div[data-color]').forEach(function(el){
-    el.style.border = el.dataset.color===corAtual ? '3px solid #111' : '3px solid transparent';
+    el.style.border=el.dataset.color===corAtual?'3px solid #111':'3px solid transparent';
   });
-
-  // Ocultar campos de credencial (gerenciados pelo Desenrola Sistema)
-  var credSection = g('gm-login')?.closest('.fr');
-  if (credSection) credSection.style.display = 'none';
-
-  // Ocultar perfil/status (gerenciados pelo Desenrola Sistema)
-  document.querySelectorAll('.adm-only').forEach(function(el){
-    el.style.display = 'none';
-  });
-
-  // Ocultar botão excluir (exclusão feita no Desenrola Sistema)
-  var delBtn = g('guia-del-btn');
-  if (delBtn) delBtn.classList.add('hid');
-
+  document.querySelectorAll('.adm-only').forEach(function(el){ el.style.display='none'; });
+  var delBtn=g('guia-del-btn'); if(delBtn) delBtn.classList.add('hid');
   openModal('mo-guia');
 }
 
@@ -3215,34 +3062,24 @@ function selectGuiaColor(el, cor) {
 }
 
 async function saveGuia() {
-  if (!editGuiaId) { toast('Nenhum guia selecionado','warn'); return; }
-
-  var wa  = (g('gm-wa')  ? g('gm-wa').value.trim()  : '');
-  var bio = (g('gm-bio') ? g('gm-bio').value.trim()  : '');
-  var cor = (g('gm-cor') ? g('gm-cor').value : '#3498db');
-  var parques = Array.from(document.querySelectorAll('input[name="gm-pk"]:checked')).map(function(i){ return i.value; });
-
-  // Salvar em DB.perfis_guias (dados específicos do guia)
-  if (!DB.perfis_guias) DB.perfis_guias = {};
-  DB.perfis_guias[editGuiaId] = {
-    id:      editGuiaId,
-    wa:      wa,
-    bio:     bio,
-    cor:     cor,
-    parques: parques,
-  };
-
+  if(!editGuiaId){ toast('Nenhum guia selecionado','warn'); return; }
+  var wa =(g('gm-wa') ?g('gm-wa').value.trim() :'');
+  var bio=(g('gm-bio')?g('gm-bio').value.trim():'');
+  var cor=(g('gm-cor')?g('gm-cor').value:'#3498db');
+  var parques=Array.from(document.querySelectorAll('input[name="gm-pk"]:checked')).map(function(i){ return i.value; });
+  if(!DB.perfis_guias) DB.perfis_guias={};
+  DB.perfis_guias[editGuiaId]={ id:editGuiaId, wa:wa, bio:bio, cor:cor, parques:parques };
   await saveData();
-  toast('Perfil salvo com sucesso ✅');
+  toast('Perfil salvo ✅');
   closeModal('mo-guia');
   renderGuias();
   fillGuiaSelects();
 }
 
 async function deleteGuia() {
-  toast('Exclusão de guias é feita no Desenrola Sistema','warn');
+  toast('Gerencie usuários no Desenrola Sistema','warn');
+  closeModal('mo-guia');
 }
-
 
 // ══════════════════════════════════════════════════════════════════════════
 // CALENDÁRIO — Cores por grupo
@@ -3591,8 +3428,6 @@ function renderAtracoes() {
 
   // Dados customizados do usuário (no DB)
   const custom = DB.encItems||[];
-
-  const hiddenSet = new Set(DB.hiddenItems||[]);
 
   const hiddenSet = new Set(DB.hiddenItems||[]);
 
@@ -3949,7 +3784,7 @@ function openEncModalItem(itemData) {
 
 async function deleteEncItemById(id) {
   if (!id) { toast('Item nao pode ser excluido','warn'); return; }
-  // Usar openConfirm do sistema (evita openConfirm_compat() nativo bloqueado no Wix)
+  // Usar openConfirm do sistema (evita confirm() nativo bloqueado no Wix)
   if (typeof openConfirm === 'function') {
     openConfirm('Excluir este item?', 'Esta acao nao pode ser desfeita.', async () => {
       DB.encItems = (DB.encItems||[]).filter(x=>x.id!==id);
@@ -4078,4 +3913,984 @@ function exportRoteiroPDF(rId) {
   const dicas = dicasParque[rot.parque]||[];
 
   const pkFoto = getFoto(rot.parque, rot.parque);
-  const html = `
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Roteiro — ${esc(grupo.nome)} — ${pk.nome} — ${fmtDate(rot.data)}\x3C/title\x3E
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:#1a1a1a;font-size:13px;line-height:1.6;background:#fff}
+  @media print{@page{size:A4 portrait;margin:12mm 14mm}body{font-size:12px}h2{page-break-before:auto}.no-print{display:none}.page-break{page-break-before:always}}
+  .cover{background:linear-gradient(135deg,#0f1117 0%,#1a2035 60%,#0f2418 100%);color:#fff;padding:32px 36px;position:relative;overflow:hidden}
+  .cover::before{content:'';position:absolute;top:0;right:0;width:200px;height:200px;background:radial-gradient(circle,rgba(29,158,117,.3),transparent);pointer-events:none}
+  .cover-logo{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:16px}
+  .cover-title{font-size:28px;font-weight:800;letter-spacing:-.03em;margin-bottom:6px}
+  .cover-sub{font-size:16px;color:rgba(255,255,255,.65);margin-bottom:20px}
+  .cover-meta{display:flex;gap:24px;flex-wrap:wrap;margin-top:16px}
+  .cover-meta-item{display:flex;flex-direction:column;gap:2px}
+  .cover-meta-label{font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.1em;text-transform:uppercase}
+  .cover-meta-value{font-size:14px;font-weight:600;color:rgba(255,255,255,.9)}
+  .acc{color:#1D9E75}
+  .body{padding:24px 36px}
+  h2{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1D9E75;border-bottom:2px solid #1D9E75;padding-bottom:5px;margin:22px 0 12px}
+  h2.red{color:#ef4444;border-color:#ef4444}
+  h2.blue{color:#1e40af;border-color:#1e40af}
+  h2.amber{color:#92400e;border-color:#f59e0b}
+  .atr-row{background:#f8f9fc;border-radius:10px;padding:12px 14px;margin-bottom:8px;border-left:3px solid #1D9E75}
+  .atr-row.single{border-left-color:#f59e0b}
+  .atr-row.t1{border-left-color:#1e40af}
+  .atr-row.t2{border-left-color:#0284c7}
+  .atr-row.expr{border-left-color:#7c3aed}
+  .atr-row.rest{border-left-color:#059669}
+  .atr-row.show{border-left-color:#be185d}
+  .atr-row.atv{border-left-color:#d97706}
+  .atr-num{font-size:16px;font-weight:800;color:#1D9E75;min-width:28px}
+  .atr-name{font-size:14px;font-weight:700;color:#111;margin-bottom:4px}
+  .atr-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;align-items:center}
+  .atr-desc{font-size:11px;color:#444;line-height:1.6;margin:6px 0}
+  .atr-map{font-size:11px;margin-top:6px}
+  .atr-map a{color:#1D9E75;text-decoration:none}
+  .tag{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:700;display:inline-block}
+  .tag.single{background:#fef3c7;color:#92400e}
+  .tag.t1{background:#dbeafe;color:#1e40af}
+  .tag.t2{background:#e0f2fe;color:#0284c7}
+  .tag.multi{background:#d1fae5;color:#065f46}
+  .tag.expr{background:#ede9fe;color:#4c1d95}
+  .dica-box{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;margin-bottom:8px}
+  .dica-box li{font-size:12px;color:#1a3a2a;margin-bottom:4px;padding-left:6px}
+  .parking-box{background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:14px 16px;margin-bottom:16px}
+  .parking-title{font-size:13px;font-weight:700;color:#c2410c;margin-bottom:6px}
+  .parking-row{font-size:12px;color:#7c2d12;margin-bottom:3px}
+  .parking-row a{color:#c2410c}
+  .footer{margin-top:28px;padding-top:12px;border-top:1px solid #e5e7eb;font-size:10px;color:#9ca3af;display:flex;justify-content:space-between;align-items:center}
+  .no-print{text-align:center;padding:16px;background:#f0fdf4;border-bottom:2px solid #1D9E75}
+  .no-print p{color:#065f46;font-size:13px;font-weight:500}
+  .badge-info{display:inline-block;background:#dbeafe;color:#1e40af;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;margin:2px}
+\x3C/style\x3E
+\x3C/head\x3E<body>
+
+<div class="no-print">
+  <p>⬇️ <strong>Para salvar como PDF:</strong> Pressione <kbd>Ctrl+P</kbd> (ou <kbd>⌘+P</kbd> no Mac) → Destino: <strong>"Salvar como PDF"</strong> → Clique em Salvar</p>
+</div>
+
+<!-- ══ CAPA ══ -->
+<div class="cover">
+  ${pkFoto ? `<img src="${pkFoto}" alt="${pk.nome||rot.parque}" style="width:100%;height:180px;object-fit:cover;border-radius:10px;margin-bottom:16px;opacity:.85">` : ''}
+  <div class="cover-logo">✦ Desenrola Turismo · Sistema de Guiamento Virtual</div>
+  <div class="cover-title">${pk.emoji||''} ${esc(grupo.nome)}</div>
+  <div class="cover-sub">${esc(pk.nome)} · ${fmtDate(rot.data)}</div>
+  <div class="cover-meta">
+    <div class="cover-meta-item"><div class="cover-meta-label">Guia</div><div class="cover-meta-value">${esc(grupo.guia||'—')}</div></div>
+    <div class="cover-meta-item"><div class="cover-meta-label">Responsável</div><div class="cover-meta-value">${esc(grupo.responsavel||'—')}</div></div>
+    <div class="cover-meta-item"><div class="cover-meta-label">Participantes</div><div class="cover-meta-value">${(grupo.numAdultos||0)+(grupo.numCriancas||0)} pessoas</div></div>
+    <div class="cover-meta-item"><div class="cover-meta-label">Chegada prevista</div><div class="cover-meta-value">${rot.horaChegada||'08:00'}h</div></div>
+    <div class="cover-meta-item"><div class="cover-meta-label">Status do roteiro</div><div class="cover-meta-value">${rot.status||'Rascunho'}</div></div>
+  </div>
+</div>
+
+<div class="body">
+
+<!-- ══ ESTACIONAMENTO ══ -->
+${parking.nome ? `
+<h2>🅿️ Estacionamento</h2>
+<div class="parking-box">
+  <div class="parking-title">🏢 ${parking.nome}</div>
+  <div class="parking-row">💰 <strong>Valor:</strong> ${parking.preco}</div>
+  <div class="parking-row">📍 <a href="${parking.maps}" target="_blank">Abrir no Google Maps →</a></div>
+  <div class="parking-row" style="margin-top:6px">💡 ${parking.dica||''}</div>
+</div>` : ''}
+
+<!-- ══ LIGHTNING LANES PLANEJADAS ══ -->
+${llSingle.length ? `<h2 class="amber">💳 Lightning Lane Single Pass — Compra Individual Antecipada</h2>
+<p style="font-size:11px;color:#92400e;background:#fef3c7;padding:8px 12px;border-radius:6px;margin-bottom:10px">
+  ⚠️ Estas atrações NÃO estão no Multi Pass. Compra separada no app MDE. Preços variam por data.</p>
+${llSingle.map((a,i)=>atrCard(a,'LL Single','single')).join('')}` : ''}
+
+${!isAK && !isUniv && llT1.length ? `<h2 class="blue">🔵 Lightning Lane Multi Pass — TIER 1 (agendar PRIMEIRO)</h2>
+<p style="font-size:11px;color:#1e40af;background:#dbeafe;padding:8px 12px;border-radius:6px;margin-bottom:10px">
+  Você pode escolher apenas 1 atração do Tier 1 no pré-booking. Esgotam antes das 9h!</p>
+${llT1.map(a=>`<div class="atr-row t1">${atrCard(a,'T1 — Multi Pass','t1').replace('<div class="atr-row">','')}`).join('')}` : ''}
+
+${!isAK && !isUniv && llT2.length ? `<h2>⚪ Lightning Lane Multi Pass — TIER 2</h2>
+<p style="font-size:11px;color:#0284c7;background:#e0f2fe;padding:8px 12px;border-radius:6px;margin-bottom:10px">
+  Você pode selecionar até 2 atrações do Tier 2 no pré-booking.</p>
+${llT2.map(a=>`<div class="atr-row t2">${atrCard(a,'T2 — Multi Pass','t2').replace('<div class="atr-row">','')}`).join('')}` : ''}
+
+${isAK && llMulti.length ? `<h2>🦁 Lightning Lane Multi Pass — Animal Kingdom (sem tiers)</h2>
+<p style="font-size:11px;color:#065f46;background:#d1fae5;padding:8px 12px;border-radius:6px;margin-bottom:10px">
+  Animal Kingdom não tem sistema de Tiers — escolha livre de até 3 atrações!</p>
+${llMulti.map(a=>atrCard(a,'Multi Pass','multi')).join('')}` : ''}
+
+${isUniv && llExpr.length ? `<h2>⚡ Express Pass — Universal Orlando</h2>
+<p style="font-size:11px;color:#4c1d95;background:#ede9fe;padding:8px 12px;border-radius:6px;margin-bottom:10px">
+  Express Pass substitui o Lightning Lane. Use na entrada exclusiva de cada atração.</p>
+${llExpr.map(a=>`<div class="atr-row expr">${atrCard(a,'Express Pass','expr').replace('<div class="atr-row">','')}`).join('')}` : ''}
+
+<!-- ══ REFEIÇÕES ══ -->
+${rot.restaurante ? `<h2>🍽️ Refeição Planejada</h2>
+<div class="atr-row rest">
+  ${(()=>{
+    const pk2 = rot.parque;
+    const ress = [...(RESTAURANTES[pk2]?.ts||[]),...(RESTAURANTES[pk2]?.qs||[])];
+    const info = ress.find(r=>r.n===rot.restaurante)||{};
+    const mUrl = 'https://maps.google.com/?q='+encodeURIComponent(rot.restaurante+' '+pk.nome+' Orlando Florida');
+    return `<div class="atr-name">${esc(rot.restaurante)}</div>
+    ${info.tipo==='table'?'<span class="badge-info">🪑 Mesa com Reserva</span>':'<span class="badge-info">🍔 Quick Service</span>'}
+    ${info.dica?`<div class="atr-desc">${esc(info.dica)}</div>`:''}
+    <div class="atr-map"><a href="${mUrl}" target="_blank">📍 Ver localização no Google Maps →</a></div>`;
+  })()}
+</div>` : ''}
+
+<!-- ══ SHOWS & ATIVIDADES ══ -->
+${rot.shows ? `<h2>🎭 Shows & Desfiles</h2>
+<div class="atr-row show">
+  ${(()=>{
+    const showList = SHOWS[rot.parque]||[];
+    const info = showList.find(s=>s.n===rot.shows)||{};
+    return `<div class="atr-name">${esc(rot.shows)}</div>
+    ${info.horario?`<span class="badge-info">⏰ ${info.horario}</span>`:''}
+    ${info.local?`<span class="badge-info">📍 ${info.local}</span>`:''}
+    ${info.dica?`<div class="atr-desc">${esc(info.dica)}</div>`:''}
+    <div style="font-size:11px;margin-top:6px;color:#be185d;font-weight:600">⚠️ Shows não têm mapa fixo — posicione-se com antecedência no local indicado!</div>`;
+  })()}
+</div>` : ''}
+
+${rot.atividades ? `<h2>🎨 Atividades Especiais</h2>
+<div class="atr-row atv">
+  ${(()=>{
+    const pk2 = rot.parque;
+    const atvList = ATIVIDADES[pk2]||[];
+    const info = atvList.find(a=>a.n===rot.atividades)||{};
+    const mUrl = 'https://maps.google.com/?q='+encodeURIComponent(rot.atividades+' '+pk.nome+' Orlando Florida');
+    return `<div class="atr-name">${esc(rot.atividades)}</div>
+    ${info.reserva?'<span class="badge-info" style="background:#fee2e2;color:#991b1b">⚠️ Reserva Necessária</span>':'<span class="badge-info" style="background:#d1fae5;color:#065f46">✅ Walk-in</span>'}
+    ${info.dica?`<div class="atr-desc">${esc(info.dica)}</div>`:''}
+    <div class="atr-map"><a href="${mUrl}" target="_blank">📍 Ver localização no Google Maps →</a></div>`;
+  })()}
+</div>` : ''}
+
+${rot.personagens ? `<h2>👑 Personagens</h2>
+<div class="atr-row" style="border-left-color:#f59e0b">
+  <div class="atr-name">Meet & Greet</div>
+  <div class="atr-desc">${esc(rot.personagens)}</div>
+  <div style="font-size:11px;color:#92400e;margin-top:6px">💡 Personagens podem mudar de local sem aviso. Consulte o app MDE no dia!</div>
+</div>` : ''}
+
+<!-- ══ DICAS DO PARQUE ══ -->
+${dicas.length ? `<h2>💡 Dicas Exclusivas — ${esc(pk.nome)}</h2>
+<div class="dica-box">
+  <ul>
+    ${dicas.map(d=>`<li>✅ ${esc(d)}</li>`).join('')}
+  </ul>
+</div>` : ''}
+
+<!-- ══ ESTRATÉGIA ══ -->
+${rot.notas ? `<h2>📝 Estratégia do Dia</h2>
+<div style="background:#f8f9fc;border-radius:10px;padding:14px;border:1px solid #e5e7eb;font-size:12px;line-height:1.7;color:#374151">
+  ${esc(rot.notas).replace(/\n/g,'<br>')}
+</div>` : ''}
+
+<!-- ══ RODAPÉ ══ -->
+<div class="footer">
+  <div>✦ Desenrola Turismo · Sistema de Guiamento Virtual</div>
+  <div>Gerado em ${fmtDateLong(new Date())}</div>
+  <div>WhatsApp: ${grupo.whatsapp ? `+55 ${grupo.whatsapp}` : '—'}</div>
+</div>
+
+</div><!-- /body -->
+\x3C/body\x3E\x3C/html\x3E`;
+
+  // ── DOWNLOAD COMO ARQUIVO HTML IMPRIMÍVEL (equivalente a PDF via Ctrl+P)
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const fileName = `Roteiro_${esc(grupo.nome).replace(/[^a-zA-Z0-9]/g,'_')}_${rot.parque}_${rot.data}.html`;
+
+  // Tentar salvar como arquivo
+  if (window.showSaveFilePicker) {
+    // Chrome/Edge com File System Access API — abre diálogo "Salvar como"
+    window.showSaveFilePicker({
+      suggestedName: fileName.replace('.html','.pdf'),
+      types:[{description:'HTML para impressão',accept:{'text/html':['.html']}}]
+    }).then(async fh => {
+      const ws = await fh.createWritable();
+      await ws.write(blob);
+      await ws.close();
+      toast('Arquivo salvo! Abra e pressione Ctrl+P → Salvar como PDF ✅');
+    }).catch(()=>{
+      // Cancelado pelo usuário — fallback para janela nova
+      abrirJanelaRoteiro(html);
+    });
+  } else {
+    // Fallback universal — abre nova janela com print automático
+    abrirJanelaRoteiro(html);
+  }
+}
+
+function abrirJanelaRoteiro(html) {
+  const w = window.open('','_blank','width=900,height=1200');
+  if (!w) { toast('Popup bloqueado. Permita popups e tente novamente','warn'); return; }
+  w.document.write(html);
+  w.document.close();
+  w.document.title = w.document.querySelector('title')?.text || 'Roteiro';
+  setTimeout(() => { w.focus(); w.print(); }, 800);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ROTEIRO MODAL — Preencher datalists de restaurantes/shows/atividades
+// ══════════════════════════════════════════════════════════════════════════
+function fillRoteiroDataLists(pk) {
+  if(!pk) return;
+  const ress = [...(RESTAURANTES[pk]?.ts||[]),...(RESTAURANTES[pk]?.qs||[])];
+  const shows = (SHOWS[pk]||[]);
+  const atvs  = (ATIVIDADES[pk]||[]);
+  const dlR = g('mr-rest-list'); if(dlR) dlR.innerHTML=ress.map(r=>`<option value="${esc(r.n)}">`).join('');
+  const dlS = g('mr-shows-list'); if(dlS) dlS.innerHTML=shows.map(s=>`<option value="${esc(s.n)}">`).join('');
+  const dlA = g('mr-atv-list'); if(dlA) dlA.innerHTML=atvs.map(a=>`<option value="${esc(a.n)}">`).join('');
+  // Mostrar botão PDF se editando roteiro existente
+  const pdfBtn = g('mr-pdf-btn'); if(pdfBtn) pdfBtn.style.display = editId.roteiro ? 'inline-flex' : 'none';
+}
+
+
+// ══════════════════════════════════════════════════════════════════════════
+// ESTACIONAMENTO (para PDF)
+// ══════════════════════════════════════════════════════════════════════════
+const PARKING = {
+  MK:  {nome:'Transportation & Ticket Center',preco:'Standard: ~$30/dia · Preferencial: ~$45/dia',
+        maps:'https://maps.google.com/?q=Walt+Disney+World+Transportation+Ticket+Center+Parking+Orlando+FL',
+        dica:'Estacionamento compartilhado entre MK e EPCOT. Do TTC, pegue o Monorail (~15 min) ou o Ferry (~20 min) até a entrada do Magic Kingdom. Ônibus Disney operam 24h.'},
+  EPCOT:{nome:'EPCOT Parking Plaza',preco:'Standard: ~$30/dia · Preferencial: ~$45/dia',
+        maps:'https://maps.google.com/?q=EPCOT+Parking+Walt+Disney+World+Orlando+FL',
+        dica:'Estacionamento próprio do EPCOT com acesso fácil ao Main Entrance. Compartilhado com o TTC se chegar pela frente do MK. Trams internos disponíveis.'},
+  HS:  {nome:'Hollywood Studios Parking Lot',preco:'Standard: ~$30/dia · Preferencial: ~$45/dia',
+        maps:'https://maps.google.com/?q=Hollywood+Studios+Parking+Walt+Disney+World+Orlando+FL',
+        dica:'Estacionamento próprio bem próximo da entrada. Tram disponível para quem estacionar longe. Fácil acesso pela US-192.'},
+  AK:  {nome:'Animal Kingdom Parking Lot',preco:'Standard: ~$30/dia · Preferencial: ~$45/dia',
+        maps:'https://maps.google.com/?q=Animal+Kingdom+Parking+Walt+Disney+World+Orlando+FL',
+        dica:'Seções do estacionamento têm nomes de animais — fotografe onde parou! Tram disponível.'},
+  USO: {nome:'Universal Studios Florida Parking Garage',preco:'General: $30-45/dia · Prime: $50-65/dia',
+        maps:'https://maps.google.com/?q=Universal+Studios+Florida+Parking+Garage+Orlando+FL',
+        dica:'Garagem coberta compartilhada entre USO e IOA. Prime Parking fica mais perto da entrada do CityWalk. Válido para ambos os parques no mesmo dia.'},
+  IOA: {nome:'Universal Orlando Parking Garage',preco:'General: $30-45/dia · Prime: $50-65/dia',
+        maps:'https://maps.google.com/?q=Universal+Orlando+Parking+Garage+FL',
+        dica:'Mesmo complexo de garagem de USO — um único estacionamento serve ambos os parques. Acesse pela Kirkman Road (Universal Blvd).'},
+  EU:  {nome:'Epic Universe Parking Complex',preco:'General: ~$30-45/dia · Prime: ~$50+/dia',
+        maps:'https://maps.google.com/?q=Epic+Universe+Universal+Orlando+Parking',
+        dica:'Novo complexo ao sul de Universal Orlando (2025). Estacionamento próprio com acesso direto ao parque. Verificar preços atuais no site Universal.'},
+  SEA: {nome:'SeaWorld Orlando Parking',preco:'Standard: ~$30/dia · Preferencial: ~$35/dia',
+        maps:'https://maps.google.com/?q=SeaWorld+Orlando+Parking+FL',
+        dica:'Estacionamento aberto amplo. Chegar cedo para vagas mais próximas da entrada principal.'},
+  BGT: {nome:'Busch Gardens Tampa Parking',preco:'Standard: ~$30/dia · Preferencial: ~$35/dia',
+        maps:'https://maps.google.com/?q=Busch+Gardens+Tampa+Parking+FL',
+        dica:'Estacionamento externo ao redor do parque. Trams disponíveis nos dias movimentados.'},
+  BB:  {nome:'Blizzard Beach Parking',preco:'Incluso para hóspedes Disney · ~$30/dia para demais',
+        maps:'https://maps.google.com/?q=Blizzard+Beach+Disney+Parking+FL',
+        dica:'Estacionamento pequeno e gratuito para hóspedes de hotel Disney. Chegar cedo nos dias quentes — pode lotar!'},
+  TL:  {nome:'Typhoon Lagoon Parking',preco:'Incluso para hóspedes Disney · ~$30/dia para demais',
+        maps:'https://maps.google.com/?q=Typhoon+Lagoon+Disney+Parking+FL',
+        dica:'Próximo ao Disney Springs. Estacionamento conveniente com caminhada curta até a entrada.'},
+  KSC: {nome:'Kennedy Space Center Visitor Complex',preco:'✅ GRATUITO — incluso no ingresso!',
+        maps:'https://maps.google.com/?q=Kennedy+Space+Center+Visitor+Complex+Parking+FL',
+        dica:'Estacionamento gratuito e amplo no complexo. Curta caminhada até a entrada principal.'}
+};
+
+// ══════════════════════════════════════════════════════════════════════════
+// CHARTS
+// ══════════════════════════════════════════════════════════════════════════
+function renderChart(id, type, labels, data, colors, label='') {
+  const canvas = g(id); if(!canvas) return;
+  if(charts[id]) { charts[id].destroy(); delete charts[id]; }
+  try {
+    charts[id] = new Chart(canvas, {
+      type, data:{ labels, datasets:[{ label, data, backgroundColor:type==='line'?colors[0]+'33':colors, borderColor:colors, borderWidth:type==='line'?2:0, tension:.4, fill:type==='line', pointRadius:3 }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{callbacks:{}} }, scales: type==='doughnut'?{}:{ y:{ beginAtZero:true, grid:{color:'#f3f4f6'}, ticks:{font:{size:11},maxTicksLimit:6} }, x:{ grid:{display:false}, ticks:{font:{size:11},maxRotation:45,minRotation:0} } } }
+    });
+  } catch(e){}
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// MODALS & CONFIRM
+// ══════════════════════════════════════════════════════════════════════════
+function openModal(id) {
+  g(id)?.classList.remove('hid');
+  if (id !== 'mo-confirm') _editando = true;
+}
+function closeModal(id) {
+  g(id)?.classList.add('hid');
+  if (!document.querySelectorAll('.mo:not(.hid):not(#mo-confirm)').length) {
+    _editando = false;
+    if (_pendingRemoteUpdate) {
+      const u = _pendingRemoteUpdate; _pendingRemoteUpdate = null;
+      if ((u._lastSaved||0) > (DB._lastSaved||0)) { DB=Object.assign({},u); saveLocal(); renderPage(curPage); }
+    }
+  }
+}
+
+let _confirmCb = null;
+function confirmDelete(type, id, nome) {
+  g('confirm-msg').innerHTML = `Tem certeza que deseja excluir <strong>${esc(nome)}</strong>? Esta ação não pode ser desfeita.`;
+  _confirmCb = () => { deleteEntity(type, id); closeModal('mo-confirm'); };
+  g('confirm-ok').onclick = _confirmCb;
+  openModal('mo-confirm');
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.mo').forEach(m => {
+  m.addEventListener('click', e => { if(e.target===m) closeModal(m.id); });
+});
+
+
+
+// ══════════════════════════════════════════════════════════════════════════
+// MENSAGENS WHATSAPP — Geração automática por tipo de card
+// ══════════════════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════════════════════
+// TIPO DE ATRACAO — mapeamento para mensagens WPP
+// ══════════════════════════════════════════════════════════════════════════
+const TIPO_ATR = {
+  'TRON Lightcycle Run':'Montanha-russa de lancamento',
+  'Seven Dwarfs Mine Train':'Montanha-russa familiar',
+  "Tiana's Bayou Adventure":'Passeio de bote com queda',
+  'Big Thunder Mountain Railroad':'Montanha-russa classica',
+  "Peter Pan's Flight":'Dark ride aereo',
+  'Space Mountain':'Montanha-russa no escuro',
+  'Haunted Mansion':'Dark ride classico',
+  'Pirates of the Caribbean':'Passeio de barco',
+  'Jungle Cruise':'Passeio de barco humoristico',
+  "The Many Adventures of Winnie the Pooh":'Dark ride familiar',
+  "Mickey & Minnie's Runaway Railway":'Dark ride tecnologico',
+  'Guardians of the Galaxy: Cosmic Rewind':'Montanha-russa reversa',
+  'Frozen Ever After':'Passeio de barco musical',
+  "Remy's Ratatouille Adventure":'Dark ride familiar',
+  "Soarin' Across America":'Simulador de voo parapente',
+  "Soarin' Around the World":'Simulador de voo parapente',
+  'Test Track':'Simulador de velocidade',
+  'Spaceship Earth':'Dark ride historico',
+  'Star Wars: Rise of the Resistance':'Dark ride epico cinematografico',
+  'Slinky Dog Dash':'Montanha-russa familiar',
+  "Rock 'n' Roller Coaster Starring The Muppets":'Montanha-russa de lancamento',
+  'The Twilight Zone Tower of Terror':'Torre de queda aleatoria',
+  'Millennium Falcon: Smugglers Run':'Simulador interativo',
+  'Avatar: Flight of Passage':'Simulador de voo em banshee',
+  "Na'vi River Journey":'Passeio de barco bioluminescente',
+  'Kilimanjaro Safaris':'Safari com animais reais',
+  'Expedition Everest':'Montanha-russa com reversao',
+  "Hagrid's Magical Creatures Motorbike Adventure":'Moto voadora - dark ride',
+  'Jurassic World VelociCoaster':'Montanha-russa radical',
+  'Harry Potter and the Forbidden Journey':'Simulador dark ride',
+  'The Amazing Adventures of Spider-Man':'Simulador 3D dark ride',
+  'The Incredible Hulk Coaster':'Montanha-russa com inversoes',
+  'Hollywood Rip Ride Rockit':'Montanha-russa de lancamento',
+  'Mako':'Montanha-russa hipercoaster',
+  'Manta':'Flying coaster invertido',
+  'Ice Breaker':'Montanha-russa de lancamento',
+  'Kraken (VR coaster)':'Montanha-russa invertida',
+  'Infinity Falls':'Rio com queda record',
+  'Iron Gwazi':'Montanha-russa hibrida',
+  'SheiKra':'Dive coaster queda vertical',
+  'Cheetah Hunt':'Montanha-russa de lancamento',
+  'Montu':'Montanha-russa invertida classica',
+};
+
+function getTipoAtr(nome) {
+  return TIPO_ATR[nome] || null;
+}
+
+function gerarMsgWA(ll, grupo, parque) {
+  var tipo   = ll.tipo || 'atracao';
+  var nome   = ll.atracao || ll.nome || '';
+  var hora   = ll.hora || '';
+  var pkInfo = PARQUES[parque] || { nome: parque };
+  var mapsUrl = 'https://maps.google.com/?q=' + encodeURIComponent(nome + ' ' + pkInfo.nome + ' Orlando Florida');
+  var NL = '\n';
+
+  var atrs     = ATRACOES[parque] || [];
+  var atrInfo  = atrs.find(function(a){ return a.n === nome; }) || {};
+  var restList = (RESTAURANTES[parque] ? (RESTAURANTES[parque].ts||[]).concat(RESTAURANTES[parque].qs||[]) : []);
+  var restInfo = restList.find(function(r){ return r.n === nome; }) || {};
+  var showList = SHOWS[parque] || [];
+  var showInfo = showList.find(function(s){ return s.n === nome; }) || {};
+  var atvList  = ATIVIDADES[parque] || [];
+  var atvInfo  = atvList.find(function(a){ return a.n === nome; }) || {};
+
+  // Tipo de acesso formatado
+  var llTipo = atrInfo.ll || '';
+  var tipoAcesso = 'Fila Normal (Standby)';
+  if (llTipo === 'single')   tipoAcesso = 'Lightning Lane Single Pass (compra individual)';
+  if (llTipo === 'multi-t1') tipoAcesso = 'Lightning Lane Multi Pass';
+  if (llTipo === 'multi-t2') tipoAcesso = 'Lightning Lane Multi Pass';
+  if (llTipo === 'multi')    tipoAcesso = 'Lightning Lane Multi Pass';
+  if (llTipo === 'express')  tipoAcesso = 'Express Pass';
+
+  // Tipo da atracao (coaster, dark ride, etc.)
+  var tipoAtracao = getTipoAtr(nome);
+
+  // Intensidade
+  // Intensidade sem emoji nas keys
+  var intensidade = null;
+  if (atrInfo.nivel) {
+    if (atrInfo.nivel.indexOf('Radical') >= 0)  intensidade = 'Radical';
+    else if (atrInfo.nivel.indexOf('Familia') >= 0 || atrInfo.nivel.indexOf('Familia') >= 0 || atrInfo.nivel.indexOf('Fam') >= 0) intensidade = atrInfo.nivel.indexOf('+') >= 0 ? 'Moderada' : 'Leve';
+    else intensidade = 'Moderada';
+  }
+  var alturaReq   = atrInfo.req   ? ('Altura minima: ' + atrInfo.req + 'cm') : null;
+  var descAtr     = getDesc(nome) || null;
+
+  var msg = '';
+
+  if (tipo === 'restaurante') {
+    var isTS = restInfo.tipo === 'table';
+    var dica = (restInfo.dica || '').split('|')[0].trim().slice(0,100);
+
+    if (isTS) {
+      msg = '*Chegou a hora da sua experiencia gastronomica!*' + NL + NL +
+            '*Restaurante:* ' + nome + NL +
+            (hora ? ('*Reserva:* ' + hora + NL) : '') + NL +
+            '*Informacoes importantes:*' + NL +
+            '- Cheguem com 10 a 15 minutos de antecedencia.' + NL +
+            '- Facam o check-in pelo app quando disponivel.' + NL +
+            (dica ? ('- ' + dica + NL) : '- Aproveitem a experiencia com calma!' + NL) + NL +
+            '*Como chegar:* ' + mapsUrl + NL + NL +
+            'Assim que finalizarem, me avisem para continuarmos o planejamento!' + NL +
+            'Bom almoco/jantar!';
+    } else {
+      msg = '*Hora de uma pausa para recarregar as energias!*' + NL + NL +
+            '*Restaurante:* ' + nome + NL + NL +
+            '*Informacoes:*' + NL +
+            '- Servico rapido (Quick Service), sem reserva.' + NL +
+            '- Escolham mesa apos retirar o pedido.' + NL +
+            (dica ? ('- ' + dica + NL) : '- Podem pedir pelo app para economizar tempo.' + NL) + NL +
+            '*Como chegar:* ' + mapsUrl + NL + NL +
+            'Quando terminarem, me avisem por aqui!' + NL +
+            'Bom apetite!';
+    }
+
+  } else if (tipo === 'show' || tipo === 'desfile') {
+    var horTxt   = showInfo.horario || hora || '';
+    var localTxt = showInfo.local || '';
+    var dicaShow = (showInfo.dica || '').split('|')[0].trim().slice(0,120);
+    msg = '*Atencao: ' + nome + ' esta chegando!*' + NL + NL +
+          (horTxt   ? ('*Horario:* ' + horTxt + NL) : '') +
+          (localTxt ? ('*Local:* '   + localTxt + NL) : '') + NL +
+          (dicaShow ? ('*Dica:* ' + dicaShow + NL) : 'Posicionem-se com 15-20 min de antecedencia!' + NL) + NL +
+          'Aproveitem! Me avisem quando terminar.';
+
+  } else if (tipo === 'atividade') {
+    var dicaAtv  = (atvInfo.dica || '').split('|')[0].trim().slice(0,120);
+    var temRes   = atvInfo.reserva;
+    msg = '*Proxima experiencia: ' + nome + '*' + NL + NL +
+          '*O que precisam saber:*' + NL +
+          (dicaAtv ? ('- ' + dicaAtv + NL) : '') +
+          (temRes ? '- Atencao: confirmem a reserva na entrada!' + NL : '- Sem reserva, e so aparecer!' + NL) + NL +
+          '*Como chegar:* ' + mapsUrl + NL + NL +
+          'Depois da atividade, me avisem por aqui!' + NL +
+          'Aproveitem esse momento!';
+
+  } else {
+    // ATRACAO - sem emojis, texto limpo
+    var infos = [];
+    if (tipoAtracao) infos.push('Tipo: ' + tipoAtracao);
+    else { var tipoFromDica = getTipoAtr(nome); if(tipoFromDica) infos.push('Tipo: ' + tipoFromDica); }
+    if (intensidade) infos.push('Intensidade: ' + intensidade);
+    if (alturaReq)   infos.push(alturaReq);
+    if (descAtr)     infos.push(descAtr.slice(0, 80));
+
+    msg = '*Proxima parada: ' + nome + '*' + NL + NL +
+          '*Tipo de acesso:* ' + tipoAcesso + NL + NL +
+          '*O que voces precisam saber:*' + NL +
+          (infos.length ? infos.map(function(i){ return '- ' + i; }).join(NL) + NL : '- Preparados para uma experiencia incrivel!' + NL) + NL +
+          '*Como chegar:* ' + mapsUrl + NL + NL +
+          'Quando sairem da atracao, me avisem aqui para eu passar a proxima orientacao e mantermos o melhor fluxo no parque!' + NL +
+          'Estou acompanhando voces!';
+  }
+
+  var numero = waNum(grupo ? grupo.whatsapp || '' : '');
+  if (numero) {
+    return 'https://wa.me/' + numero + '?text=' + encodeURIComponent(msg);
+  }
+  return 'copy:' + msg;
+}
+
+function enviarMsgCard(grupoId, data, idx) {
+  const gui = (DB.guiamentos||[]).find(x=>x.grupoId===grupoId&&x.data===data);
+  if (!gui?.logLL) return;
+  const ll = gui.logLL[idx];
+  if (!ll) return;
+  const grupo  = (DB.grupos||[]).find(g2=>g2.id===grupoId);
+  const parque = (grupo?.parques||[]).find(p=>p.data===data)?.parque || '';
+  const url = gerarMsgWA(ll, grupo, parque);
+  if (url.startsWith('copy:')) {
+    const msg = url.replace('copy:','');
+    navigator.clipboard.writeText(msg)
+      .then(()=>toast('Mensagem copiada! Cole no WhatsApp 📋'))
+      .catch(()=>toast('Configure o WhatsApp no cadastro do grupo','warn'));
+  } else {
+    window.open(url, '_blank');
+  }
+}
+
+
+
+// ══════════════════════════════════════════════════════════════════════════
+// FOTOS — Banco de imagens (Wikipedia Commons + Notion)
+// Wikipedia Commons: licença livre (CC-BY-SA)
+// ══════════════════════════════════════════════════════════════════════════
+const FOTOS = {
+  // ── PARQUES ──────────────────────────────────────────────────────────
+  'MK':   'https://upload.wikimedia.org/wikipedia/commons/e/e6/Cinderella_Castle%2C_Magic_Kingdom_%282026%29.jpg',
+  'EPCOT':'https://upload.wikimedia.org/wikipedia/commons/7/73/Spaceship_Earth%2C_EPCOT.jpg',
+  'HS':   'https://upload.wikimedia.org/wikipedia/commons/a/a0/The_Twilight_Zone_Tower_of_Terror%2C_2024.jpg',
+  'AK':   'https://upload.wikimedia.org/wikipedia/commons/a/a4/Tree_of_Life%2C_Disney%27s_Animal_Kingdom.jpg',
+  'USO':  'https://file.notion.so/f/f/d2155671-f1b1-421d-bf4d-d71dd4369b5e/763f8d31-404e-4fc4-bc90-65c781c35728/universals_tudyos.avif',
+  'IOA':  'https://sage-wormhole-561.notion.site/image/attachment%3A839466a2-d139-4d7b-8340-811e29a7f74d%3Aisland_of_adventure.jpg',
+  'EU':   'https://file.notion.so/f/f/d2155671-f1b1-421d-bf4d-d71dd4369b5e/93ad0ffc-f649-4c3a-8207-67f1257a2fa9/epic_universe.avif',
+  'SEA':  'https://upload.wikimedia.org/wikipedia/commons/6/6b/Seaworld-Orlando-Shamu-1527.jpg',
+  'BGT':  'https://upload.wikimedia.org/wikipedia/commons/6/6a/Busch_Gardens_Tampa_Bay.jpg',
+  'BB':   'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Summit-Plummet.jpg/800px-Summit-Plummet.jpg',
+  'TL':   'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Typhoon_Lagoon_Surf_Pool.jpg/800px-Typhoon_Lagoon_Surf_Pool.jpg',
+  'KSC':  'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Space_Shuttle_Atlantis_at_KSC.jpg/800px-Space_Shuttle_Atlantis_at_KSC.jpg',
+
+  // ── MAGIC KINGDOM ─────────────────────────────────────────────────────
+  'TRON Lightcycle Run': 'https://upload.wikimedia.org/wikipedia/commons/5/52/Tron_Lightcycle_Power_Run_%28Magic_Kingdom%29_4.jpg',
+  'Seven Dwarfs Mine Train': 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Seven_Dwarfs_Mine_Train.jpg',
+  "Tiana's Bayou Adventure": 'https://upload.wikimedia.org/wikipedia/commons/c/cc/Tiana%27s_Bayou_Adventure_The_Magic_Kingdom_54164522834.jpg',
+  'Big Thunder Mountain Railroad': 'https://upload.wikimedia.org/wikipedia/commons/1/1e/Big_Thunder_Mountain_Railroad_2.jpg',
+  "Peter Pan's Flight": 'https://upload.wikimedia.org/wikipedia/commons/1/15/Dlp_peter_pan.jpg',
+  'Space Mountain': 'https://upload.wikimedia.org/wikipedia/commons/7/7a/Space_Mountain_at_the_Magic_Kingdom.jpg',
+  'Haunted Mansion': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Haunted_Mansion_in_WDW.jpg/800px-Haunted_Mansion_in_WDW.jpg',
+  'Pirates of the Caribbean': 'https://upload.wikimedia.org/wikipedia/commons/9/97/Pirates_of_the_Caribbean_-_The_Attack.jpg',
+  'Jungle Cruise': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Disneyland_park_-_Anaheim_Los_Angeles_California_USA_%289894255866%29.jpg/800px-Disneyland_park_-_Anaheim_Los_Angeles_California_USA_%289894255866%29.jpg',
+  "The Many Adventures of Winnie the Pooh": 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Winnie_the_Pooh_ride_entrance.jpg/800px-Winnie_the_Pooh_ride_entrance.jpg',
+
+  // ── EPCOT ─────────────────────────────────────────────────────────────
+  'Guardians of the Galaxy: Cosmic Rewind': 'https://upload.wikimedia.org/wikipedia/commons/f/f6/Guardians_of_the_Galaxy_Cosmic_Rewind-Cast_Preview_%2852030963400%29_%28cropped%29.jpg',
+  'Frozen Ever After': 'https://upload.wikimedia.org/wikipedia/commons/8/86/Frozen_Ever_After_HK_08.jpg',
+  "Remy's Ratatouille Adventure": 'https://upload.wikimedia.org/wikipedia/commons/0/08/Epcot_-_54163015047.jpg',
+  "Soarin' Across America": 'https://upload.wikimedia.org/wikipedia/commons/0/04/Soarin_Over_California_Exterior.jpg',
+  "Soarin' Around the World": 'https://upload.wikimedia.org/wikipedia/commons/0/04/Soarin_Over_California_Exterior.jpg',
+  'Test Track': 'https://upload.wikimedia.org/wikipedia/commons/5/53/Epcot_Test_Track.jpg',
+  'Spaceship Earth': 'https://upload.wikimedia.org/wikipedia/commons/7/73/Spaceship_Earth%2C_EPCOT.jpg',
+
+  // ── HOLLYWOOD STUDIOS ─────────────────────────────────────────────────
+  'Star Wars: Rise of the Resistance': 'https://upload.wikimedia.org/wikipedia/commons/2/23/Star_Wars_Rise_of_the_Resistance_queue.jpg',
+  'Slinky Dog Dash': 'https://upload.wikimedia.org/wikipedia/commons/0/0a/Slinky_Dog_Dash_%2829262611338%29_%28cropped%29.jpg',
+  "Rock 'n' Roller Coaster Starring The Muppets": 'https://upload.wikimedia.org/wikipedia/commons/f/f1/Rock_%27n%27_Roller_Coaster_starring_Aerosmith_1.jpg',
+  'The Twilight Zone Tower of Terror': 'https://upload.wikimedia.org/wikipedia/commons/a/a0/The_Twilight_Zone_Tower_of_Terror%2C_2024.jpg',
+  'Millennium Falcon: Smugglers Run': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Millennium_Falcon_Smuggler%27s_Run_-_Walt_Disney_World.jpg/800px-Millennium_Falcon_Smuggler%27s_Run_-_Walt_Disney_World.jpg',
+  "Mickey & Minnie's Runaway Railway": 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Mickey_and_Minnie%27s_Runaway_Railway_-_exterior.jpg/800px-Mickey_and_Minnie%27s_Runaway_Railway_-_exterior.jpg',
+  'Indiana Jones Stunt Spectacular': 'https://upload.wikimedia.org/wikipedia/commons/3/34/Indiana_Jones_Stunt_Spectacular_%2842346735095%29.jpg',
+  'Festival of Fantasy': 'https://upload.wikimedia.org/wikipedia/commons/6/67/Princess_Garden%2C_Festival_of_Fantasy_Parade_%2816398355087%29.jpg',
+  'Fantasmic!': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Fantasmic%21_at_Disney%27s_Hollywood_Studios_%2840028059053%29.jpg/800px-Fantasmic%21_at_Disney%27s_Hollywood_Studios_%2840028059053%29.jpg',
+
+  // ── ANIMAL KINGDOM ────────────────────────────────────────────────────
+  'Avatar: Flight of Passage': 'https://upload.wikimedia.org/wikipedia/commons/f/f1/Avatar_Flight_of_Passage_%2833825577724%29.jpg',
+  "Na'vi River Journey": 'https://upload.wikimedia.org/wikipedia/commons/8/8b/Na%27vi_River_Journey_-_Disney%27s_Animal_Kingdom_01.jpg',
+  'Kilimanjaro Safaris': 'https://upload.wikimedia.org/wikipedia/commons/3/3c/Kilimanjaro_Safaris_truck_%281%29.jpg',
+  'Expedition Everest': 'https://upload.wikimedia.org/wikipedia/commons/8/8b/Expedition_Everest.jpg',
+  'Festival of the Lion King': 'https://upload.wikimedia.org/wikipedia/commons/2/26/LionKingDisneyWorld.JPG',
+
+  // ── UNIVERSAL STUDIOS FLORIDA ─────────────────────────────────────────
+  "Hagrid's Magical Creatures Motorbike Adventure": 'https://upload.wikimedia.org/wikipedia/commons/2/21/HagridsMagicalCreaturesMotorbikeAdventureEntrance.jpg',
+  'Hollywood Rip Ride Rockit': 'https://upload.wikimedia.org/wikipedia/commons/4/47/Hollywood_Rip_Ride_Rockit_-_panoramio.jpg',
+  "Harry Potter — Escape from Gringotts": 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Harry_Potter_Escape_from_Gringotts_queue.jpg/800px-Harry_Potter_Escape_from_Gringotts_queue.jpg',
+  'Revenge of the Mummy': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Revenge_of_the_Mummy_Universal_Studios_Florida_%2830437817842%29.jpg/800px-Revenge_of_the_Mummy_Universal_Studios_Florida_%2830437817842%29.jpg',
+  'The Simpsons Ride': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/The_Simpsons_Ride_-_Universal_Studios_Florida.jpg/800px-The_Simpsons_Ride_-_Universal_Studios_Florida.jpg',
+
+  // ── ISLANDS OF ADVENTURE ─────────────────────────────────────────────
+  'Jurassic World VelociCoaster': 'https://upload.wikimedia.org/wikipedia/commons/1/18/Islands_of_Adventure_Orlando_%2851149417278%29_%28cropped%29.jpg',
+  'Harry Potter and the Forbidden Journey': 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Wizarding_World_of_Harry_Potter_-_Hogwarts_castle_%285013698317%29.jpg',
+  'The Amazing Adventures of Spider-Man': 'https://upload.wikimedia.org/wikipedia/commons/7/75/Amazing_Adventures_of_Spider-Man_ride_vehicle_IOA.jpg',
+  'The Incredible Hulk Coaster': 'https://upload.wikimedia.org/wikipedia/commons/a/af/The_Incredible_Hulk_at_Islands_of_Adventure_04.jpg',
+
+  // ── SEAWORLD ──────────────────────────────────────────────────────────
+  'Mako': 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Mako_%28SeaWorld_Orlando%29_1.jpg',
+  'Kraken (VR coaster)': 'https://upload.wikimedia.org/wikipedia/commons/2/2e/Kraken_%28SeaWorld_Orlando%29_01.jpg',
+  'Infinity Falls': 'https://upload.wikimedia.org/wikipedia/commons/b/bb/Infinity_Falls_layout_drop.jpg',
+
+  // ── BUSCH GARDENS ─────────────────────────────────────────────────────
+  'Iron Gwazi': 'https://upload.wikimedia.org/wikipedia/commons/e/e6/Iron_Gwazi_Busch_Gardens_night_%281%29.jpg',
+  'Cheetah Hunt': 'https://upload.wikimedia.org/wikipedia/commons/d/db/Cheetah_Hunt_%40_Busch_Gardens_Tampa_2012_-_panoramio.jpg',
+  'Montu': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Montu_at_Busch_Gardens_Tampa.jpg/800px-Montu_at_Busch_Gardens_Tampa.jpg',
+
+  // ── RESTAURANTES ─────────────────────────────────────────────────────
+  'Be Our Guest Restaurant': 'https://upload.wikimedia.org/wikipedia/commons/3/37/Be_Our_Guest_%2814249415155%29.jpg',
+};
+// Função helper
+function getFoto(nome, parque) {
+  return FOTOS[nome] || FOTOS[parque] || '';
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// DESCRITIVOS CURTOS DAS ATRAÇÕES (para mensagens WPP e enciclopédia)
+// ══════════════════════════════════════════════════════════════════════════
+const DESCS = {
+  // ── MAGIC KINGDOM ────────────────────────────────────────────────────
+  'TRON Lightcycle Run': 'Coaster de moto no mundo digital de Tron — até 95 km/h em um lançamento eletrizante pelo Grid. Não tem inversões, mas a velocidade e os efeitos de luz são de tirar o fôlego!',
+  'Seven Dwarfs Mine Train': 'Montanha-russa suave e encantadora com os 7 Anões minerando pedras preciosas. Perfeito para toda a família — balança de lado a lado enquanto você canta "Heigh-Ho"!',
+  "Tiana's Bayou Adventure": 'Passeio de bote pelos pântanos coloridos da Louisiana com a Princesa Tiana. Encerra com uma descida e pode molhar um pouco. Substitui a antiga Splash Mountain.',
+  'Space Mountain': 'Clássico coaster no escuro que simula uma viagem pelo espaço estelar desde 1975. Rápido, com curvas surpresa e efeitos de luz que criam ilusão de velocidade intergaláctica.',
+  'Big Thunder Mountain Railroad': 'O "trem mais louco do Oeste"! Montanha-russa temática de mineração em Frontierland. Velocidade moderada, muito divertida para toda a família e muito bem temática.',
+  'Haunted Mansion': 'Passeio de Doom Buggy pelos aposentos de 999 fantasmas felizes. Clássico Disney com efeitos de holografia, humor negro leve e cenário impecável. Adorado por todas as idades!',
+  "Peter Pan's Flight": 'Voo encantado sobre Londres e Neverland ao lado de Peter Pan. Um dos mais curtos e amados clássicos do MK — sempre muito disputado justamente pela magia que transmite.',
+  'Pirates of the Caribbean': 'Passeio de barco pelos mares dos piratas com batalhas navais e Jack Sparrow. Clássico Disney de 8 minutos — pode borrifar levemente. Inspirou a franquia de filmes.',
+  'Jungle Cruise': 'Safari humorístico por rios "perigosos" do mundo todo em barco cheio de animais (mecânicos) e piadas ruins do guia. Um clássico de 1955 com renovação de diversão garantida!',
+  // ── EPCOT ────────────────────────────────────────────────────────────
+  'Guardians of the Galaxy: Cosmic Rewind': 'O único coaster reverso do mundo! Você é puxado para dentro de uma nave galáctica e sai voando ao som dos hits dos Guardiões — experiência absolutamente única.',
+  'Frozen Ever After': 'Passeio musical e visual pelo reino de Arendelle com Elsa e Anna. Efeitos de "frio", música do filme e cenários deslumbrantes. Ideal para fãs de Frozen de qualquer idade.',
+  "Remy's Ratatouille Adventure": 'Mini aventura em que você encolhe do tamanho de um rato e corre pela cozinha do Gusteau. Ride familiar e encantador — perfeito para crianças e adultos nostálgicos.',
+  "Soarin' Across America": 'Simulador de parapente que te faz sobrevoar paisagens icônicas dos EUA. Brisa no rosto, aromas naturais, imagem 180° — sensação de liberdade incrível! Novidade 2026.',
+  'Test Track': 'Simula o teste de um carro em alta velocidade chegando a 100 km/h na reta final. Design de veículos, percurso indoor/outdoor e sensação de velocidade real. Recentemente renovado.',
+  // ── HOLLYWOOD STUDIOS ────────────────────────────────────────────────
+  'Star Wars: Rise of the Resistance': 'A atração mais épica da Disney. Você é capturado pela Primeira Ordem numa experiência de 20 minutos que combina dark ride, drops, efeitos ao vivo e AT-AT real. Imperdível!',
+  'Slinky Dog Dash': 'Montanha-russa de Toy Story em que você é o Slinky estirando pelo quintal de Andy. Divertida para toda a família, com curvas e aceleradas — perfeita para iniciantes em coasters.',
+  "Mickey & Minnie's Runaway Railway": 'Dark ride sem óculos 3D com tecnologia revolucionária de projeção. Você entra dentro dos desenhos do Mickey — caótico, colorido e tecnicamente impressionante. IMPERDÍVEL!',
+  'The Twilight Zone Tower of Terror': 'Elevador que te leva ao 13º andar de um hotel abandonado... e então cai aleatoriamente múltiplas vezes. A imprevisibilidade das quedas é o que torna ainda mais intenso!',
+  "Rock 'n' Roller Coaster Starring The Muppets": 'De 0 a 100 km/h em 2,8 segundos no escuro, com múltiplas inversões ao som da música. Reformado com os Muppets em 2026 — um dos coasters mais intensos de todo o Disney World.',
+  // ── ANIMAL KINGDOM ───────────────────────────────────────────────────
+  'Avatar: Flight of Passage': 'A experiência mais emocionante do Disney World. Você "monta" num banshee e sobrevoa Pandora num simulador tão realista que suas pernas sentem o vento. Absolutamente incrível!',
+  "Na'vi River Journey": 'Sereno passeio de barco pela floresta bioluminescente de Pandora à noite. Relaxante, visual espetacular e a animatrônica da Xamã é a mais complexa já criada pela Disney.',
+  'Kilimanjaro Safaris': 'Safari autêntico de 18 minutos em caminhão aberto com animais africanos REAIS: girafas, leões, elefantes, hipopótamos e rinocerontes. De manhã os animais estão mais ativos!',
+  'Expedition Everest': 'Coaster temático que sobe o Monte Everest e inverte no escuro ao encontrar o lendário Yeti. Muito bem temático, com momento reversão surpresa. Muito divertido!',
+  // ── UNIVERSAL ────────────────────────────────────────────────────────
+  "Hagrid's Magical Creatures Motorbike Adventure": 'A mais amada da Universal! Você anda numa moto (ou sidecar) voadora por florestas do mundo mágico de Harry Potter — encontra criaturas mágicas e passa por surpresas inesquecíveis.',
+  'Jurassic World VelociCoaster': 'Coaster mais radical da Universal com inversões, lançamento duplo e 130 km/h de velocidade. Uma das melhores montanhas-russas do mundo pelos fãs de coaster.',
+  'Harry Potter and the Forbidden Journey': 'Voo em vassoura por Hogwarts ao lado de Harry, Hermione e Rony. Tecnologia de dark ride imersiva com cenas ao vivo e projeções. Ícone absoluto do Hogsmeade.',
+  'Hollywood Rip Ride Rockit': 'Coaster que sobe verticalmente de elevador! Você escolhe sua música preferida antes de sair. Múltiplas inversões e 130 km/h. Coaster altamente personalizado e único.',
+  // ── SEAWORLD ─────────────────────────────────────────────────────────
+  'Mako': 'O coaster mais alto e mais rápido da Flórida! 183 metros de altura, 130 km/h de velocidade em 91 segundos de pura adrenalina. Temática de tubarão Mako — impressionante!',
+  'Manta': 'Flying coaster que te coloca na posição horizontal — você voa como uma manta-raia! Queda de 56 metros com inversões. Uma sensação de voo completamente única.',
+  'Infinity Falls': 'Rio com a maior queda de bote de rafting do mundo (8 metros)! Em família ou grupo, espera-se MOLHAR MUITO — pega a capa de chuva ou roupa de reserva!',
+  // ── BUSCH GARDENS ─────────────────────────────────────────────────────
+  'Iron Gwazi': 'O melhor coaster híbrido do mundo segundo os fãs! Madeira + aço em uma combinação brutal de velocidade, inversões e elementos únicos. Absolutamente brutal e magnífico.',
+  'SheiKra': 'Dive coaster que te deixa suspenso no topo por 3 segundos antes de despencar 60 metros em queda quase vertical de 90°! Intensidade máxima com queda na água no final.',
+};
+
+// Função helper para buscar descrição
+function getDesc(nome) { return DESCS[nome] || ''; }
+
+// ══════════════════════════════════════════════════════════════════════════
+// IDADES DAS CRIANÇAS — hint dinâmico
+// ══════════════════════════════════════════════════════════════════════════
+function updateIdadesHint() {
+  const n = parseInt(g('mg-cri')?.value) || 0;
+  const ids = g('mg-ids');
+  if (!ids) return;
+  ids.placeholder = n > 0
+    ? Array.from({length:n}, (_,i) => `${i+1}ª criança`).join(', ') + ' (idades)'
+    : 'Ex: 8, 5, 3';
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// TEMPLATES CRUD
+// ══════════════════════════════════════════════════════════════════════════
+let editTplId = null;
+
+function getTemplates() {
+  if (!DB.templates || !DB.templates.length) {
+    DB.templates = TEMPLATES.map(t => ({ ...t, custom: false }));
+  }
+  return DB.templates;
+}
+
+function openTplModal(id = null) {
+  editTplId = id;
+  const tpl = id ? getTemplates().find(t => t.id === id) : null;
+  g('tpl-modal-title').textContent = id ? 'Editar Template' : 'Novo Template';
+  g('tpl-emoji').value  = tpl?.emoji  || '💬';
+  g('tpl-titulo').value = tpl?.titulo || '';
+  g('tpl-corpo').value  = tpl?.corpo  || '';
+  const delBtn = g('tpl-del-btn');
+  if (delBtn) delBtn.classList.toggle('hid', !id || tpl?.custom === false);
+  openModal('mo-tpl');
+}
+
+async function saveTpl() {
+  const titulo = g('tpl-titulo').value.trim();
+  const corpo  = g('tpl-corpo').value.trim();
+  if (!titulo || !corpo) { toast('Preencha título e mensagem', 'warn'); return; }
+  const tpls = getTemplates();
+  if (editTplId) {
+    const idx = tpls.findIndex(t => t.id === editTplId);
+    if (idx !== -1) tpls[idx] = { ...tpls[idx], emoji: g('tpl-emoji').value || '💬', titulo, corpo };
+  } else {
+    tpls.push({ id: 'tpl_' + Date.now(), emoji: g('tpl-emoji').value || '💬', titulo, corpo, custom: true });
+  }
+  DB.templates = tpls;
+  closeModal('mo-tpl');
+  await saveData();
+  toast('Template salvo ✅');
+  renderTemplates();
+}
+
+async function deleteTpl() {
+  if (!editTplId) return;
+  DB.templates = getTemplates().filter(t => t.id !== editTplId);
+  closeModal('mo-tpl');
+  await saveData();
+  toast('Template excluído');
+  renderTemplates();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════════════════════════
+function g(id) { return document.getElementById(id); }
+function esc(s){ const d=document.createElement('div');d.textContent=s||'';return d.innerHTML; }
+function fmtISO(d) { return d.toISOString().slice(0,10); }
+function fmtDate(s) { if(!s)return'—'; const d=new Date(s+'T12:00:00'); return d.toLocaleDateString('pt-BR'); }
+function fmtDateShort(s){ if(!s)return'—'; const d=new Date(s+'T12:00:00'); return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}); }
+function fmtDateLong(d) { return d.toLocaleDateString('pt-BR',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); }
+function fmtCurr(n) { return (n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+function waNum(n){ return (n||'').replace(/\D/g,''); }
+function showLoading(s) { g('lov').classList.toggle('hid',!s); }
+function setSyncStatus(s) {
+  const d=g('sdot');
+  d.className='sync-dot'+(s==='sy'?' sy':s==='er'?' er':'');
+  d.title=s==='ok'?'Sincronizado':s==='sy'?'Sincronizando...':'Erro de sync';
+}
+function toast(msg, type='ok') {
+  const t=g('toast');
+  t.textContent = type==='ok'?'✅ '+msg : type==='warn'?'⚠️ '+msg : msg;
+  t.classList.add('sh');
+  setTimeout(()=>t.classList.remove('sh'), 3000);
+}
+function fillGuiaSelects() {
+  var guias=USUARIOS_SISTEMA.filter(function(u){
+    var ps=Array.isArray(u.perfis)?u.perfis:[u.perfil||''];
+    return (ps.includes('adm')||ps.includes('guia'))&&(u.status||'ativo')==='ativo';
+  }).map(function(u){ return u.nome; });
+  if(!guias.length) guias=['Thomaz','Camila'];
+  ['mg-guia','av-guia'].forEach(function(id){
+    var sel=g(id); if(!sel) return;
+    var cur=sel.value;
+    sel.innerHTML='<option value="">Selecione...</option>';
+    guias.forEach(function(gs){ var o=document.createElement('option');o.value=gs;o.textContent=gs;sel.appendChild(o); });
+    if(cur) sel.value=cur;
+  });
+}
+</script>
+<!-- ═══ MODAL: ATRAÇÃO ══════════════════════════════════════════════════ -->
+<div class="mo hid" id="mo-enc-atracao">
+  <div class="mc2" style="max-width:600px">
+    <div class="mh" style="background:#eff6ff;border-bottom:2px solid #2C6AA3">
+      <div class="mt" style="color:#1e40af">🎢 Atração</div>
+      <button class="mcl" onclick="closeModal('mo-enc-atracao')">×</button>
+    </div>
+    <div class="mb">
+      <input type="hidden" class="enc-edit-id" id="enc-a-id">
+      <div class="fr">
+        <div class="fg"><label class="fl">Nome *</label><input class="fc" id="enc-a-nome" placeholder="Nome da atração"></div>
+        <div class="fg"><label class="fl">Parque *</label>
+          <select class="fc" id="enc-a-parque"><option value="">Selecione...</option>
+              <option value="MK">🏰 Magic Kingdom</option>
+              <option value="EPCOT">🌍 EPCOT</option>
+              <option value="HS">🎬 Hollywood Studios</option>
+              <option value="AK">🦁 Animal Kingdom</option>
+              <option value="USO">🎥 Universal Studios</option>
+              <option value="IOA">🏝️ Islands of Adventure</option>
+              <option value="EU">🌌 Epic Universe</option>
+              <option value="SEA">🐬 SeaWorld</option>
+              <option value="BGT">🦁 Busch Gardens</option>
+              <option value="BB">❄️ Blizzard Beach</option>
+              <option value="TL">🌊 Typhoon Lagoon</option>
+              <option value="KSC">🚀 Kennedy Space Center</option></select>
+        </div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Tipo *</label>
+          <select class="fc" id="enc-a-tipo">
+            <option value="coaster">🎢 Montanha-russa</option>
+            <option value="simulador">🎮 Simulador</option>
+            <option value="dark-ride">🌑 Dark Ride</option>
+            <option value="bote">🛶 Bote / Rafting</option>
+            <option value="aquatico">💧 Aquático</option>
+            <option value="passeio">🌿 Passeio</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Intensidade</label>
+          <select class="fc" id="enc-a-inten">
+            <option value="1">1 — Muito Leve</option>
+            <option value="2">2 — Leve</option>
+            <option value="3" selected>3 — Moderada</option>
+            <option value="4">4 — Intensa</option>
+            <option value="5">5 — Muito Intensa</option>
+          </select>
+        </div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Altura Mínima (cm)</label><input class="fc" id="enc-a-req" type="number" placeholder="Ex: 102"></div>
+        <div class="fg"><label class="fl">Lightning Lane</label>
+          <select class="fc" id="enc-a-ll">
+            <option value="">Sem LL / Standby</option>
+            <option value="single">LL Single Pass</option>
+            <option value="multi-t1">LL Multi Pass T1</option>
+            <option value="multi-t2">LL Multi Pass T2</option>
+            <option value="multi">LL Multi Pass</option>
+            <option value="express">Express Pass</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">URL da Foto</label><input class="fc" id="enc-a-foto" placeholder="https://..."></div>
+      <div class="fg"><label class="fl">Descrição</label><textarea class="fc" id="enc-a-desc" placeholder="Descrição da atração..." style="min-height:70px"></textarea></div>
+      <div class="fg"><label class="fl">Dica do Guia</label><textarea class="fc" id="enc-a-dica" placeholder="Estratégia, horário, dica..." style="min-height:60px"></textarea></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-red btn-sm enc-del" onclick="deleteEncCurrent('mo-enc-atracao')" style="display:none">🗑 Excluir</button>
+      <button class="btn btn-sec" onclick="closeModal('mo-enc-atracao')">Cancelar</button>
+      <button class="btn btn-acc" onclick="saveEncByModal('mo-enc-atracao','atracao')">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: RESTAURANTE ══════════════════════════════════════════════ -->
+<div class="mo hid" id="mo-enc-restaurante">
+  <div class="mc2" style="max-width:560px">
+    <div class="mh" style="background:#f0fdf4;border-bottom:2px solid #A4B56E">
+      <div class="mt" style="color:#065f46">🍽️ Restaurante</div>
+      <button class="mcl" onclick="closeModal('mo-enc-restaurante')">×</button>
+    </div>
+    <div class="mb">
+      <input type="hidden" class="enc-edit-id" id="enc-r-id">
+      <div class="fr">
+        <div class="fg"><label class="fl">Nome *</label><input class="fc" id="enc-r-nome" placeholder="Nome do restaurante"></div>
+        <div class="fg"><label class="fl">Parque *</label>
+          <select class="fc" id="enc-r-parque"><option value="">Selecione...</option>
+              <option value="MK">🏰 Magic Kingdom</option>
+              <option value="EPCOT">🌍 EPCOT</option>
+              <option value="HS">🎬 Hollywood Studios</option>
+              <option value="AK">🦁 Animal Kingdom</option>
+              <option value="USO">🎥 Universal Studios</option>
+              <option value="IOA">🏝️ Islands of Adventure</option>
+              <option value="EU">🌌 Epic Universe</option>
+              <option value="SEA">🐬 SeaWorld</option>
+              <option value="BGT">🦁 Busch Gardens</option>
+              <option value="BB">❄️ Blizzard Beach</option>
+              <option value="TL">🌊 Typhoon Lagoon</option>
+              <option value="KSC">🚀 Kennedy Space Center</option></select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Tipo *</label>
+        <select class="fc" id="enc-r-tipo">
+          <option value="restaurante-ts">🪑 Mesa com Reserva (Table Service)</option>
+          <option value="restaurante-qs">🍔 Quick Service (sem reserva)</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">URL da Foto</label><input class="fc" id="enc-r-foto" placeholder="https://..."></div>
+      <div class="fg"><label class="fl">Dica do Guia</label><textarea class="fc" id="enc-r-dica" placeholder="Dica, horário, reserva..." style="min-height:70px"></textarea></div>
+      <div class="fg"><label class="fl">Descrição / Culinária</label><textarea class="fc" id="enc-r-desc" placeholder="Tipo de culinária, ambiente..." style="min-height:60px"></textarea></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-red btn-sm enc-del" onclick="deleteEncCurrent('mo-enc-restaurante')" style="display:none">🗑 Excluir</button>
+      <button class="btn btn-sec" onclick="closeModal('mo-enc-restaurante')">Cancelar</button>
+      <button class="btn btn-acc" onclick="saveEncByModal('mo-enc-restaurante','restaurante')">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: SHOW / DESFILE ═══════════════════════════════════════════ -->
+<div class="mo hid" id="mo-enc-show">
+  <div class="mc2" style="max-width:560px">
+    <div class="mh" style="background:#fdf4ff;border-bottom:2px solid #a855f7">
+      <div class="mt" style="color:#7e22ce">🎭 Show / Desfile</div>
+      <button class="mcl" onclick="closeModal('mo-enc-show')">×</button>
+    </div>
+    <div class="mb">
+      <input type="hidden" class="enc-edit-id" id="enc-s-id">
+      <div class="fr">
+        <div class="fg"><label class="fl">Nome *</label><input class="fc" id="enc-s-nome" placeholder="Nome do show"></div>
+        <div class="fg"><label class="fl">Parque *</label>
+          <select class="fc" id="enc-s-parque"><option value="">Selecione...</option>
+              <option value="MK">🏰 Magic Kingdom</option>
+              <option value="EPCOT">🌍 EPCOT</option>
+              <option value="HS">🎬 Hollywood Studios</option>
+              <option value="AK">🦁 Animal Kingdom</option>
+              <option value="USO">🎥 Universal Studios</option>
+              <option value="IOA">🏝️ Islands of Adventure</option>
+              <option value="EU">🌌 Epic Universe</option>
+              <option value="SEA">🐬 SeaWorld</option>
+              <option value="BGT">🦁 Busch Gardens</option>
+              <option value="BB">❄️ Blizzard Beach</option>
+              <option value="TL">🌊 Typhoon Lagoon</option>
+              <option value="KSC">🚀 Kennedy Space Center</option></select>
+        </div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Tipo</label>
+          <select class="fc" id="enc-s-tipo">
+            <option value="show">Show</option>
+            <option value="desfile">Desfile</option>
+            <option value="show-noturno">Show Noturno / Fogos</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Duração</label><input class="fc" id="enc-s-dur" placeholder="Ex: 25 min"></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Horário</label><input class="fc" id="enc-s-horario" placeholder="Ex: 21:00 / Vários"></div>
+        <div class="fg"><label class="fl">Local</label><input class="fc" id="enc-s-local" placeholder="Ex: Hub / Castelo"></div>
+      </div>
+      <div class="fg"><label class="fl">URL da Foto</label><input class="fc" id="enc-s-foto" placeholder="https://..."></div>
+      <div class="fg"><label class="fl">Dica do Guia</label><textarea class="fc" id="enc-s-dica" placeholder="Melhor posição, chegar com antecedência..." style="min-height:70px"></textarea></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-red btn-sm enc-del" onclick="deleteEncCurrent('mo-enc-show')" style="display:none">🗑 Excluir</button>
+      <button class="btn btn-sec" onclick="closeModal('mo-enc-show')">Cancelar</button>
+      <button class="btn btn-acc" onclick="saveEncByModal('mo-enc-show','show')">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: ATIVIDADE ════════════════════════════════════════════════ -->
+<div class="mo hid" id="mo-enc-atividade">
+  <div class="mc2" style="max-width:540px">
+    <div class="mh" style="background:#fff7ed;border-bottom:2px solid #f97316">
+      <div class="mt" style="color:#c2410c">🎨 Atividade Especial</div>
+      <button class="mcl" onclick="closeModal('mo-enc-atividade')">×</button>
+    </div>
+    <div class="mb">
+      <input type="hidden" class="enc-edit-id" id="enc-atv-id">
+      <div class="fr">
+        <div class="fg"><label class="fl">Nome *</label><input class="fc" id="enc-atv-nome" placeholder="Nome da atividade"></div>
+        <div class="fg"><label class="fl">Parque *</label>
+          <select class="fc" id="enc-atv-parque"><option value="">Selecione...</option>
+              <option value="MK">🏰 Magic Kingdom</option>
+              <option value="EPCOT">🌍 EPCOT</option>
+              <option value="HS">🎬 Hollywood Studios</option>
+              <option value="AK">🦁 Animal Kingdom</option>
+              <option value="USO">🎥 Universal Studios</option>
+              <option value="IOA">🏝️ Islands of Adventure</option>
+              <option value="EU">🌌 Epic Universe</option>
+              <option value="SEA">🐬 SeaWorld</option>
+              <option value="BGT">🦁 Busch Gardens</option>
+              <option value="BB">❄️ Blizzard Beach</option>
+              <option value="TL">🌊 Typhoon Lagoon</option>
+              <option value="KSC">🚀 Kennedy Space Center</option></select>
+        </div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Tipo</label>
+          <select class="fc" id="enc-atv-tipo">
+            <option value="atividade">Atividade Especial</option>
+            <option value="meet-greet">Meet &amp; Greet</option>
+            <option value="experiencia">Experiência VIP</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Reserva necessária?</label>
+          <select class="fc" id="enc-atv-reserva">
+            <option value="0">Não (Walk-in)</option>
+            <option value="1">Sim (Reservar com antecedência)</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">URL da Foto</label><input class="fc" id="enc-atv-foto" placeholder="https://..."></div>
+      <div class="fg"><label class="fl">Dica do Guia</label><textarea class="fc" id="enc-atv-dica" placeholder="Como participar, custo, dicas..." style="min-height:80px"></textarea></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-red btn-sm enc-del" onclick="deleteEncCurrent('mo-enc-atividade')" style="display:none">🗑 Excluir</button>
+      <button class="btn btn-sec" onclick="closeModal('mo-enc-atividade')">Cancelar</button>
+      <button class="btn btn-acc" onclick="saveEncByModal('mo-enc-atividade','atividade')">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+
+</body>
+</html>
