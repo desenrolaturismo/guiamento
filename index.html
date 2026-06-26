@@ -2043,7 +2043,68 @@ async function loadUsuariosSistema() {
   USUARIOS_SISTEMA = USUARIOS_FALLBACK.slice();
 }
 
-async function sha256(str){try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}catch(e){return str;}}
+// SHA-256 puro em JS — funciona em qualquer contexto (file://, http, Wix iframe)
+function _sha256Pure(msgBytes) {
+  var K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+    0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+    0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+    0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+    0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+    0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+    0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+    0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  var H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  var rr = function(v,n){ return (v>>>n)|(v<<(32-n)); };
+  // Padding
+  var l = msgBytes.length;
+  var bs = []; for(var i=0;i<l;i++) bs[i]=msgBytes[i];
+  bs.push(0x80);
+  while(bs.length%64!==56) bs.push(0);
+  var bl=l*8;
+  for(var i=7;i>=0;i--){ bs.push(bl/Math.pow(2,i*8)&0xff); }
+  // Process blocks
+  for(var ofs=0;ofs<bs.length;ofs+=64){
+    var w=new Array(64);
+    for(var i=0;i<16;i++) w[i]=(bs[ofs+i*4]<<24)|(bs[ofs+i*4+1]<<16)|(bs[ofs+i*4+2]<<8)|bs[ofs+i*4+3];
+    for(var i=16;i<64;i++){
+      var s0=(rr(w[i-15],7)^rr(w[i-15],18)^(w[i-15]>>>3));
+      var s1=(rr(w[i-2],17)^rr(w[i-2],19)^(w[i-2]>>>10));
+      w[i]=(w[i-16]+s0+w[i-7]+s1)|0;
+    }
+    var a=H[0],b=H[1],cc=H[2],d=H[3],e=H[4],f=H[5],g2=H[6],h=H[7];
+    for(var i=0;i<64;i++){
+      var S1=(rr(e,6)^rr(e,11)^rr(e,25));
+      var ch=(e&f)^(~e&g2);
+      var t1=(h+S1+ch+K[i]+w[i])|0;
+      var S0=(rr(a,2)^rr(a,13)^rr(a,22));
+      var maj=(a&b)^(a&cc)^(b&cc);
+      var t2=(S0+maj)|0;
+      h=g2; g2=f; f=e; e=(d+t1)|0; d=cc; cc=b; b=a; a=(t1+t2)|0;
+    }
+    H[0]=(H[0]+a)|0; H[1]=(H[1]+b)|0; H[2]=(H[2]+cc)|0; H[3]=(H[3]+d)|0;
+    H[4]=(H[4]+e)|0; H[5]=(H[5]+f)|0; H[6]=(H[6]+g2)|0; H[7]=(H[7]+h)|0;
+  }
+  return H.map(function(v){ return ('00000000'+((v>>>0).toString(16))).slice(-8); }).join('');
+}
+
+// sha256 pública: tenta crypto.subtle, fallback para puro JS
+async function sha256(str) {
+  // Converter string para bytes UTF-8 (suporta todos os caracteres)
+  var bytes;
+  try { bytes = Array.from(new TextEncoder().encode(str)); } catch(e) {
+    // Fallback UTF-8 manual
+    bytes = unescape(encodeURIComponent(str)).split('').map(function(c){ return c.charCodeAt(0); });
+  }
+  // Tentar crypto.subtle (mais rápido)
+  try {
+    if (crypto && crypto.subtle) {
+      const buf = await crypto.subtle.digest('SHA-256', new Uint8Array(bytes));
+      return Array.from(new Uint8Array(buf)).map(function(x){ return x.toString(16).padStart(2,'0'); }).join('');
+    }
+  } catch(e) {}
+  // Fallback puro JS — sempre funciona
+  return _sha256Pure(bytes);
+}
 
 async function doLogin(e) {
   if(e&&e.preventDefault) e.preventDefault();
@@ -2052,7 +2113,7 @@ async function doLogin(e) {
   g('lerr').textContent = '';
   try {
     const loginInput = (g('f-usr').value||'').trim();
-    const senhaInput = (g('f-pw').value||'').trim();
+    const senhaInput = g('f-pw').value||''; // não trim — senhas podem ter espaços
     if(!loginInput||!senhaInput){ g('lerr').textContent='Preencha login e senha.'; return; }
     showLoading(true);
     await loadUsuariosSistema();
@@ -2089,7 +2150,7 @@ function _loginEntrar() {
   var nm=g('sb-nm'); if(nm) nm.textContent=U.nome||'';
   fillGuiaSelects();
   applyRoleAccess();
-  showPage(isAdmUser(U)?'dashboard':isMktUser(U)?'agenda':'dia');
+  showPage(isAdmUser(U)||isGuiaUser(U)?'dashboard':isMktUser(U)?'agenda':'dia');
 }
 
 function doLogout() {
@@ -2945,29 +3006,57 @@ function getGrupoColor(grupoId) {
 // CONTROLE DE ACESSO POR PERFIL
 // ══════════════════════════════════════════════════════════════════════════
 function applyRoleAccess() {
-  var ps = Array.isArray(U?.perfis)?U.perfis:[U?.perfil||'guia'];
+  var ps    = Array.isArray(U?.perfis) ? U.perfis : [U?.perfil||'guia'];
   var isAdm = ps.includes('adm');
-  var isMkt = ps.includes('mkt')&&!isAdm;
-  var isGuia= ps.includes('guia')&&!isAdm;
-  document.querySelectorAll('.adm-only').forEach(function(el){ el.style.display=isAdm?'':'none'; });
-  document.querySelectorAll('.guia-only').forEach(function(el){ el.style.display=isGuia?'':'none'; });
-  var admLbl=g('sb-adm-lbl'); if(admLbl) admLbl.style.display=isAdm?'':'none';
-  if(!isAdm){
-    ['dashboard','atracoes','avaliacoes','templates','relatorios','guias'].forEach(function(pg){
-      var el=document.querySelector('[data-page="'+pg+'"]'); if(el) el.style.display='none';
+  var isMkt = ps.includes('mkt') && !isAdm;
+  var isGuia= ps.includes('guia') && !isAdm;
+
+  // ADM: acesso total — nada é ocultado
+  // GUIA: acesso completo ao guiamento, mas apenas seus próprios dados
+  // MKT: visualização somente
+
+  // Elementos que só ADM pode ver/usar (gestão de usuários, etc.)
+  document.querySelectorAll('.adm-only').forEach(function(el) {
+    el.style.display = isAdm ? '' : 'none';
+  });
+  // Elementos específicos de guia
+  document.querySelectorAll('.guia-only').forEach(function(el) {
+    el.style.display = isGuia ? '' : 'none';
+  });
+
+  // Label ADM na sidebar
+  var admLbl = g('sb-adm-lbl');
+  if (admLbl) admLbl.style.display = isAdm ? '' : 'none';
+
+  // GUIA: acesso completo ao sistema de guiamento
+  // Apenas ocultamos páginas que são exclusivamente gerenciais (não operacionais)
+  if (!isAdm && !isMkt) {
+    // Guia NÃO vê: avaliações, templates, relatórios (gestão administrativa)
+    // Guia VÊ: dashboard, dia, agenda, grupos, roteiros, atracoes, guias
+    ['avaliacoes','relatorios'].forEach(function(pg) { // templates liberado para guias
+      var el = document.querySelector('[data-page="'+pg+'"]');
+      if (el) el.style.display = 'none';
     });
   }
-  if(isMkt){
-    if(!document.getElementById('mkt-banner')){
-      var b=document.createElement('div');
-      b.id='mkt-banner';
-      b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9999;background:#fff7ed;border-bottom:2px solid #f97316;padding:8px;text-align:center;font-size:12px;font-weight:600;color:#c2410c';
-      b.textContent='👁️ Modo Visualização — perfil MKT não permite edições';
+
+  // MKT: vê tudo mas sem editar
+  if (isMkt) {
+    if (!document.getElementById('mkt-banner')) {
+      var b = document.createElement('div');
+      b.id = 'mkt-banner';
+      b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#fff7ed;border-bottom:2px solid #f97316;padding:8px;text-align:center;font-size:12px;font-weight:600;color:#c2410c';
+      b.textContent = '👁️ Modo Visualização — perfil MKT não permite edições';
       document.body.prepend(b);
     }
-    document.querySelectorAll('.btn-acc,.btn-red').forEach(function(el){ el.style.display='none'; });
+    document.querySelectorAll('.btn-acc,.btn-red').forEach(function(el) {
+      el.style.display = 'none';
+    });
   }
+
+  // Página inicial por perfil
+  // (já definida em _loginEntrar)
 }
+
 
 
 function getGruposVisiveis() {
@@ -2982,39 +3071,56 @@ function getGruposVisiveis() {
 let editGuiaId = null;
 
 function renderGuias() {
-  const body=g('guias-body'); if(!body) return;
-  const search=(g('guia-search')?.value||'').toLowerCase();
-  const sfilt=g('guia-status-filter')?.value||'';
-  const perfis_guias=DB.perfis_guias||{};
-  var guias=USUARIOS_SISTEMA.filter(function(u){
-    var ps=Array.isArray(u.perfis)?u.perfis:[u.perfil||''];
-    return ps.includes('guia')||ps.includes('adm');
-  }).map(function(u){ return Object.assign({},u,perfis_guias[u.id]||{}); });
-  var filtered=guias.filter(function(g2){
-    if(search&&!(g2.nome||'').toLowerCase().includes(search)) return false;
-    if(sfilt&&(g2.status||'ativo')!==sfilt) return false;
+  const body = g('guias-body');
+  if (!body) return;
+  const search = (g('guia-search')?.value||'').toLowerCase();
+  const sfilt  = g('guia-status-filter')?.value||'';
+  const pg     = DB.perfis_guias || {};
+
+  var guias = USUARIOS_SISTEMA.filter(function(u) {
+    var ps = Array.isArray(u.perfis) ? u.perfis : [u.perfil||''];
+    return ps.includes('guia') || ps.includes('adm');
+  }).map(function(u) { return Object.assign({}, u, pg[u.id]||{}); });
+
+  // GUIA: só vê o próprio perfil
+  if (!isAdmUser(U)) {
+    guias = guias.filter(function(g2) { return g2.id === U.id; });
+  }
+
+  var filtered = guias.filter(function(g2) {
+    if (search && !(g2.nome||'').toLowerCase().includes(search)) return false;
+    if (sfilt  && (g2.status||'ativo') !== sfilt) return false;
     return true;
   });
-  if(!filtered.length){
-    body.innerHTML='<div class="emp"><div class="emp-i">🧭</div><div class="emp-t">Nenhum guia</div><div class="emp-s">Crie no Desenrola Sistema</div></div>';
+
+  if (!filtered.length) {
+    body.innerHTML = '<div class="emp"><div class="emp-i">🧭</div><div class="emp-t">Nenhum guia encontrado</div>' +
+      (isAdmUser(U) ? '<div class="emp-s">Crie usuários com perfil Guia no Desenrola Sistema</div>' : '') + '</div>';
     return;
   }
-  var gc=function(g2){ return (DB.grupos||[]).filter(function(gr){ return gr.guia===g2.nome; }).length; };
-  var np=function(g2){ var avs=(DB.avaliacoes||[]).filter(function(a){ return a.guia===g2.nome; }); return avs.length?(avs.reduce(function(s,a){return s+(+a.nps||0);},0)/avs.length).toFixed(1):'—'; };
-  var pl=function(u){ var ps=Array.isArray(u.perfis)?u.perfis:[u.perfil||'guia']; return ps.map(function(p){ return ({adm:'⚙️ ADM',guia:'🧭 Guia',mkt:'📊 MKT',vendedor:'🛒 Vendedor'})[p]||p; }).join(' + '); };
-  body.innerHTML=filtered.map(function(g2){
-    var ativo=(g2.status||'ativo')==='ativo';
-    var canEdit=isAdmUser(U)||(g2.id===U.id);
-    return '<div class="guia-card"'+(canEdit?' onclick="openGuiaModal(\''+g2.id+'\')"':'')+'>'+
-      '<div class="guia-av" style="background:'+(g2.cor||'#1D9E75')+'">'+(g2.nome||'?').charAt(0).toUpperCase()+'</div>'+
-      '<div class="guia-info">'+
-        '<div class="fcb"><div class="guia-nome">'+esc(g2.nome)+'</div>'+
-        '<span class="'+(ativo?'status-ativo':'status-inativo')+'">'+(ativo?'Ativo':'Inativo')+'</span></div>'+
+
+  var gc = function(g2) { return (DB.grupos||[]).filter(function(gr){ return gr.guia===g2.nome; }).length; };
+  var np = function(g2) {
+    var avs = (DB.avaliacoes||[]).filter(function(a){ return a.guia===g2.nome; });
+    return avs.length ? (avs.reduce(function(s,a){ return s+(+a.nps||0); },0)/avs.length).toFixed(1) : '—';
+  };
+  var pl = function(u) {
+    var ps = Array.isArray(u.perfis) ? u.perfis : [u.perfil||'guia'];
+    return ps.map(function(p){ return ({adm:'⚙️ ADM',guia:'🧭 Guia',mkt:'📊 MKT',vendedor:'🛒 Vendedor'})[p]||p; }).join(' + ');
+  };
+
+  body.innerHTML = filtered.map(function(g2) {
+    var ativo = (g2.status||'ativo') === 'ativo';
+    return '<div class="guia-card" onclick="openGuiaModal(\''+g2.id+'\')">' +
+      '<div class="guia-av" style="background:'+(g2.cor||'#1D9E75')+'">'+(g2.nome||'?').charAt(0).toUpperCase()+'</div>' +
+      '<div class="guia-info">' +
+        '<div class="fcb"><div class="guia-nome">'+esc(g2.nome)+'</div>' +
+        '<span class="'+(ativo?'status-ativo':'status-inativo')+'">'+(ativo?'Ativo':'Inativo')+'</span></div>' +
         '<div class="guia-meta">'+pl(g2)+' &nbsp;·&nbsp; '+gc(g2)+' grupo(s) &nbsp;·&nbsp; ⭐ '+np(g2)+
           (g2.wa?' &nbsp;·&nbsp; <a href="https://wa.me/'+waNum(g2.wa)+'" target="_blank" onclick="event.stopPropagation()">💬</a>':'')+
-        '</div>'+
-        (g2.bio?'<div class="fs11 tm mt8" style="font-style:italic">'+esc((g2.bio||'').slice(0,80))+((g2.bio||'').length>80?'…':'')+'</div>':'')+
-        '<div class="guia-parques">'+(g2.parques||[]).map(function(p){ return '<span class="pt2 pk-'+p+'">'+(PARQUES[p]?.emoji||'')+' '+p+'</span>'; }).join('')+'</div>'+
+        '</div>' +
+        (g2.bio?'<div class="fs11 tm mt8" style="font-style:italic">'+esc((g2.bio||'').slice(0,80))+((g2.bio||'').length>80?'…':'')+'</div>':'') +
+        '<div class="guia-parques">'+(g2.parques||[]).map(function(p){ return '<span class="pt2 pk-'+p+'">'+(PARQUES[p]?.emoji||'')+' '+p+'</span>'; }).join('')+'</div>' +
       '</div></div>';
   }).join('');
 }
