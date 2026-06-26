@@ -1108,10 +1108,9 @@ const LS_KEY  = 'dtr_guiamento_v1';
 
 // ── BASE UNIFICADA — gerenciada pelo Desenrola Sistema ───────────────
 let USUARIOS_SISTEMA = []; // preenchido em loadUsuariosSistema()
-const USUARIOS_FALLBACK = [
-  { id:'u1', nome:'Thomaz', login:'Thomaz', senha:'Thbignotto',   perfis:['adm'], status:'ativo' },
-  { id:'u2', nome:'Camila', login:'Camila', senha:'CaPascholati', perfis:['adm'], status:'ativo' }
-];
+const USUARIOS_FALLBACK = [];
+// Fallback de credenciais removido — todos os usuários têm SHA-256 no Firebase
+// Se o Firebase não carregar, o sistema exibirá mensagem de offline
 function temPerfil(u,p){ if(!u)return false; return Array.isArray(u.perfis)?u.perfis.includes(p):(u.perfil||'')===p; }
 function isAdmUser(u)      { return temPerfil(u,'adm'); }
 function isGuiaUser(u)     { return temPerfil(u,'guia'); }
@@ -2003,17 +2002,40 @@ let _editando = false;
 let _pendingRemoteUpdate = null;
 let _encSearchTimer = null;
 
+// Nonces de sessão válidos recebidos do Desenrola Sistema (G-10)
+var _guiNonces = new Set();
+
 function initIntegracao() {
   try {
     _integChannel = new BroadcastChannel('desenrola_integracao');
     _integChannel.onmessage = function(ev) {
       if(!ev.data) return;
-      var tipo = ev.data.type || ev.data.tipo; // aceita ambos os formatos
+      var tipo    = ev.data.type || ev.data.tipo; // aceita ambos formatos
       var payload = ev.data.payload;
+
       if(tipo === 'PING') {
         _integChannel.postMessage({ type: 'PONG' });
+        return;
       }
+
+      // Registrar nonce quando o Sistema fizer ANNOUNCE_SESSION (S-03)
+      if(tipo === 'ANNOUNCE_SESSION') {
+        if(ev.data._sessionId) {
+          _guiNonces.add(ev.data._sessionId);
+          console.log('[Guiamento] Nonce registrado:', ev.data._sessionId);
+        }
+        return;
+      }
+
       if(tipo === 'CRIAR_GRUPO_GUIAMENTO') {
+        // G-10: validar nonce (modo suave — só valida se algum nonce foi registrado)
+        if(_guiNonces.size > 0) {
+          var nonce = ev.data._sessionNonce || ev.data._sessionId;
+          if(!nonce || !_guiNonces.has(nonce)) {
+            console.warn('[Guiamento] CRIAR_GRUPO_GUIAMENTO rejeitado — nonce inválido:', nonce);
+            return;
+          }
+        }
         processarPendingLocal(payload, ev.data.origemId);
       }
     };
@@ -2081,22 +2103,83 @@ async function criarGrupoFromSistema(dados) {
   return novoGrupo;
 }
 
-// Processa item de guiamento_pending (Firebase child_added) — Parte 2 do spec
-async function processarPending(key, item) {
-  var payload = item.payload || {};
+// Classifica se erro é de infraestrutura (vale retry) ou de negócio (vai direto DLQ)
+function _isInfraError(e) {
+  var msg = (e && e.message ? e.message : '').toLowerCase();
+  // Excluir erros de negócio/auth do Firebase que não devem ter retry
+  if(msg.includes('permission') || msg.includes('denied') || msg.includes('unauthorized')) return false;
+  // Erros de infraestrutura (rede, timeout, conexão) — merecem retry
+  return msg.includes('network') || msg.includes('timeout') || msg.includes('offline') ||
+         msg.includes('unavailable') || msg.includes('connection') ||
+         (msg.includes('failed') && !msg.includes('assertion'));
+}
+
+// Move item falho para Dead Letter Queue — G-02
+async function _moverParaDLQ(key, item, erros) {
   try {
-    var res = await criarGrupoFromSistema(payload);
-    if(res === 'ja_existe') {
-      _notificarDesenrola('GRUPO_JA_EXISTE', { origemId: payload.origemId });
-    } else if(res) {
-      _notificarDesenrola('GRUPO_CRIADO', { nomeGrupo: res.nome, origemId: payload.origemId });
+    if(_fbDb) {
+      await _fbDb.ref('desenrola_guiamento_v1/pending_dlq/'+key).set(
+        Object.assign({}, item, {
+          _erros:    erros,
+          _movidoEm: Date.now(),
+          _token:    'DTurismo2026!Secure#v3'
+        })
+      );
     }
   } catch(e) {
-    console.error('processarPending erro:', e);
-    _notificarDesenrola('GRUPO_ERRO', { mensagem: e.message || 'Erro desconhecido', origemId: payload.origemId });
+    console.warn('DLQ write failed:', e);
   } finally {
-    // SEMPRE remover da fila (Parte 2.2 do spec)
+    // Remove da fila principal independente do resultado da DLQ
     if(_fbDb) _fbDb.ref('desenrola_v3/integrations/guiamento_pending/'+key).remove();
+  }
+}
+
+// Processa item de guiamento_pending — G-01: retry 3x | G-02: DLQ | G-03: reprocessavel
+async function processarPending(key, item) {
+  var payload = item.payload || {};
+
+  // Dados inválidos → DLQ direto, sem retry (erro de negócio)
+  if(!payload.nome) {
+    await _moverParaDLQ(key, item, [{ts:Date.now(), mensagem:'Payload inválido: campo nome ausente', tentativa:0}]);
+    _notificarDesenrola('GRUPO_ERRO', { mensagem:'Payload inválido', origemId:payload.origemId, reprocessavel:false });
+    return;
+  }
+
+  var delays  = [0, 1000, 3000]; // tentativa 1 imediata, 2 após 1s, 3 após 3s
+  var erros   = [];
+  var res     = null;
+  var tipoErr = 'infra';
+
+  for(var i = 0; i < delays.length; i++) {
+    if(delays[i] > 0) await new Promise(function(r){ setTimeout(r, delays[i]); });
+    try {
+      res = await criarGrupoFromSistema(payload);
+      erros = []; // sucesso — limpa erros
+      break;
+    } catch(e) {
+      var isInfra = _isInfraError(e);
+      erros.push({ ts:Date.now(), mensagem:e.message||'Erro desconhecido', tentativa:i+1, tipo:isInfra?'infra':'negocio' });
+      if(!isInfra) { tipoErr = 'negocio'; break; } // erro de negócio não faz retry
+    }
+  }
+
+  if(res === 'ja_existe') {
+    _notificarDesenrola('GRUPO_JA_EXISTE', { origemId: payload.origemId });
+    if(_fbDb) _fbDb.ref('desenrola_v3/integrations/guiamento_pending/'+key).remove();
+  } else if(res && res !== null && typeof res === 'object') {
+    // Sucesso real
+    _notificarDesenrola('GRUPO_CRIADO', { nomeGrupo: res.nome, origemId: payload.origemId });
+    if(_fbDb) _fbDb.ref('desenrola_v3/integrations/guiamento_pending/'+key).remove();
+    toast('Grupo integrado: ' + res.nome + ' ✅');
+  } else {
+    // Falha após retries (ou erro de negócio)
+    var reprocessavel = (tipoErr === 'infra');
+    await _moverParaDLQ(key, item, erros);
+    _notificarDesenrola('GRUPO_ERRO', {
+      mensagem:     erros.length ? erros[erros.length-1].mensagem : 'Erro desconhecido',
+      origemId:     payload.origemId,
+      reprocessavel: reprocessavel  // G-03
+    });
   }
 }
 
@@ -2264,10 +2347,18 @@ async function doLogin(e) {
     for(var i=0;i<USUARIOS_SISTEMA.length;i++){
       var u=USUARIOS_SISTEMA[i];
       if((u.login||'').trim().toLowerCase()!==loginLow) continue;
-      if((u.senha===senhaHash)||(u.senha===senhaInput)){ found=u; break; }
+      if(u.senha===senhaHash){ found=u; break; } // G-06: removida comparação plaintext
     }
     showLoading(false);
-    if(!found){ g('lerr').textContent='Usuario ou senha invalidos.'; return; }
+    if(!found){
+      // Distinguir Firebase offline (lista vazia) de credenciais erradas
+      if(USUARIOS_SISTEMA.length === 0) {
+        g('lerr').textContent='Sistema offline. Verifique a conexão e tente novamente.';
+      } else {
+        g('lerr').textContent='Usuario ou senha invalidos.';
+      }
+      return;
+    }
     if(found.status === 'inativo'){ g('lerr').textContent='Conta inativa. Contate o administrador.'; _loginBusy=false; return; }
     if(!podeAcessarGuiamento(found)){ g('lerr').textContent='Seu perfil nao tem acesso ao Sistema de Guiamento.'; return; }
     U = Object.assign({},found);
@@ -2279,7 +2370,7 @@ async function doLogin(e) {
     _loginEntrar();
   } catch(err) {
     console.error('Erro login:',err);
-    g('lerr').textContent='Erro ao carregar. Tente novamente.';
+    g('lerr').textContent='Firebase indisponível. Verifique a conexão e tente novamente.';
     showLoading(false);
   } finally { _loginBusy=false; }
 }
