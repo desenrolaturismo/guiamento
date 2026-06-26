@@ -215,7 +215,7 @@ select.fc{cursor:pointer}
 .inten-1{background:#22c55e}.inten-2{background:#86efac}.inten-3{background:#eab308}.inten-4{background:#f97316}.inten-5{background:#ef4444}
 .inten-empty{background:#e5e7eb}
 /* ── ATRAÇÕES ENCYCLOPEDIA ── */
-.atr-enc-card{background:#fff;border:1px solid var(--bdr);border-radius:12px;overflow:hidden;transition:box-shadow .15s}
+.atr-enc-card{display:flex;flex-direction:column;background:var(--card);border-radius:10px;overflow:hidden;border:1px solid var(--bdr);width:280px;min-width:260px;max-width:300px;box-shadow:0 2px 6px #0002;transition:transform .15s;}
 .atr-enc-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.1)}
 .atr-enc-photo{width:100%;height:140px;object-fit:cover;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:40px;border-bottom:1px solid var(--bdr)}
 .atr-enc-body{padding:12px}
@@ -267,10 +267,10 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
 .btn-brand:hover{background:#1e5a8a}
 
 /* ── ENCICLOPÉDIA CARDS REDESIGN ── */
-.enc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.enc-grid{display:flex;flex-wrap:wrap;gap:16px;padding:4px;align-items:flex-start;}
 .enc-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.07);border:1px solid var(--bdr);display:flex;flex-direction:column;transition:box-shadow .15s}
 .enc-card:hover{box-shadow:0 4px 20px rgba(44,106,163,.13)}
-.enc-photo{width:100%;height:150px;object-fit:cover;display:block;background:#e8f0f8}
+.enc-photo{width:100%;height:160px;object-fit:cover;display:block;background:#1a2e4d;}
 .enc-photo-placeholder{width:100%;height:150px;display:flex;align-items:center;justify-content:center;font-size:48px;background:linear-gradient(135deg,#e8f0f8,#d0dfe8)}
 .enc-body{padding:14px;flex:1;display:flex;flex-direction:column;gap:7px}
 .enc-name{font-size:14px;font-weight:700;color:#1a2e4a;line-height:1.3}
@@ -366,7 +366,6 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
   <!-- MAIN CONTENT -->
   <main id="mc">
 
-    <!-- ── DASHBOARD ───────────────────────────────────────────── -->
     <div id="pg-dashboard" class="page">
       <div class="ph"><div class="pt">🏠 Dashboard</div><div class="fca g8"><span class="fs12 tm" id="dash-date"></span><button class="btn btn-acc btn-sm" onclick="showPage('grupos');openGrupoModal()">+ Novo Grupo</button></div></div>
       <div class="pb">
@@ -396,7 +395,6 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
       </div>
     </div>
 
-    <!-- ── PAINEL DO DIA ────────────────────────────────────────── -->
     <div id="pg-dia" class="page hid">
       <div class="ph">
         <div class="pt">☀️ Dia D</div>
@@ -474,6 +472,9 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
           <button class="enc-tab" onclick="switchEncTab('restaurantes',this)">🍽️ Restaurantes</button>
           <button class="enc-tab" onclick="switchEncTab('shows',this)">🎭 Shows &amp; Desfiles</button>
           <button class="enc-tab" onclick="switchEncTab('atividades',this)">🎨 Atividades</button>
+          <button class="enc-tab" onclick="switchEncTab('lojas',this)">🛍️ Lojas</button>
+          <button class="enc-tab" onclick="switchEncTab('servicos',this)">🏥 Serviços</button>
+          <button class="enc-tab" onclick="switchEncTab('festivais',this)">🌸 Festivais</button>
         </div>
         <div class="filt">
           <input class="fi" type="text" id="enc-search" placeholder="🔍 Buscar..." oninput="clearTimeout(_encSearchTimer);_encSearchTimer=setTimeout(renderAtracoes,220)">
@@ -1140,30 +1141,43 @@ const PARQUES = {
 const ATRACOES = {
   // MAGIC KINGDOM — Tier 1, Tier 2, Single Pass
   MK:[
-    // ── SINGLE PASS (compra separada, não incluso no Multi Pass)
-    {n:'TRON Lightcycle Run',                     ll:'single',   tier:0, nivel:'🔴 Radical',  req:'102cm',dica:'LL Single obrigatório | Mais disputada do MK | 1.5 min | Agendar logo ao abrir janela de compra' },
-    {n:'Seven Dwarfs Mine Train',                 ll:'single',   tier:0, nivel:'🟡 Família+', req:'97cm', dica:'LL Single | Esgota rapidamente! | 2.5 min | Prioridade absoluta na compra' },
-    // ── MULTI PASS TIER 1 (1 escolha de T1 no pré-booking)
-    {n:"Tiana's Bayou Adventure",                 ll:'multi-t1', tier:1, nivel:'🟡 Família+', req:'91cm', dica:'TIER 1 | Primeira LL a esgotar no MK! Esgota ~9h16 | 9 min | Molha' },
-    {n:'Big Thunder Mountain Railroad',           ll:'multi-t1', tier:1, nivel:'🟡 Família+', req:'112cm',dica:'TIER 1 | Alta demanda | 3.5 min | Em refurb 2025, reabre 2026' },
-    {n:"Peter Pan's Flight",                      ll:'multi-t1', tier:1, nivel:'🟢 Família',  req:null,   dica:'TIER 1 | Sempre esgota! | 3 min | Encher nesta como 1ª escolha T1' },
-    {n:'Space Mountain',                          ll:'multi-t1', tier:1, nivel:'🔴 Radical',  req:'112cm',dica:'TIER 1 | Alta demanda | 2.5 min | Coaster no escuro' },
-    {n:"The Many Adventures of Winnie the Pooh",  ll:'multi-t1', tier:1, nivel:'🟢 Família',  req:null,   dica:'TIER 1 | Esgota rápido | 3 min | Ótima para crianças pequenas' },
+    // ── SINGLE PASS
+    {n:'TRON Lightcycle Run',                          ll:'single',   tier:0, nivel:'🔴 Radical',  req:'102cm',dica:'LL Single obrigatório | Mais disputada do MK | 1.5 min | Agendar logo ao abrir janela de compra',desc:'Montanha-russa de alta velocidade inspirada no universo TRON, com veículos em formato de motocicleta.' },
+    {n:'Seven Dwarfs Mine Train',                      ll:'single',   tier:0, nivel:'🟡 Família+', req:'97cm', dica:'LL Single | Esgota rapidamente! | 2.5 min | Prioridade absoluta na compra',desc:'Montanha-russa familiar que passa pela mina dos Sete Anões com carrinhos que balançam durante o percurso.' },
+    // ── MULTI PASS TIER 1
+    {n:"Tiana's Bayou Adventure",                      ll:'multi-t1', tier:1, nivel:'🟡 Família+', req:'91cm', dica:"TIER 1 | Primeira LL a esgotar no MK! Esgota ~9h16 | 9 min | Molha",desc:'Aventura aquática inspirada em A Princesa e o Sapo, com trilha sonora envolvente e uma grande queda final.' },
+    {n:'Big Thunder Mountain Railroad',                ll:'multi-t1', tier:1, nivel:'🟡 Família+', req:'112cm',dica:'TIER 1 | Alta demanda | 3.5 min',desc:'Montanha-russa temática que percorre uma mina abandonada no Velho Oeste com curvas e pequenas quedas.' },
+    {n:"Peter Pan's Flight",                           ll:'multi-t1', tier:1, nivel:'🟢 Família',  req:null,   dica:"TIER 1 | Sempre esgota! | 3 min | Encher nesta como 1ª escolha T1",desc:'Sobrevoe Londres e a Terra do Nunca em um barco voador inspirado no clássico Peter Pan.' },
+    {n:'Space Mountain',                               ll:'multi-t1', tier:1, nivel:'🔴 Radical',  req:'112cm',dica:'TIER 1 | Escuro, efeito espacial | 3 min | Alta demanda no LL',desc:'Clássica montanha-russa no escuro com temática espacial.' },
+    {n:'The Many Adventures of Winnie the Pooh',       ll:'multi-t1', tier:1, nivel:'🟢 Família',  req:null,   dica:'TIER 1 | Ride leve ideal para crianças pequenas | 3.5 min',desc:'Aventura divertida pelos sonhos e histórias do Ursinho Pooh e seus amigos.' },
     // ── MULTI PASS TIER 2
-    {n:'Haunted Mansion',                         ll:'multi-t2', tier:2, nivel:'🟢 Família',  req:null,   dica:'TIER 2 | Demanda moderada | 9 min | Clássico assombrado' },
-    {n:'Pirates of the Caribbean',               ll:'multi-t2', tier:2, nivel:'🟢 Família',  req:null,   dica:'TIER 2 | Demanda moderada | 8.5 min | Pode molhar levemente' },
-    {n:'Jungle Cruise',                          ll:'multi-t2', tier:2, nivel:'🟢 Família',  req:null,   dica:'TIER 2 | Esgota tarde | 7-9 min | Humor e animais' },
-    {n:"Buzz Lightyear's Space Ranger Spin",     ll:'multi-t2', tier:2, nivel:'🟢 Família',  req:null,   dica:'TIER 2 | Interativo | 4.5 min | Reabrindo 2026 com novo visual' },
-    {n:'The Barnstormer',                        ll:'multi-t2', tier:2, nivel:'🟢 Família',  req:'89cm', dica:'TIER 2 | Mini coaster | 1 min | Para primeiros coasters' },
-    {n:'Mad Tea Party',                          ll:'multi-t2', tier:2, nivel:'🟢 Família',  req:null,   dica:'TIER 2 | Xícaras giratórias | 2 min' },
-    {n:'Tomorrowland Speedway',                  ll:'multi-t2', tier:2, nivel:'🟢 Família',  req:null,   dica:'TIER 2 | Carrinhos guiados | 5 min | Crianças dirigem' },
-    {n:'Dumbo the Flying Elephant',              ll:'multi-t2', tier:2, nivel:'🟢 Família',  req:null,   dica:'TIER 2 | Para crianças pequenas | Elefante voador clássico' },
-    {n:"Mickey's PhilharMagic",                  ll:'multi-t2', tier:2, nivel:'🟢 Família',  req:null,   dica:'TIER 2 | Show 4D | 12 min | Menos urgente, fácil de conseguir' },
-    // ── SEM LL (fila normal)
-    {n:"It's a Small World",                     ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | 11 min | Melhor no calor para descansar' },
-    {n:'Monsters Inc. Laugh Floor',              ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | Show 15 min | Muito engraçado | AC gostoso' },
-    {n:'Walt Disney World Railroad',             ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | Trem 20 min | Ótimo para descanso' },
-    {n:'Carousel of Progress',                   ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | 21 min | Ar condicionado | Show animatônico histórico' },
+    {n:'Haunted Mansion',                              ll:'multi-t2', tier:2, nivel:'🟢 Família',  req:null,   dica:'TIER 2 | 9 min | Clássico imperdível',desc:'Passeio por uma mansão mal-assombrada repleta de fantasmas, efeitos especiais e ilusões clássicas da Disney.' },
+    {n:'Pirates of the Caribbean',                    ll:'multi-t2', tier:2, nivel:'🟢 Família',  req:null,   dica:'TIER 2 | 8 min | Clássico absoluto da Disney',desc:'Passeio de barco pelos cenários dos piratas do Caribe, com animatrônicos, batalhas e o Capitão Jack Sparrow.' },
+    {n:'Jungle Cruise',                               ll:'multi-t2', tier:2, nivel:'🟢 Família',  req:null,   dica:'TIER 2 | 10 min | Piloto com roteiro de piadas',desc:'Passeio de barco por rios da Ásia, África e América do Sul com um capitão repleto de piadas.' },
+    {n:"Buzz Lightyear's Space Ranger Spin",          ll:'multi-t2', tier:2, nivel:'🟢 Família',  req:null,   dica:'TIER 2 | 5 min | Atirar nos alvos para marcar pontos',desc:'Jogo interativo onde os visitantes ajudam Buzz Lightyear derrotando o Imperador Zurg com pistolas a laser.' },
+    {n:'The Barnstormer',                             ll:'multi-t2', tier:2, nivel:'🟢 Família',  req:'89cm', dica:'TIER 2 | 1 min | 1ª montanha-russa ideal para crianças pequenas',desc:'Pequena montanha-russa do Pateta, perfeita para crianças que estão conhecendo atrações radicais.' },
+    {n:'Mad Tea Party',                               ll:'multi-t2', tier:2, nivel:'🟢 Família',  req:null,   dica:'TIER 2 | 2 min | Xícaras giratórias | você controla a velocidade',desc:'Clássicas xícaras giratórias inspiradas em Alice no País das Maravilhas.' },
+    {n:'Tomorrowland Speedway',                       ll:'multi-t2', tier:2, nivel:'🟢 Família',  req:null,   dica:'TIER 2 | 5 min | Crianças dirigem | req 54cm para dirigir',desc:'As crianças podem dirigir seu próprio carrinho em uma pista inspirada em corridas.' },
+    {n:'Dumbo the Flying Elephant',                   ll:'multi-t2', tier:2, nivel:'🟢 Família',  req:null,   dica:'TIER 2 | 2 min | Controle a altura do voo | área de espera coberta com playground',desc:'Passeio clássico em elefantes voadores onde cada visitante controla a altura do voo.' },
+    {n:"Mickey's PhilharMagic",                       ll:'multi-t2', tier:2, nivel:'🟢 Família',  req:null,   dica:'TIER 2 | 12 min | Espetáculo 3D | ar condicionado',desc:'Espetáculo 3D estrelado pelo Pato Donald com músicas dos clássicos da Disney.' },
+    {n:'Under the Sea – Journey of The Little Mermaid',ll:'multi-t2',tier:2, nivel:'🟢 Família',  req:null,   dica:'TIER 2 | 3.5 min | Ride musical da Pequena Sereia',desc:'Passeio musical que recria as cenas mais famosas do filme A Pequena Sereia.' },
+    // ── SEM LL
+    {n:"It's a Small World",                          ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | 11 min | Passeio de barco mundial | fila anda rápido',desc:'Passeio de barco por cenários que representam culturas do mundo inteiro ao som da famosa música.' },
+    {n:'Monsters Inc. Laugh Floor',                   ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | 15 min | Show interativo de comédia | participação do público',desc:'Show interativo de comédia com os personagens de Monstros S.A. utilizando a participação do público.' },
+    {n:'Walt Disney World Railroad',                  ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | 20 min | Volta completa pelo parque | 3 paradas',desc:'Trem histórico que percorre o parque com paradas em Main Street, Frontierland e Fantasyland.' },
+    {n:'Carousel of Progress',                        ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | 21 min | Show rotativo de Walt Disney | quase sem fila',desc:'Clássico espetáculo criado por Walt Disney que apresenta a evolução tecnológica das famílias ao longo das décadas.' },
+    {n:'Tomorrowland Transit Authority PeopleMover',  ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | 10 min | Vista elevada da Tomorrowland | quase sem fila',desc:'Passeio tranquilo elevado que oferece belas vistas da Tomorrowland.' },
+    {n:'Astro Orbiter',                               ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | 2 min | Foguetes giratórios | vista elevada',desc:'Passeio em foguetes giratórios com vista elevada da Tomorrowland.' },
+    {n:"Walt Disney's Enchanted Tiki Room",           ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | 15 min | Pássaros animatrônicos cantando | ar condicionado',desc:'Espetáculo clássico com pássaros, flores e totens animatrônicos que cantam músicas tropicais.' },
+    {n:'Swiss Family Treehouse',                      ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | Auto guiado | Casa na árvore | ótimo para crianças',desc:'Caminhada por uma enorme casa na árvore inspirada no filme Swiss Family Robinson.' },
+    {n:'The Magic Carpets of Aladdin',                ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | 2 min | Tapetes voadores | similar ao Dumbo',desc:'Passeio semelhante ao Dumbo, onde os visitantes voam em tapetes mágicos inspirados no filme Aladdin.' },
+    {n:'Country Bear Musical Jamboree',               ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | 16 min | Show de ursos animatrônicos | ar condicionado',desc:'Show musical com ursos animatrônicos em apresentações cheias de humor e músicas country.' },
+    {n:'Liberty Square Riverboat',                    ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | 17 min | Passeio relaxante de barco a vapor',desc:'Passeio relaxante em um barco a vapor navegando pelos Rivers of America.' },
+    {n:'Hall of Presidents',                          ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | 23 min | Animatrônicos realistas | ar condicionado',desc:'Espetáculo que apresenta a história da presidência dos Estados Unidos utilizando animatrônicos realistas.' },
+    {n:'Prince Charming Regal Carrousel',             ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | 2 min | Carrossel clássico | vista do Castelo',desc:'Carrossel tradicional localizado em frente ao Castelo da Cinderela.' },
+    {n:'Enchanted Tales with Belle',                  ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | 30 min | Experiência interativa com a Bela | crianças participam',desc:'Experiência interativa onde os visitantes ajudam a contar a história de A Bela e a Fera ao lado da Bela.' },
+    {n:'Main Street Vehicles',                        ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | Veículos antigos | ida ou volta na Main Street',desc:'Passeio em veículos antigos que circulam pela Main Street em horários selecionados.' },
+    {n:'Main Street Cinema',                          ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | Curtas clássicos do Mickey | ar condicionado',desc:'Pequeno cinema que exibe curtas clássicos do Mickey e de outros personagens da Disney.' },
   ],
   // EPCOT — Tier 1, Tier 2, Single Pass
   EPCOT:[
@@ -1186,81 +1200,87 @@ const ATRACOES = {
     {n:'Spaceship Earth',                        ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL frequente | Melhor de manhã cedo ou noite' },
   ],
   // HOLLYWOOD STUDIOS — Tier 1, Tier 2, Single Pass
-  HS:[
-    // ── SINGLE PASS
-    {n:'Star Wars: Rise of the Resistance',      ll:'single',   tier:0, nivel:'🟡 Família+', req:null,   dica:'LL Single | EXPERIÊNCIA MAIS INCRÍVEL DA DISNEY | 20 min total | Comprar imediatamente!' },
-    // ── TIER 1
-    {n:'Slinky Dog Dash',                        ll:'multi-t1', tier:1, nivel:'🟡 Família+', req:'97cm', dica:'TIER 1 | Esgota ~8h23! | 2 min | Toy Story Land | Prioridade máxima no booking' },
-    {n:"Mickey & Minnie's Runaway Railway",      ll:'multi-t1', tier:1, nivel:'🟢 Família',  req:null,   dica:'TIER 1 | Alta demanda | 5 min | Tecnologia sem óculos 3D | IMPERDÍVEL' },
-    {n:"Rock 'n' Roller Coaster Starring The Muppets", ll:'multi-t1', tier:1, nivel:'🔴 Radical', req:'122cm', dica:'TIER 1 | Reopening verão 2026 com Muppets | 0 a 100 km/h em 2.8s' },
-    // ── TIER 2
-    {n:'Millennium Falcon: Smugglers Run',       ll:'multi-t2', tier:2, nivel:'🟡 Família+', req:'97cm', dica:'TIER 2 | Interativo | Piloto, co-piloto, gunner | 5 min | Disponível mais tarde' },
-    {n:'The Twilight Zone Tower of Terror',      ll:'multi-t2', tier:2, nivel:'🔴 Radical',  req:'102cm',dica:'TIER 2 | Queda aleatória | 15 min total' },
-    {n:'Toy Story Mania!',                       ll:'multi-t2', tier:2, nivel:'🟢 Família',  req:null,   dica:'TIER 2 | Esgota em Tier 2 | Interativo | 7 min | Favorito das crianças' },
-    {n:'Star Tours: The Adventures Continue',    ll:'multi-t2', tier:2, nivel:'🟡 Família+', req:'102cm',dica:'TIER 2 | Simulador Star Wars | 4.5 min | Cenas aleatórias' },
-    {n:'Alien Swirling Saucers',                ll:'multi-t2', tier:2, nivel:'🟢 Família',  req:'81cm', dica:'TIER 2 | Para crianças | 2 min | Toy Story Land' },
-  ],
-  // ANIMAL KINGDOM — SEM TIERS, Single Pass separado
+    HS:[
+      // ── SINGLE PASS
+      {n:"Star Wars: Rise of the Resistance",ll:"single",tier:0,nivel:"🟡 Família+",req:null,dica:"LL Single obrigatório | Mais imersiva da Disney | 18 min | Esgota em minutos",desc:"Uma das atrações mais imersivas da Disney, combinando simulador, dark ride, veículos sem trilhos e animatrônicos em uma missão contra a Primeira Ordem." },
+      // ── TIER 1
+      {n:"Slinky Dog Dash",ll:"multi-t1",tier:1,nivel:"🟡 Família+",req:null,dica:"TIER 1 | Esgota muito rápido! | 2.5 min | Boa para todas as idades",desc:"Montanha-russa familiar inspirada em Toy Story, com curvas suaves e ótima para todas as idades." },
+      {n:"Mickey & Minnie's Runaway Railway",ll:"multi-t1",tier:1,nivel:"🟢 Família",req:null,dica:"TIER 1 | Tecnologia trackless | 5 min | Sem náusea",desc:"Primeiro passeio estrelado por Mickey e Minnie utilizando tecnologia de veículos sem trilhos." },
+      {n:"Rock 'n' Roller Coaster Starring Aerosmith",ll:"multi-t1",tier:1,nivel:"🔴 Radical",req:"122cm",dica:"TIER 1 | Lançamento 0-60 em 2.8s | Loops no escuro | Verificar disponibilidade",desc:"Montanha-russa indoor com lançamento de alta velocidade ao som do Aerosmith." },
+      // ── TIER 2
+      {n:"Millennium Falcon: Smugglers Run",ll:"multi-t2",tier:2,nivel:"🟡 Família+",req:null,dica:"TIER 2 | Pilote a Millennium Falcon | 5 min",desc:"Simulador interativo onde os visitantes pilotam a Millennium Falcon assumindo funções de piloto, engenheiro ou atirador." },
+      {n:"The Twilight Zone Tower of Terror",ll:"multi-t2",tier:2,nivel:"🔴 Radical",req:"102cm",dica:"TIER 2 | Queda livre aleatória | 13 min | Ícone do parque",desc:"Torre de queda livre inspirada na série Além da Imaginação. Uma das atrações mais famosas da Disney." },
+      {n:"Toy Story Mania!",ll:"multi-t2",tier:2,nivel:"🟢 Família",req:null,dica:"TIER 2 | Competição em 4D | 8 min",desc:"Competição em 4D onde os visitantes utilizam canhões para acertar alvos em diversos jogos." },
+      {n:"Star Tours: The Adventures Continue",ll:"multi-t2",tier:2,nivel:"🟡 Família+",req:"102cm",dica:"TIER 2 | Centenas de combinações | 7 min | 3D com movimento",desc:"Simulador 3D com centenas de combinações diferentes de aventuras no universo Star Wars." },
+      // ── SEM LL
+      {n:"Alien Swirling Saucers",ll:null,tier:0,nivel:"🟢 Família",req:null,dica:"Sem LL | 2 min | Toy Story Land | Carrinhos giratórios dos alienígenas verdes",desc:"Carrinhos giratórios conduzidos pelos alienígenas verdes de Toy Story." },
+    ],
   AK:[
     // ── SINGLE PASS
-    {n:'Avatar: Flight of Passage',             ll:'single',   tier:0, nivel:'🟡 Família+', req:'112cm',dica:'LL Single | EMOÇÃO MAIS INTENSA DA DISNEY | 5 min | Comprar antes de qualquer coisa!' },
-    // ── MULTI PASS (sem tiers — escolha livre de 3 atrações)
-    {n:"Na'vi River Journey",                   ll:'multi',    tier:0, nivel:'🟢 Família',  req:null,   dica:'Multi Pass | Sem tiers em AK | Esgota ~11h28 | 5 min | Alta demanda' },
-    {n:'Kilimanjaro Safaris',                   ll:'multi',    tier:0, nivel:'🟢 Família',  req:null,   dica:'Multi Pass | Sem tiers | Animais reais | 18 min | Manhã = animais ativos' },
-    {n:'Expedition Everest',                    ll:'multi',    tier:0, nivel:'🔴 Radical',  req:'112cm',dica:'Multi Pass | Sem tiers | Coaster reverso | 3 min' },
-    {n:'Kali River Rapids',                     ll:'multi',    tier:0, nivel:'🟡 Família+', req:'97cm', dica:'Multi Pass | Sem tiers | VAI MOLHAR! | 5 min' },
-    {n:'Festival of the Lion King',             ll:'multi',    tier:0, nivel:'🟢 Família',  req:null,   dica:'Multi Pass | Sem tiers | Show 30 min | IMPERDÍVEL — esgota rápido!' },
-    {n:"Zootopia: Better Zoogether!",           ll:'multi',    tier:0, nivel:'🟢 Família',  req:null,   dica:'Multi Pass | Sem tiers | Novo show Tree of Life | Alta demanda' },
-    {n:"Finding Nemo: The Big Blue...and Beyond",ll:'multi',   tier:0, nivel:'🟢 Família',  req:null,   dica:'Multi Pass | Sem tiers | Show 25 min' },
-    {n:'Feathered Friends in Flight!',          ll:'multi',    tier:0, nivel:'🟢 Família',  req:null,   dica:'Multi Pass | Sem tiers | Aves em voo livre | 25 min' },
-    {n:"UP! A Great Bird Adventure",            ll:'multi',    tier:0, nivel:'🟢 Família',  req:null,   dica:'Multi Pass | Sem tiers | Personagens UP! com aves reais' },
-    {n:'DINOSAUR',                              ll:'multi',    tier:0, nivel:'🔴 Radical',  req:'102cm',dica:'Multi Pass | FECHANDO fev/2026 para Tropical Americas | 3.5 min' },
+    {n:"Avatar Flight of Passage",ll:"single",tier:0,nivel:"🔴 Radical",req:"112cm",dica:"LL Single obrigatório | Melhor atração da Disney! | 5 min | Sempre lotado",desc:"Simulador 3D considerado uma das melhores atrações da Disney, onde os visitantes voam sobre um banshee em Pandora." },
+    // ── TIER 1
+    {n:"Kilimanjaro Safaris",ll:"multi-t1",tier:1,nivel:"🟢 Família",req:null,dica:"TIER 1 | 25 min | Animais REAIS | Manhã = animais mais ativos",desc:"Safari em veículo aberto por uma reserva africana com dezenas de animais reais." },
+    {n:"Expedition Everest",ll:"multi-t1",tier:1,nivel:"🔴 Radical",req:"112cm",dica:"TIER 1 | 4 min | Frente e verso + Yeti animatrônico",desc:"Montanha-russa com trechos para frente e para trás enfrentando o lendário Yeti." },
+    // ── TIER 2
+    {n:"Na'vi River Journey",ll:"multi-t2",tier:2,nivel:"🟢 Família",req:null,dica:"TIER 2 | 5 min | Pandora bioluminescente | Animatrônico impressionante",desc:"Passeio de barco por uma floresta bioluminescente de Pandora com animatrônico da Na'vi Shaman." },
+    {n:"DINOSAUR",ll:"multi-t2",tier:2,nivel:"🔴 Radical",req:"102cm",dica:"TIER 2 | 3.5 min | Escuro e intenso | Crianças podem assustar",desc:"Aventura no escuro onde os visitantes viajam no tempo para resgatar um dinossauro antes da extinção." },
+    {n:"Kali River Rapids",ll:"multi-t2",tier:2,nivel:"🟡 Família+",req:"97cm",dica:"TIER 2 | 7 min | Molha MUITO | Levar capa ou roupa extra",desc:"Corredeiras com muita água em uma expedição por uma floresta tropical." },
     // ── SEM LL
-    {n:'TriceraTop Spin',                       ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | Para crianças pequenas' },
-    {n:'Gorilla Falls Exploration Trail',       ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | Trilha com gorilas, hipopótamos | 20-40 min' },
-    {n:'Maharajah Jungle Trek',                 ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem LL | Tigres, morcegos, veados | 20-40 min' },
+    {n:"TriceraTop Spin",ll:null,tier:0,nivel:"🟢 Família",req:null,dica:"Sem LL | 2 min | Similar ao Dumbo | Verificar disponibilidade DinoLand",desc:"Passeio infantil semelhante ao Dumbo, onde os visitantes controlam a altura do voo." },
+    {n:"Gorilla Falls Exploration Trail",ll:null,tier:0,nivel:"🟢 Família",req:null,dica:"Sem LL | Auto guiado | Gorilas, hipopótamos e diversas espécies africanas",desc:"Trilha para observar gorilas, hipopótamos e diversas espécies africanas." },
+    {n:"Maharajah Jungle Trek",ll:null,tier:0,nivel:"🟢 Família",req:null,dica:"Sem LL | Auto guiado | Tigres, morcegos gigantes e aves exóticas",desc:"Caminhada por habitats asiáticos com tigres, morcegos gigantes e aves exóticas." },
+    {n:"Wildlife Express Train",ll:null,tier:0,nivel:"🟢 Família",req:null,dica:"Sem LL | Trem até o Rafiki's Planet Watch",desc:"Trem que leva os visitantes até Rafiki's Planet Watch." },
+    {n:"Affection Section",ll:null,tier:0,nivel:"🟢 Família",req:null,dica:"Sem LL | Interação com animais domésticos | Rafiki's Planet Watch",desc:"Área onde crianças e adultos podem interagir com animais domésticos." },
+    {n:"The Animation Experience",ll:null,tier:0,nivel:"🟢 Família",req:null,dica:"Sem LL | Aula de desenho de personagens Disney | Rafiki's Planet Watch",desc:"Aula guiada para aprender a desenhar personagens Disney inspirados em animais." },
   ],
-  // UNIVERSAL STUDIOS FLORIDA (usa Express Pass, não LL Disney)
   USO:[
-    {n:"Hollywood Rip Ride Rockit",             ll:'express',  tier:0, nivel:'🔴 Radical',  req:'132cm',dica:'Express Pass | Coaster vertical | 1.5 min | Escolha sua música' },
-    {n:"Revenge of the Mummy",                  ll:'express',  tier:0, nivel:'🔴 Radical',  req:'122cm',dica:'Express Pass | Coaster escuro | 3 min | Clássico Universal' },
-    {n:"Transformers: The Ride-3D",             ll:'express',  tier:0, nivel:'🟡 Família+', req:'102cm',dica:'Express Pass | Visual impressionante | 4.5 min' },
-    {n:"Despicable Me Minion Mayhem",           ll:'express',  tier:0, nivel:'🟢 Família',  req:null,   dica:'Express Pass | Simulador Minions | 4.5 min' },
-    {n:"Men in Black: Alien Attack",            ll:'express',  tier:0, nivel:'🟡 Família+', req:'102cm',dica:'Express Pass | Atira em aliens! | 4.5 min' },
-    {n:"Fast & Furious: Supercharged",          ll:'express',  tier:0, nivel:'🟡 Família+', req:'102cm',dica:'Express Pass | Simulador | 4.5 min' },
-    {n:"E.T. Adventure",                        ll:'express',  tier:0, nivel:'🟢 Família',  req:null,   dica:'Express Pass | Clássico Spielberg | 4.5 min' },
-    {n:"Harry Potter — Escape from Gringotts",  ll:'express',  tier:0, nivel:'🟡 Família+', req:'107cm',dica:'Express Pass | Diagon Alley | 4.5 min | Tecnologia incrível' },
-    {n:"The Simpsons Ride",                     ll:'express',  tier:0, nivel:'🟡 Família+', req:'102cm',dica:'Express Pass | Simulador Springfield | 4.5 min' },
-    {n:"Hogwarts Express (USO→IOA)",            ll:'express',  tier:0, nivel:'🟢 Família',  req:null,   dica:'Express Pass | Trem real entre parques | Requer ingresso Parque a Parque' },
-    {n:"Race Through New York Starring Jimmy Fallon",ll:'express',tier:0,nivel:'🟢 Família',req:null,   dica:'Express Pass | Simulador de voo | 4.5 min' },
+    {n:"Harry Potter and the Escape from Gringotts",ll:"express",tier:0,nivel:"🟡 Família+",req:"122cm",dica:"Melhor atração do USO | 5 min | Gringotts + Voldemort",desc:"Aventura que combina montanha-russa e simulador dentro do banco de Gringotes, com Harry, Rony e Hermione enfrentando Voldemort." },
+    {n:"Hollywood Rip Ride Rockit",ll:"express",tier:0,nivel:"🔴 Radical",req:"122cm",dica:"Trilha sonora personalizada | Verificar disponibilidade",desc:"Montanha-russa radical onde cada visitante escolhe sua própria trilha sonora durante o percurso." },
+    {n:"Revenge of the Mummy",ll:"express",tier:0,nivel:"🔴 Radical",req:"102cm",dica:"Coaster indoor com fogo e efeitos | Clássico imperdível | 3 min",desc:"Montanha-russa indoor com efeitos especiais, fogo, escuridão e cenas inspiradas no filme A Múmia." },
+    {n:"TRANSFORMERS: The Ride-3D",ll:"express",tier:0,nivel:"🟡 Família+",req:"102cm",dica:"Simulador 3D épico | 5 min | Autobots vs Decepticons",desc:"Simulador 3D em alta velocidade durante a batalha entre Autobots e Decepticons." },
+    {n:"Despicable Me Minion Mayhem",ll:"express",tier:0,nivel:"🟢 Família",req:"102cm",dica:"Simulador divertido | 5 min | Bom para famílias",desc:"Simulador divertido onde os visitantes se transformam em Minions." },
+    {n:"Villain-Con Minion Blast",ll:"express",tier:0,nivel:"🟢 Família",req:null,dica:"Atração interativa com blaster | Novo em Minion Land",desc:"Atração interativa onde os visitantes utilizam um blaster para competir em uma convenção de vilões." },
+    {n:"MEN IN BLACK Alien Attack",ll:"express",tier:0,nivel:"🟡 Família+",req:"102cm",dica:"Eliminação de alienígenas com laser | 5 min | Pontuação competitiva",desc:"Competição interativa em que os visitantes eliminam alienígenas utilizando pistolas a laser." },
+    {n:"E.T. Adventure",ll:"express",tier:0,nivel:"🟢 Família",req:null,dica:"Passeio clássico em bicicletas voadoras | 5 min | Nostálgico",desc:"Passeio clássico onde bicicletas voadoras levam os visitantes até o planeta do E.T." },
+    {n:"The Simpsons Ride",ll:"express",tier:0,nivel:"🟡 Família+",req:"102cm",dica:"Simulador em HD | 5 min | Krustyland",desc:"Simulador em alta definição dentro do parque Krustyland." },
+    {n:"Kang & Kodos Twirl n Hurl",ll:null,tier:0,nivel:"🟢 Família",req:null,dica:"Sem Express | 2 min | Passeio infantil giratório",desc:"Passeio infantil giratório inspirado nos alienígenas de Os Simpsons." },
+    {n:"Race Through New York Starring Jimmy Fallon",ll:"express",tier:0,nivel:"🟢 Família",req:"102cm",dica:"Simulador com Jimmy Fallon | 5 min | Boa opção quando lotado",desc:"Simulador que percorre Nova York em uma corrida contra Jimmy Fallon." },
+    {n:"Fast & Furious - Supercharged",ll:"express",tier:0,nivel:"🟢 Família",req:null,dica:"5 min | Menos prioritário",desc:"Passeio em veículo de grande porte inspirado na franquia Velozes & Furiosos." },
+    {n:"Hogwarts Express (King's Cross)",ll:"express",tier:0,nivel:"🟢 Família",req:null,dica:"Park-to-Park | Conecta USO ↔ IOA | Experiência diferente em cada sentido",desc:"Trem que conecta Universal Studios e Islands of Adventure. Necessário ingresso Park-to-Park." },
   ],
   // ISLANDS OF ADVENTURE
   IOA:[
-    {n:"Hagrid's Magical Creatures Motorbike Adventure",ll:'express',tier:0,nivel:'🟡 Família+',req:'122cm',dica:'Express Pass | MAIS POPULAR DA UNIVERSAL | Moto+sidecar | Fila 2h+ normal!' },
-    {n:'Jurassic World VelociCoaster',          ll:'express',  tier:0, nivel:'🔴 Radical',  req:'137cm',dica:'Express Pass | Mais radical da Universal | Múltiplas inversões | 1.5 min' },
-    {n:"Harry Potter and the Forbidden Journey",ll:'express',  tier:0, nivel:'🟡 Família+', req:'122cm',dica:'Express Pass | Ícone Hogsmeade | 4 min' },
-    {n:"The Amazing Adventures of Spider-Man",  ll:'express',  tier:0, nivel:'🟡 Família+', req:'102cm',dica:'Express Pass | 3D + movimento | 4.5 min' },
-    {n:"The Incredible Hulk Coaster",          ll:'express',  tier:0, nivel:'🔴 Radical',  req:'137cm',dica:'Express Pass | Lançamento + inversões | 2.5 min' },
-    {n:"Skull Island: Reign of Kong",           ll:'express',  tier:0, nivel:'🔴 Radical',  req:'102cm',dica:'Express Pass | King Kong ASSUSTA! | 5 min' },
-    {n:"Jurassic World Adventure",              ll:'express',  tier:0, nivel:'🟡 Família+', req:'107cm',dica:'Express Pass | Simulador VR | 4.5 min' },
-    {n:'Doctor Doom Fearfall',                  ll:'express',  tier:0, nivel:'🔴 Radical',  req:'132cm',dica:'Express Pass | Torre de queda | 1 min' },
-    {n:"Dudley Do-Right's Ripsaw Falls",        ll:'express',  tier:0, nivel:'🟡 Família+', req:'107cm',dica:'Express Pass | Vai molhar | 5 min' },
-    {n:"Popeye & Bluto's Bilge-Rat Barges",     ll:'express',  tier:0, nivel:'🟡 Família+', req:'107cm',dica:'Express Pass | Vai molhar MUITO | 6 min' },
-    {n:'Flight of the Hippogriff',              ll:'express',  tier:0, nivel:'🟡 Família+', req:'99cm', dica:'Express Pass | Mini coaster | Vista de Hogwarts | 1 min' },
-    {n:"The Cat in the Hat",                    ll:'express',  tier:0, nivel:'🟢 Família',  req:null,   dica:'Express Pass | Para crianças | 3 min' },
-    {n:"Hogwarts Express (IOA→USO)",            ll:'express',  tier:0, nivel:'🟢 Família',  req:null,   dica:'Express Pass | Trem real entre parques | IMPERDÍVEL' },
-    {n:"Pteranodon Flyers",                     ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Sem Express | Para crianças | Com adulto' },
+    {n:"Hagrid's Magical Creatures Motorbike Adventure",ll:"express",tier:0,nivel:"🔴 Radical",req:"107cm",dica:"MELHOR DO IOA | 6 min | Lançamentos + criaturas mágicas | Chegar ao abrir",desc:"Montanha-russa extremamente imersiva pelo universo Harry Potter, com múltiplos lançamentos, queda vertical e criaturas mágicas." },
+    {n:"Jurassic World VelociCoaster",ll:"express",tier:0,nivel:"🔴 Radical",req:"122cm",dica:"Uma das mais radicais do mundo | 12 inversões | 2.3 G | 5 min",desc:"Uma das montanhas-russas mais radicais do mundo, com acelerações intensas, inversões e interação com velociraptores." },
+    {n:"Harry Potter and the Forbidden Journey",ll:"express",tier:0,nivel:"🟡 Família+",req:"122cm",dica:"Simulador com braço robótico | Hogwarts por dentro | 5 min",desc:"Simulador com braço robótico que leva os visitantes pelos cenários de Hogwarts ao lado de Harry Potter." },
+    {n:"The Amazing Adventures of Spider-Man",ll:"express",tier:0,nivel:"🟡 Família+",req:"102cm",dica:"Clássico simulador 3D | 5 min | Marvel Island",desc:"Clássico simulador 3D que mistura telas, cenários reais e veículos em movimento." },
+    {n:"The Incredible Hulk Coaster",ll:"express",tier:0,nivel:"🔴 Radical",req:"137cm",dica:"Lançamento imediato + inversões | 2.5 min | Clássico do IOA",desc:"Montanha-russa com lançamento imediato e diversas inversões em alta velocidade." },
+    {n:"Skull Island: Reign of Kong",ll:"express",tier:0,nivel:"🟡 Família+",req:"107cm",dica:"Veículo grande + King Kong | 8 min | Bom para todas as idades",desc:"Expedição em veículo de grande porte enfrentando criaturas gigantes e King Kong." },
+    {n:"Jurassic Park River Adventure",ll:"express",tier:0,nivel:"🟡 Família+",req:"107cm",dica:"Grande queda com T-Rex | Molha MUITO | 5 min",desc:"Passeio de barco pelo Jurassic Park que termina em uma grande queda diante do T-Rex." },
+    {n:"Flight of the Hippogriff",ll:"express",tier:0,nivel:"🟡 Família+",req:"99cm",dica:"Coaster familiar | Hogsmeade | Bom primeiro coaster para crianças",desc:"Montanha-russa infantil inspirada nas aulas de Hagrid com o Hipogrifo Bicuço." },
+    {n:"Doctor Doom's Fearfall",ll:"express",tier:0,nivel:"🔴 Radical",req:"102cm",dica:"Torre de lançamento para cima | Marvel Island | 1 min",desc:"Torre de lançamento que impulsiona os visitantes para o alto." },
+    {n:"Dudley Do-Right's Ripsaw Falls",ll:"express",tier:0,nivel:"🟡 Família+",req:"107cm",dica:"Queda aquática gigante | Molha MUITO | Toon Lagoon",desc:"Aventura aquática com uma das maiores quedas da Universal." },
+    {n:"Popeye & Bluto's Bilge-Rat Barges",ll:"express",tier:0,nivel:"🟡 Família+",req:"107cm",dica:"Corredeiras em botes circulares | Molha TOTALMENTE",desc:"Corredeiras extremamente molhadas em botes circulares." },
+    {n:"Storm Force Accelatron",ll:null,tier:0,nivel:"🟢 Família",req:null,dica:"Sem Express | Carrinhos giratórios X-Men | Para crianças pequenas",desc:"Carrinhos giratórios inspirados nos X-Men." },
+    {n:"Pteranodon Flyers",ll:null,tier:0,nivel:"🟢 Família",req:null,dica:"Sem Express | Fila longuíssima | Apenas crianças com adulto",desc:"Passeio suspenso voltado principalmente para crianças, com vista da Jurassic Park." },
+    {n:"Caro-Seuss-el",ll:null,tier:0,nivel:"🟢 Família",req:null,dica:"Sem Express | Carrossel temático Dr. Seuss | Para crianças",desc:"Carrossel temático do Dr. Seuss." },
+    {n:"One Fish, Two Fish, Red Fish, Blue Fish",ll:null,tier:0,nivel:"🟢 Família",req:null,dica:"Sem Express | Seuss Landing | Semelhante ao Dumbo",desc:"Passeio semelhante ao Dumbo, onde os peixes sobem e descem." },
+    {n:"The High in the Sky Seuss Trolley Train Ride!",ll:null,tier:0,nivel:"🟢 Família",req:null,dica:"Sem Express | Seuss Landing | Vista panoramica | Passeio elevado",desc:"Passeio elevado oferecendo belas vistas da Seuss Landing." },
+    {n:"Hogwarts Express (Hogsmeade)",ll:"express",tier:0,nivel:"🟢 Família",req:null,dica:"Park-to-Park | Conecta IOA ↔ USO | Experiência diferente",desc:"Trem que liga Islands of Adventure ao Universal Studios Florida. Requer ingresso Park-to-Park." },
   ],
   // EPIC UNIVERSE
   EU:[
-    {n:"Mario Kart: Bowser's Challenge",        ll:'express',  tier:0, nivel:'🟡 Família+', req:null,   dica:'Express Pass | Super Nintendo World | AR | 2025' },
-    {n:"Donkey Kong Mine Cart Dash",            ll:'express',  tier:0, nivel:'🟡 Família+', req:'107cm',dica:'Express Pass | Super Nintendo World | Coaster+AR | 2025' },
-    {n:"Harry Potter and the Battle at the Ministry",ll:'express',tier:0,nivel:'🟡 Família+',req:null,  dica:'Express Pass | Ministry of Magic | Mais impressionante EU | 2025' },
-    {n:"Dragon Racer's Rally",                  ll:'express',  tier:0, nivel:'🟡 Família+', req:'107cm',dica:'Express Pass | Isle of Berk (HTTYD) | Coaster | 2025' },
-    {n:"Monsters Unchained: The Frankenstein Experiment",ll:'express',tier:0,nivel:'🔴 Radical',req:'122cm',dica:'Express Pass | Dark Universe | Coaster no escuro | Assustador | 2025' },
-    {n:"Curse of the Werewolf",                 ll:null,        tier:0, nivel:'🟡 Família+', req:null,   dica:'Dark Universe | Dark ride | 2025' },
-    {n:"Hiccup's Wing Glider",                  ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Isle of Berk | Para crianças | 2025' },
-    {n:"Yoshi's Adventure",                     ll:null,        tier:0, nivel:'🟢 Família',  req:null,   dica:'Super Nintendo World | Para crianças' },
+    {n:"Harry Potter and the Battle at the Ministry",ll:"express",tier:0,nivel:"🔴 Radical",req:"102cm",dica:"MAIS PROCURADA DO EU | Ministério da Magia | Inédita | Reservar cedo",desc:"Atração revolucionária que leva os visitantes ao Ministério da Magia em uma aventura inédita do universo Harry Potter." },
+    {n:"Stardust Racers",ll:"express",tier:0,nivel:"🔴 Radical",req:"107cm",dica:"Lançamento duplo | Celestial Park | 2 trens simultâneos | Muito popular",desc:"Montanha-russa de lançamento duplo onde dois trens percorrem o circuito simultaneamente em altas velocidades." },
+    {n:"Mine-Cart Madness",ll:"express",tier:0,nivel:"🟡 Família+",req:"102cm",dica:"Donkey Kong | Ilusão de trilhos quebrados | Donkey Kong Country",desc:"Montanha-russa inspirada em Donkey Kong que cria a ilusão de trilhos quebrados e saltos." },
+    {n:"Monsters Unchained: The Frankenstein Experiment",ll:"express",tier:0,nivel:"🟡 Família+",req:"107cm",dica:"Dark ride | Dark Universe | Frankenstein + Dracula + Lobisomem",desc:"Dark ride de última geração reunindo Frankenstein, Drácula, Lobisomem e outros monstros clássicos da Universal." },
+    {n:"Mario Kart: Bowser's Challenge",ll:"express",tier:0,nivel:"🟡 Família+",req:null,dica:"Realidade aumentada do Mario Kart | Super Nintendo World | Muito procurado",desc:"Atração interativa utilizando realidade aumentada para competir em corridas do Mario Kart." },
+    {n:"Dragon Racer's Rally",ll:"express",tier:0,nivel:"🟡 Família+",req:"102cm",dica:"Como Treinar Seu Dragão | Controlar manobras durante o voo | Isle of Berk",desc:"Atração onde os visitantes controlam as manobras durante o voo em dragões." },
+    {n:"Hiccup's Wing Gliders",ll:"express",tier:0,nivel:"🟢 Família",req:"99cm",dica:"Coaster familiar | Como Treinar Seu Dragão | Boa para crianças",desc:"Montanha-russa familiar inspirada em Como Treinar o Seu Dragão." },
+    {n:"Curse of the Werewolf",ll:"express",tier:0,nivel:"🟡 Família+",req:"107cm",dica:"Dark Universe | Coaster familiar temático | Monstros clássicos",desc:"Montanha-russa familiar inspirada no universo dos monstros clássicos da Universal." },
+    {n:"Yoshi's Adventure",ll:null,tier:0,nivel:"🟢 Família",req:null,dica:"Sem Express | Super Nintendo World | Passeio tranquilo | Crianças pequenas",desc:"Passeio tranquilo pelo Mushroom Kingdom com belas vistas da área temática." },
+    {n:"Fyre Drill",ll:null,tier:0,nivel:"🟢 Família",req:null,dica:"Sem Express | Competição com canhões de água | Isle of Berk",desc:"Competição aquática interativa utilizando canhões de água." },
+    {n:"Constellation Carousel",ll:null,tier:0,nivel:"🟢 Família",req:null,dica:"Sem Express | Celestial Park | Carrossel moderno",desc:"Carrossel moderno com criaturas celestiais que gira em diferentes direções e níveis." },
   ],
   // BLIZZARD BEACH
   BB:[
@@ -1339,6 +1359,8 @@ const RESTAURANTES = {
       {n:"Liberty Tree Tavern",            reserva:true,  tipo:'table',  dica:'Jantar family-style americano | Estilo colonial | Comfort food' },
       {n:"Skipper Canteen",               reserva:false, tipo:'table',  dica:'Fácil walk-in | Muito temático e engraçado | Cardápio internacional' },
       {n:"Tony's Town Square Restaurant",  reserva:false, tipo:'table',  dica:'Lady e o Vagabundo | Pizzas e massas | Entrada do parque' },
+      {n:"The Plaza Restaurant",reserva:false,tipo:"table",dica:"Vista para o Castelo | Sanduíches, massas, sobremesas | Walk-in disponível",desc:"Restaurante com sanduíches, massas, sobremesas e vista para o Castelo da Cinderela." },
+      {n:"The Diamond Horseshoe",reserva:false,tipo:"table",dica:"Frontierland | Comida americana familiar | Walk-in",desc:"Restaurante de comida americana servido em estilo familiar." },
     ],
     qs:[
       {n:"Be Our Guest (almoço QS)",       reserva:false, tipo:'quick',  dica:'Mesma decoração do TS mas QS no almoço | VALE MUITO! Fila grande' },
@@ -1350,10 +1372,17 @@ const RESTAURANTES = {
       {n:"Aloha Isle",                     reserva:false, tipo:'quick',  dica:'🍍 DOLE WHIP! Sorvete de abacaxi obrigatório | Fila grande mas vale' },
       {n:"Main Street Bakery (Starbucks)", reserva:false, tipo:'quick',  dica:'Starbucks temático | Café da manhã ao chegar | Foto obrigatória' },
       {n:"The Friar's Nook",              reserva:false, tipo:'quick',  dica:'Macarrão e queijo, tater tots | Fantasyland | Rápido' },
+      {n:"Sleepy Hollow",reserva:false,tipo:"quick",dica:"Liberty Square | Waffles recheados e funnel cakes",desc:"Famoso pelos waffles recheados, funnel cakes e sobremesas." },
+      {n:"The Lunching Pad",reserva:false,tipo:"quick",dica:"Tomorrowland | Hot dogs, pretzels e bebidas",desc:"Lanches rápidos na Tomorrowland, incluindo hot dogs, pretzels e bebidas." },
+      {n:"Cheshire Café",reserva:false,tipo:"quick",dica:"Famoso pelo Cheshire Cat Tail e cafés especiais",desc:"Quiosque conhecido pelo famoso Cheshire Cat Tail e cafés especiais." },
+      {n:"Golden Oak Outpost",reserva:false,tipo:"quick",dica:"Entre Frontierland e Adventureland | Nuggets e snacks",desc:"Pequeno quiosque com nuggets, batatas e snacks." },
+      {n:"The Plaza Ice Cream Parlor",reserva:false,tipo:"quick",dica:"Main Street | Sorvetes e sundaes clássicos",desc:"Sorveteria tradicional da Main Street que serve sorvetes e sundaes." },
+      {n:"Storybook Treats",reserva:false,tipo:"quick",dica:"Fantasyland | Sorvetes temáticos de personagens Disney",desc:"Quiosque especializado em sorvetes temáticos inspirados em personagens Disney." },
     ]
   },
   EPCOT:{
     ts:[
+        {n:"Space 220 Restaurant",reserva:true,tipo:"table",dica:"🏆 Experiência única | Vista da Terra do espaço | Reserva obrigatória com meses de antecedência",desc:"Restaurante temático que simula uma viagem a uma estação espacial a 220 milhas da Terra." },
       {n:"Le Cellier Steakhouse",          reserva:true,  tipo:'table',  dica:'🏆 Um dos MAIS DISPUTADOS de toda Disney! Filé com molho cogumelo-trufas | Reservar 60 dias' },
       {n:"Coral Reef Restaurant",          reserva:true,  tipo:'table',  dica:'Vista para o aquário com Nemo | Frutos do mar | Bonito para crianças' },
       {n:"Garden Grill",                   reserva:true,  tipo:'table',  char:true, dica:'Restaurante ROTATIVO! Mickey, Pluto, Goofy | Farm to Table | Future World' },
@@ -1367,11 +1396,14 @@ const RESTAURANTES = {
       {n:"San Angel Inn Restaurante",      reserva:true,  tipo:'table',  dica:'Mexico | Dentro da pirâmide | Vista pro Gran Fiesta Tour. Muito romântico' },
       {n:"Rose & Crown Dining Room",       reserva:true,  tipo:'table',  dica:'UK Pavilion | Pedir mesa com vista para fogos do EPCOT!!' },
       {n:"Via Napoli Ristorante",          reserva:true,  tipo:'table',  dica:'Italy Pavilion | Forno a lenha | Pizzas grandes e autênticas' },
+        {n:"Shiki-Sai: Sushi Izakaya",reserva:true,tipo:"table",dica:"Japan | Sushi moderno e culinária sazonal | Boa vista do World Showcase",desc:"Restaurante japonês moderno especializado em sushi e culinária sazonal." },
+        {n:"Via Napoli Ristorante e Pizzeria",reserva:true,tipo:"table",dica:"Italy | Pizzas autênticas em fornos importados da Itália | Sempre lotado",desc:"Restaurante italiano famoso pelas pizzas preparadas em fornos importados da Itália." },
       {n:"Nine Dragons Restaurant",        reserva:false, tipo:'table',  dica:'China Pavilion | Fácil conseguir mesa | Culinária chinesa clássica' },
     ],
     qs:[
       {n:"Les Halles Boulangerie-Patisserie",reserva:false,tipo:'quick', dica:'🏆 MELHOR QS DO EPCOT! Croissants, quiches, croque-monsieur | Fila mas vale MUITO' },
       {n:"Connections Café & Eatery",      reserva:false, tipo:'quick',  dica:'Perto do Spaceship Earth | Maior QS do EPCOT | Starbucks integrado' },
+        {n:"Sunshine Seasons",reserva:false,tipo:"quick",dica:"The Land Pavilion | Grande variedade de pratos | Uma das melhores opções QS do EPCOT",desc:"Restaurante localizado no pavilhão The Land, com grande variedade de pratos para toda a família." },
       {n:"Regal Eagle Smokehouse",         reserva:false, tipo:'quick',  dica:'American Adventure | BBQ americano | Costelas, brisket' },
       {n:"Tangierine Café",               reserva:false, tipo:'quick',  dica:'Morocco | Frango e berinjela assados | Excelente custo-benefício' },
       {n:"Lotus Blossom Café",             reserva:false, tipo:'quick',  dica:'China | Arroz frito, Mongolian Beef | Rápido e bom' },
@@ -1385,6 +1417,8 @@ const RESTAURANTES = {
   },
   HS:{
     ts:[
+        {n:"Oga's Cantina",reserva:true,tipo:"table",dica:"Galaxy's Edge | Bar tematico de Star Wars | Bebidas exclusivas | Maximo 45 min | Reservar com antecedencia",desc:"Bar tematico de Star Wars com bebidas exclusivas e ambiente extremamente imersivo." },
+        {n:"Hollywood & Vine",reserva:true,tipo:"table",char:true,dica:"Buffet com personagens Disney em horarios especificos | Verificar tipo de refeicao disponivel",desc:"Buffet com personagens Disney em horarios especificos." },
       {n:"Hollywood Brown Derby",          reserva:true,  tipo:'table',  dica:'Assinatura | Inspirado no Derby de LA | Cobb Salad original. Vinhos premiados' },
       {n:"50\'s Prime Time Café",         reserva:true,  tipo:'table',  dica:'Anos 50 | Garçons são seus pais! Pedem pra comer os legumes | Super divertido' },
       {n:"Sci-Fi Dine-In Theater",         reserva:true,  tipo:'table',  dica:'Mesas em carros assistindo filmes B de ficção científica! Experiência única' },
@@ -1395,6 +1429,9 @@ const RESTAURANTES = {
     qs:[
       {n:"Docking Bay 7 Food and Cargo",   reserva:false, tipo:'quick',  dica:'🏆 MELHOR QS DO HS! Pratos criativos e temáticos de Star Wars | Muito Instagram' },
       {n:"Ronto Roasters",                reserva:false, tipo:'quick',  dica:'Galaxy\'s Edge | Ronto Wrap: porco assado na espada! Favorito absoluto' },
+        {n:"Catalina Eddie's",reserva:false,tipo:"quick",dica:"Pizzas, saladas e bebidas | Sunset Boulevard",desc:"Pizzas, saladas e bebidas." },
+        {n:"Fairfax Fare",reserva:false,tipo:"quick",dica:"Sanduiches e pratos sazonais | Sunset Boulevard",desc:"Opcoes rapidas de sanduiches e pratos sazonais." },
+        {n:"Rosie's All-American Cafe",reserva:false,tipo:"quick",dica:"Hamburgueres e fast food classico americano | Sunset Boulevard",desc:"Hamburgueres e fast food classico americano." },
       {n:"Woody\'s Lunch Box",            reserva:false, tipo:'quick',  dica:'Toy Story Land | Tater tots e S\'mores francesas | FAMOSO! Fila sempre grande' },
       {n:"Backlot Express",               reserva:false, tipo:'quick',  dica:'Near Star Wars | Burgers e sanduíches | Bom e rápido' },
       {n:"ABC Commissary",                reserva:false, tipo:'quick',  dica:'Perto da entrada | Pratos variados | Bom ar condicionado!' },
@@ -1406,6 +1443,7 @@ const RESTAURANTES = {
     ts:[
       {n:"Tiffins",                        reserva:true,  tipo:'table',  dica:'🏆 MELHOR do AK! Culinária inspirada nas viagens dos Imagineers | Muito sofisticado' },
       {n:"Tusker House Restaurant",        reserva:true,  tipo:'table',  char:true, dica:'Donald, Daisy, Goofy, Mickey de safari! Buffet africano + americano | Excelente!' },
+        {n:"Rainforest Cafe",reserva:false,tipo:"table",dica:"Entrada do parque | Restaurante tematico com animais animatronicos | Floresta tropical",desc:"Restaurante tematico com animais animatronicos e floresta tropical, localizado na entrada do parque." },
       {n:"Yak & Yeti Restaurant",          reserva:true,  tipo:'table',  dica:'Asia | Fusão asiática | Opção de TS mais fácil em AK | Bom custo-benefício' },
       {n:"Rainforest Café",               reserva:false, tipo:'table',  dica:'Animais mecânicos e trovões | Para crianças | Perto da entrada' },
     ],
@@ -1421,39 +1459,45 @@ const RESTAURANTES = {
   },
   USO:{
     ts:[
-      {n:"The Leaky Cauldron",            reserva:false, tipo:'table',  dica:'Diagon Alley | OBRIGATÓRIO para fãs HP! Fish & chips, shepherd\'s pie, cerveja amanteigada' },
-      {n:"Lombard\'s Seafood Grille",    reserva:false, tipo:'table',  dica:'San Francisco | Frutos do mar | Fácil conseguir mesa' },
-      {n:"Finnegan\'s Bar & Grill",      reserva:false, tipo:'table',  dica:'New York | Pub irlandês | Shepherd\'s pie, bangers & mash | Live music' },
+      {n:"Lombard's Seafood Grille",reserva:false,tipo:"table",dica:"Frutos do mar | Vista para a lagoa central | Bom para um almoco tranquilo",desc:"Restaurante especializado em frutos do mar com vista para a lagoa central." },
+      {n:"Finnegan's Bar & Grill",reserva:false,tipo:"table",dica:"Pub irlandes | Hamburgueres, fish & chips e cervejas | Ambiente descontraido",desc:"Pub irlandes com hamburgueres, fish & chips e cervejas." },
     ],
     qs:[
-      {n:"Springfield U.S.A. (Simpsons)", reserva:false, tipo:'quick',  dica:'Krusty Burger, Lard Lad Donuts, Flaming Moe | Área mais completa dos Simpsons' },
-      {n:"Mel\'s Drive-In",              reserva:false, tipo:'quick',  dica:'Hollywood area | Carros época | Hamburguer + milkshakes | Retrô e gostoso' },
-      {n:"Bumblebee Man\'s Taco Truck",  reserva:false, tipo:'quick',  dica:'Springfield | Tacos criativos com nomes dos Simpsons' },
-      {n:"Butterbeer Cart (Diagon)",      reserva:false, tipo:'quick',  dica:'🍺 BUTTERBEER gelada, quente ou sorvete | OBRIGATÓRIO! Símbolo da Universal' },
-      {n:"Studio Café",                   reserva:false, tipo:'quick',  dica:'Perto da entrada | Café da manhã e lanches variados' },
+      {n:"Leaky Cauldron",reserva:false,tipo:"quick",dica:"Beco Diagonal | Cafe da manha ingles e pratos tipicos do universo Harry Potter | Muito popular",desc:"Restaurante do Beco Diagonal com cafe da manha ingles e pratos tipicos do universo Harry Potter." },
+      {n:"Louie's Italian Restaurant",reserva:false,tipo:"quick",dica:"Pizzas, massas e pratos italianos | Hollywood",desc:"Pizzas, massas e pratos italianos." },
+      {n:"Fast Food Boulevard (Springfield)",reserva:false,tipo:"quick",dica:"Praca de alimentacao inspirada em Springfield | Varios restaurantes em um so lugar",desc:"Praca de alimentacao inspirada em Springfield com varios restaurantes dos Simpsons." },
+      {n:"Bumblebee Man's Taco Truck",reserva:false,tipo:"quick",dica:"Tacos mexicanos inspirados em Os Simpsons | Springfield",desc:"Tacos mexicanos inspirados em Os Simpsons." },
+      {n:"Mel's Drive-In",reserva:false,tipo:"quick",dica:"Hamburgueres e milkshakes em restaurante dos anos 50 | Hollywood Blvd",desc:"Hamburgueres e milkshakes em restaurante dos anos 50." },
+      {n:"Minion Cafe",reserva:false,tipo:"quick",dica:"Restaurante tematico dos Minions | Pratos divertidos para toda a familia | Minion Land",desc:"Restaurante tematico dos Minions com pratos divertidos para toda a familia." },
     ]
   },
   IOA:{
     ts:[
-      {n:"Mythos Restaurant",             reserva:true,  tipo:'table',  dica:'🏆 Votado melhor restaurante de parque temático do mundo | Caverna mítica | Lost Continent' },
-      {n:"Three Broomsticks",             reserva:false, tipo:'table',  dica:'Hogsmeade | Frango assado, shepherd\'s pie, pão com manteiga | Estilo Great Hall' },
-      {n:"Confisco Grille",               reserva:false, tipo:'table',  dica:'Port of Entry | Fácil walk-in | Menu variado | Boa opção' },
+      {n:"Mythos Restaurant",reserva:true,tipo:"table",dica:"Considerado um dos melhores restaurantes de parques do mundo | Culinaria mediterranea | Reservar com antecedencia",desc:"Considerado um dos melhores restaurantes de parques tematicos do mundo, com culinaria mediterranea e americana." },
+      {n:"Confisco Grille",reserva:false,tipo:"table",dica:"Port of Entry | Pratos internacionais | Atmosfera de exploradores",desc:"Restaurante inspirado em exploradores, com pratos internacionais." },
     ],
     qs:[
-      {n:"Butterbeer Stand (Hogsmeade)",  reserva:false, tipo:'quick',  dica:'🍺 BUTTERBEER gelada, quente ou sorvete | Hogsmeade | IMPERDÍVEL!' },
-      {n:"Hogsmeade — Honeydukes/Dervish",reserva:false, tipo:'quick',  dica:'Chocolate Frog, Bertie Bott\'s, Chocolate Frog Card! Loja + experiência' },
-      {n:"Green Eggs and Ham",            reserva:false, tipo:'quick',  dica:'Seuss Landing | Ovos verdes e presunto | Temático e divertido' },
-      {n:"Moose Juice, Goose Juice",      reserva:false, tipo:'quick',  dica:'Seuss Landing | Sucos coloridos laranja e verde' },
+      {n:"Three Broomsticks",reserva:false,tipo:"quick",dica:"MELHOR QS DO IOA | Cafe da manha ingles, fish & chips e costelas | Hogsmeade | Muito popular",desc:"Restaurante tematico de Harry Potter com cafe da manha ingles, fish & chips e costelas." },
+      {n:"Thunder Falls Terrace",reserva:false,tipo:"quick",dica:"Costelas e frango | Jurassic Park | Vista para a River Adventure | Muito bom",desc:"Costelas, frango e saladas com vista para Jurassic Park River Adventure." },
+      {n:"Burger Digs",reserva:false,tipo:"quick",dica:"Hamburgueres e batatas fritas | Jurassic Park | Opcao rapida",desc:"Hamburgueres e batatas fritas na Jurassic Park." },
+      {n:"Captain America Diner",reserva:false,tipo:"quick",dica:"Hamburgueres e sanduiches | Marvel Super Hero Island",desc:"Hamburgueres, sanduiches e refeicoes rapidas na Marvel Island." },
+      {n:"Green Eggs and Ham Cafe",reserva:false,tipo:"quick",dica:"Famoso pelos Tater Tot Bowls criativos | Seuss Landing | Unico e divertido",desc:"Quiosque famoso pelos Tater Tot Bowls criativos." },
+      {n:"Circus McGurkus Cafe",reserva:false,tipo:"quick",dica:"Seuss Landing | Pizzas, massas e frango | Para familias com criancas",desc:"Restaurante colorido com pizzas, massas e frango." },
     ]
   },
   EU:{
     ts:[
-      {n:"The Great Hall (HTTYD)",         reserva:true,  tipo:'table',  dica:'Isle of Berk | Vikings e dragões! Show ao vivo | Experiência imersiva única' },
+      {n:"Atlantic",reserva:true,tipo:"table",dica:"Restaurante sofisticado | Frutos do mar | Vista para Celestial Park",desc:"Restaurante sofisticado com frutos do mar e vista para Celestial Park." },
+      {n:"The Blue Dragon Pan-Asian Restaurant",reserva:true,tipo:"table",dica:"Culinaria asiatica | Lanternas e mercados orientais | Muito especial",desc:"Restaurante de culinaria asiatica com ambiente inspirado em lanternas e mercados orientais." },
+      {n:"Oak & Star Tavern",reserva:false,tipo:"table",dica:"Carnes defumadas e churrasco americano | Celestial Park",desc:"Especializado em carnes defumadas e churrasco americano." },
     ],
     qs:[
-      {n:"Nintendo NY Café",              reserva:false, tipo:'quick',  dica:'Super Nintendo World | Mario Mushroom Pizza, Star items | Muito temático' },
-      {n:"The Cauldron (Ministry of Magic)",reserva:false,tipo:'quick', dica:'Ministry of Magic | Drinks mágicos que mudam de cor! Muito instagramável' },
-      {n:"Dark Universe Food Court",       reserva:false, tipo:'quick',  dica:'Dark Universe | Pratos temáticos Universal Monsters' },
+      {n:"Toadstool Cafe",reserva:false,tipo:"quick",dica:"Super Mario | Pratos inspirados nos jogos Nintendo | Super Nintendo World | Imperdivel",desc:"Restaurante tematico do Super Mario com pratos inspirados nos jogos da Nintendo." },
+      {n:"Mead Hall",reserva:false,tipo:"quick",dica:"Como Treinar Seu Dragao | Isle of Berk | Tematico e gostoso",desc:"Restaurante de servico rapido inspirado em Como Treinar o Seu Dragao." },
+      {n:"Burning Blade Tavern",reserva:false,tipo:"quick",dica:"Dark Universe | Taverna tematica com monstros classicos",desc:"Taverna tematica localizada na Dark Universe." },
+      {n:"Comet Dogs",reserva:false,tipo:"quick",dica:"Hot dogs gourmet | Celestial Park",desc:"Hot dogs gourmet em Celestial Park." },
+      {n:"Meteor Astropub",reserva:false,tipo:"quick",dica:"Hamburgueres, sanduiches e cervejas artesanais | Celestial Park | Casual",desc:"Restaurante casual com hamburgueres, sanduiches e cervejas artesanais." },
+      {n:"Pizza Moon",reserva:false,tipo:"quick",dica:"Pizzaria tematica | Inspirada em um antigo teatro | Celestial Park",desc:"Pizzaria tematica inspirada em um antigo teatro." },
     ]
   },
   BB:{ts:[],qs:[
@@ -1487,44 +1531,112 @@ const RESTAURANTES = {
 // ══════════════════════════════════════════════════════════════════════════
 const SHOWS = {
   MK:[
-    {n:"Happily Ever After",              tipo:'show-noturno', horario:'~21:00', local:'Castelo / Hub', duracao:'18 min', dica:'FOGOS + PROJEÇÕES NO CASTELO | OBRIGATÓRIO | Chegar 1h antes | Posição: Hub em frente ao castelo' },
-    {n:"Festival of Fantasy",             tipo:'desfile',     horario:'12:00 e 14:00', local:'Main Street → Fantasyland', duracao:'20 min', dica:'DESFILE MAIS BONITO DA DISNEY! Carros temáticos espetaculares | Ver de Main Street ou Liberty Square' },
-    {n:"Mickey\'s Royal Friendship Faire",tipo:'show',       horario:'10:00, 12:30, 14:30, 17:30', local:'Palco Castelo Cinderela', duracao:'20 min', dica:'Mickey, Minnie, Elsa, Tiana, Rapunzel, Moana. Lindo para crianças' },
-    {n:"Move It! Shake It! MousekeDance!", tipo:'show-desfile', horario:'11:00, 15:00', local:'Main Street USA', duracao:'15 min', dica:'Show de dança com Mickey e amigos | Convidam o público para participar' },
-    {n:"Projeções no Castelo (anoitecer)", tipo:'show',       horario:'Ao anoitecer', local:'Cinderella Castle', duracao:'Contínua', dica:'O castelo muda de cor ao anoitecer | Foto obrigatória | Gratuito' },
+    {n:"Happily Ever After",tipo:"show-noturno",horario:"~21:00",local:"Castelo / Hub",dica:"OBRIGATÓRIO | Fogos + projeções | Chegar 45 min antes",desc:"Espetáculo noturno com fogos, projeções no Castelo, lasers e trilha sonora emocionante." },
+    {n:"Festival of Fantasy Parade",tipo:"desfile",horario:"12:00 e 14:00",local:"Main Street → Fantasyland",dica:"Desfile mais bonito do MK | Dragão de Malévola | Ver da Main Street",desc:"Principal desfile do MK com carros alegóricos, princesas, dragão de Malévola e personagens Disney." },
+    {n:"Mickey's Magical Friendship Faire",tipo:"show",horario:"10:00-17:30",local:"Castelo da Cinderela",dica:"Show em frente ao Castelo com Mickey e personagens | 20 min",desc:"Show realizado em frente ao Castelo da Cinderela com Mickey, Minnie e personagens Disney." },
+    {n:"Disney Adventure Friends Cavalcade",tipo:"show-desfile",horario:"11:00 e 15:00",local:"Main Street",dica:"Mini desfile com dezenas de personagens | Ver da Main Street",desc:"Mini desfile com dezenas de personagens percorrendo a Main Street e parte do parque." },
+    {n:"The Dapper Dans",tipo:"show",horario:"Variável",local:"Main Street U.S.A.",dica:"Quarteto barbershop clássico | Foto certinha",desc:"Quarteto musical na Main Street com músicas clássicas em estilo barbershop." },
+    {n:"Main Street Philharmonic",tipo:"show",horario:"Variável",local:"Main Street",dica:"Banda ao vivo percorrendo a Main Street",desc:"Banda ao vivo que percorre a Main Street apresentando clássicos da Disney." },
+    {n:"Mickey Mouse (Town Square Theater)",tipo:"meet-greet",horario:"Abertura-fechamento",local:"Town Square Theater",dica:"Encontro oficial com o Mickey | Planejar início ou fim do dia",desc:"Encontro com o Mickey em sua roupa clássica logo na entrada do parque." },
+    {n:"Tiana e Rapunzel",tipo:"meet-greet",horario:"10:00–20:00",local:"Princess Fairytale Hall",dica:"Princesas na Fairytale Hall | Fila pode ser longa",desc:"Encontro com as princesas na Princess Fairytale Hall." },
+    {n:"Cinderella e Elena",tipo:"meet-greet",horario:"10:00–20:00",local:"Princess Fairytale Hall",dica:"Outra opção de princesas na Fairytale Hall",desc:"Outra opção de encontro com princesas na Princess Fairytale Hall." },
+    {n:"Ariel",tipo:"meet-greet",horario:"10:00–19:00",local:"Ariel's Grotto — Fantasyland",dica:"Encontro com Ariel em sua gruta",desc:"Encontro com Ariel em sua gruta na Fantasyland." },
+    {n:"Winnie the Pooh e Tigrão",tipo:"meet-greet",horario:"Verificar app",local:"The Thoughtful Spot",dica:"Encontro fofíssimo para crianças pequenas",desc:"Encontro com personagens do Bosque dos Cem Acres." },
+    {n:"Aladdin e Jasmine",tipo:"meet-greet",horario:"Verificar app",local:"Adventureland",dica:"Em horários selecionados",desc:"Encontro na Adventureland em horários selecionados." },
+    {n:"Peter Pan",tipo:"meet-greet",horario:"Verificar app",local:"Fantasyland / Main Street",dica:"Personagem circulando",desc:"Personagem circulando pela Fantasyland e Main Street em horários específicos." },
+    {n:"Mirabel",tipo:"meet-greet",horario:"Verificar app",local:"Magic Kingdom",dica:"Personagem de Encanto | Sujeito à programação",desc:"Encontro com a personagem de Encanto, sujeito à programação do parque." },
+    {n:"Stitch",tipo:"meet-greet",horario:"Verificar app",local:"Tomorrowland",dica:"Em horários determinados",desc:"Encontro na Tomorrowland em horários determinados." },
+    {n:"Merida",tipo:"meet-greet",horario:"Verificar app",local:"Fairytale Garden",dica:"Próximo ao Castelo",desc:"Encontro na Fairytale Garden, próximo ao Castelo." },
   ],
-  EPCOT:[
-    {n:"Luminous: The Symphony of Us",   tipo:'show-noturno', horario:'~21:00', local:'World Showcase Lagoon', duracao:'18 min', dica:'FOGOS + DRONES + ÁGUA + PROJEÇÕES | Impressionante! Posição: Italy ou France Pavilion' },
-    {n:"Harmonious (histórico)",          tipo:'show',       horario:'~21:00', local:'World Showcase Lagoon', duracao:'18 min', dica:'Predecessor do Luminous | Verificar qual show está ativo na data' },
-    {n:"World Showcase — Artistas de Rua",tipo:'show',       horario:'Variável', local:'World Showcase (todos países)', duracao:'20-30 min', dica:'Shows de folkore, música e dança em cada pavilhão nacional | Gratuitos' },
-    {n:"EPCOT Festival Concerts",         tipo:'show',       horario:'Variável', local:'America Gardens Theatre', duracao:'25 min', dica:'Durante festivais (Food & Wine, Flower & Garden, Arts) — shows ao vivo de artistas famosos' },
-  ],
+    EPCOT:[
+      {n:"Luminous: The Symphony of Us",tipo:"show-noturno",horario:"~21:00",local:"World Showcase Lagoon",dica:"OBRIGATÓRIO | Fogos, fontes, lasers | Melhor vista: frente do UK ou Canada",desc:"Espetáculo noturno com fogos, fontes, lasers e trilha sonora celebrando a união entre as pessoas." },
+      {n:"Voices of Liberty",tipo:"show",horario:"Variável — app",local:"The American Adventure",dica:"Grupo vocal a cappella | Dentro da rotunda | Show rápido e emocionante",desc:"Grupo vocal a cappella que se apresenta na rotunda do pavilhão The American Adventure." },
+      {n:"JAMMitors",tipo:"show",horario:"Variável — app",local:"Future World",dica:"Show de percussão com latas e baldes | Divertidíssimo para crianças",desc:"Show de percussão utilizando latas de lixo, baldes e utensílios de limpeza de forma divertida." },
+      {n:"Matsuriza",tipo:"show",horario:"Variável — app",local:"Pavilhão do Japão",dica:"Tambores Taiko | Shows rítmicos ao ar livre | Imperdível",desc:"Apresentação tradicional japonesa com tambores Taiko." },
+      {n:"Mariachi Cobre",tipo:"show",horario:"Variável — app",local:"Pavilhão do México",dica:"Banda mexicana tradicional | Shows dentro e fora da pirâmide",desc:"Banda mexicana que apresenta músicas tradicionais no pavilhão do México." },
+      {n:"Command Performance",tipo:"show",horario:"Variável — app",local:"Pavilhão do Reino Unido",dica:"Rock e pop britânico ao ar livre | Muito animado",desc:"Grupo musical britânico que toca sucessos do rock e pop no pavilhão do Reino Unido." },
+      {n:"Sergio",tipo:"show",horario:"Variável — app",local:"World Showcase",dica:"Malabarismo, humor e participação do público | Italiano carismático",desc:"Artista italiano que mistura malabarismo, humor e interação com o público." },
+      {n:"Mickey Mouse",tipo:"meet-greet",horario:"Verificar app",local:"EPCOT — entrada",dica:"Encontro com Mickey próximo à entrada",desc:"Encontro com Mickey próximo à entrada do parque." },
+      {n:"Minnie Mouse",tipo:"meet-greet",horario:"Verificar app",local:"World Celebration",dica:"Encontro em World Celebration conforme programação",desc:"Encontro em World Celebration, conforme programação diária." },
+      {n:"Goofy",tipo:"meet-greet",horario:"Verificar app",local:"EPCOT — entrada",dica:"Próximo à entrada do parque",desc:"Encontro em áreas próximas à entrada do parque." },
+      {n:"Figment",tipo:"meet-greet",horario:"Verificar app",local:"Imagination Pavilion",dica:"Personagem exclusivo do EPCOT | Verificar programação",desc:"Personagem exclusivo do EPCOT disponível em eventos e ocasiões especiais." },
+      {n:"Anna e Elsa",tipo:"meet-greet",horario:"10:00–19:00",local:"Royal Sommerhus — Noruega",dica:"Irmãs de Arendelle na Noruega | Fila pode ser longa",desc:"Encontro com as irmãs de Arendelle no pavilhão da Noruega." },
+      {n:"Branca de Neve",tipo:"meet-greet",horario:"Verificar app",local:"Pavilhão da Alemanha",dica:"Encontro no pavilhão da Alemanha",desc:"Encontro no pavilhão da Alemanha." },
+      {n:"Bela e Aurora",tipo:"meet-greet",horario:"Verificar app",local:"Pavilhão da França",dica:"Encontro no pavilhão da França",desc:"Encontro no pavilhão da França." },
+      {n:"Jasmine",tipo:"meet-greet",horario:"Verificar app",local:"Pavilhão do Marrocos",dica:"Encontro no pavilhão do Marrocos",desc:"Encontro no pavilhão do Marrocos." },
+      {n:"Alice e Mary Poppins",tipo:"meet-greet",horario:"Verificar app",local:"Pavilhão do Reino Unido",dica:"Encontros nos jardins do pavilhão do Reino Unido",desc:"Encontros no pavilhão e jardins do Reino Unido." },
+    ],
   HS:[
-    {n:"Fantasmic!",                     tipo:'show-noturno', horario:'21:30 e 22:00 (2 sessões)', local:'Hollywood Hills Amphitheater', duracao:'27 min', dica:'OBRIGATÓRIO! Mickey vs. Vilões | Água, fogo, projeções | Chegar 45-60 min antes | Fantasmic! Dining Package disponível' },
-    {n:"Indiana Jones Stunt Spectacular", tipo:'show',       horario:'11:00, 13:00, 15:00, 17:00', local:'Echo Lake Theater', duracao:'35 min', dica:'Show de ação ao vivo ESPETACULAR | Convidam voluntários do público | Muito impactante' },
-    {n:"Beauty and the Beast Live on Stage",tipo:'show',     horario:'10:00, 11:45, 13:30, 16:30, 18:00', local:'Theater of the Stars', duracao:'30 min', dica:'Musical ao vivo Bela e a Fera | Muito bom para crianças' },
-    {n:"Star Wars: A Galaxy Far Far Away", tipo:'show',      horario:'Vários horários', local:'Launch Bay Stage', duracao:'25 min', dica:'Personagens Star Wars ao vivo: Kylo Ren, BB-8, DJ Rex | Múltiplos horários' },
-    {n:"For the First Time in Forever: Frozen Sing-Along",tipo:'show',horario:'Vários horários',local:'Hyperion Theater',duracao:'30 min',dica:'Sing-along Frozen com Anna e Elsa ao vivo | Crianças adoram!' },
-    {n:"Jedi Training: Trials of the Temple",tipo:'atividade',horario:'Vários horários',local:'Launch Bay Stage',duracao:'20 min',dica:'CRIANÇAS 4-12 ANOS | Luta com sabre de luz vs Darth Vader | INSCREVER na entrada ao chegar! Vagas limitadas' },
+    {n:"Fantasmic!",tipo:"show-noturno",horario:"21:30 e 22:00",local:"Hollywood Hills Amphitheater",dica:"OBRIGATORIO | 25 min | Pegar LL de Fantasmic | Chegar 45 min antes",desc:"Espetaculo noturno com Mickey, fogos, agua, lasers, personagens e projecoes em um enorme anfiteatro." },
+    {n:"Indiana Jones Epic Stunt Spectacular!",tipo:"show",horario:"11:00, 13:00, 15:00, 17:00",local:"Echo Lake Theater",dica:"30 min | Chegar 20 min antes | Muito popular",desc:"Demonstracao de efeitos especiais e cenas classicas dos filmes de Indiana Jones." },
+    {n:"Beauty and the Beast - Live on Stage",tipo:"show",horario:"10:00, 11:45, 13:30, 16:30",local:"Theater of the Stars",dica:"25 min | Musical ao ar livre",desc:"Musical baseado em A Bela e a Fera com apresentacoes ao vivo." },
+    {n:"Frozen Sing-Along Celebration",tipo:"show",horario:"Varios horarios",local:"Hyperion Theater",dica:"25 min | Ar condicionado | Interativo",desc:"Espetaculo onde os visitantes cantam os sucessos de Frozen junto com Anna, Elsa e Olaf." },
+    {n:"Disney Jr. Play and Dance!",tipo:"show",horario:"Varios horarios",local:"Animation Courtyard",dica:"Para criancas pequenas | Personagens do Disney Jr.",desc:"Festa dancante para criancas pequenas com personagens do Disney Jr." },
+    {n:"Mickey e Minnie",tipo:"meet-greet",horario:"Verificar app",local:"Red Carpet Dreams",dica:"Encontro em Red Carpet Dreams",desc:"Encontro com Mickey e Minnie em Red Carpet Dreams." },
+    {n:"Olaf",tipo:"meet-greet",horario:"Verificar app",local:"Celebrity Spot - Echo Lake",dica:"Muito popular | Proximo ao Echo Lake",desc:"Meet and Greet muito popular proximo ao Echo Lake." },
+    {n:"Buzz Lightyear",tipo:"meet-greet",horario:"Verificar app",local:"Toy Story Land",dica:"Encontro em Toy Story Land",desc:"Encontro em Toy Story Land." },
+    {n:"Woody e Jessie",tipo:"meet-greet",horario:"Verificar app",local:"Toy Story Land",dica:"Meet and Greet em Toy Story Land",desc:"Meet and Greet em Toy Story Land." },
+    {n:"Sulley",tipo:"meet-greet",horario:"Verificar app",local:"Animation Courtyard",dica:"Personagem de Monstros S.A.",desc:"Encontro com Sulley de Monstros S.A." },
+    {n:"Darth Vader",tipo:"meet-greet",horario:"Verificar app",local:"Galaxy Edge",dica:"Encontro exclusivo Disney Visa",desc:"Encontro exclusivo para participantes elegiveis do programa Disney Visa." },
   ],
   AK:[
-    {n:"Festival of the Lion King",      tipo:'show',       horario:'Harambe Theater (múltiplos)', local:'Harambe Theater', duracao:'30 min', dica:'IMPERDÍVEL! Show musical ao vivo | Acrobatas, dançarinos, cantores | Emocionante para toda família' },
-    {n:"Finding Nemo: The Big Blue...and Beyond",tipo:'show',horario:'Theater in the Wild',local:'Theater in the Wild',duracao:'25 min',dica:'Novo show de Nemo | Muito bonito para crianças | Marlin, Dory, Nemo' },
-    {n:"UP! A Great Bird Adventure",     tipo:'show',       horario:'Caravan Stage', local:'Discovery Island', duracao:'25 min', dica:'Aves reais de espécies diferentes | Personagens Russell e Dug | IMPERDÍVEL!' },
-    {n:"Feathered Friends in Flight!",   tipo:'show',       horario:'Caravan Stage, Asia', local:'Asia', duracao:'25 min', dica:'INCRÍVEL! Aves exóticas voam LIVRE acima da plateia! Águias, araras, corujas' },
-    {n:"Rivers of Light",               tipo:'show-noturno', horario:'~21:00 (verificar)', local:'Discovery River Amphitheater', duracao:'20 min', dica:'Show aquático noturno | Verificar disponibilidade na data da visita' },
+    {n:"Festival of the Lion King",tipo:"show",horario:"Multiplos horarios",local:"Harambe Theater",dica:"OBRIGATORIO | 30 min | Musical espetacular | Chegar 15 min antes",desc:"Espetaculo musical inspirado em O Rei Leao com acrobacias, cantores e personagens." },
+    {n:"Finding Nemo: The Big Blue... and Beyond!",tipo:"show",horario:"Multiplos horarios",local:"Theater in the Wild",dica:"25 min | Musical com marionetes e efeitos especiais",desc:"Musical baseado em Procurando Nemo com marionetes e efeitos especiais." },
+    {n:"Feathered Friends in Flight!",tipo:"show",horario:"Multiplos horarios",local:"Caravan Stage Asia",dica:"25 min | Aves exoticas voando sobre o publico",desc:"Demonstracao educativa com aves exoticas voando sobre o publico." },
+    {n:"Tree of Life Awakenings",tipo:"show-noturno",horario:"Datas selecionadas ao anoitecer",local:"Tree of Life",dica:"Projecoes na Arvore da Vida | Verificar app",desc:"Projecoes noturnas na Arvore da Vida celebrando a natureza." },
+    {n:"Mickey e Minnie (Adventure Outpost)",tipo:"meet-greet",horario:"Verificar app",local:"Discovery Island",dica:"Mickey e Minnie vestidos para safari",desc:"Encontro com Mickey e Minnie vestidos para uma expedicao de safari." },
+    {n:"Russell e Dug",tipo:"meet-greet",horario:"Verificar app",local:"Discovery Island",dica:"Personagens de Up Altas Aventuras",desc:"Personagens de Up - Altas Aventuras." },
+    {n:"Moana",tipo:"meet-greet",horario:"Verificar app",local:"Animal Kingdom",dica:"Encontro em horarios selecionados",desc:"Encontro em horarios selecionados." },
+    {n:"Pocahontas",tipo:"meet-greet",horario:"Verificar app",local:"Discovery Island",dica:"Encontro proximo a Discovery Island",desc:"Encontro proximo a Discovery Island." },
+    {n:"Kevin (Up)",tipo:"meet-greet",horario:"Verificar app",local:"Discovery Island",dica:"Personagem circulando pela Discovery Island",desc:"Personagem circulando pela Discovery Island." },
   ],
   USO:[
-    {n:"Universal\'s Horror Make-Up Show",tipo:'show',     horario:'Vários horários', local:'Hollywood Theater', duracao:'25 min', dica:'Como criar efeitos especiais de horror! Muito engraçado e educativo' },
-    {n:"Ollivander\'s Wand Experience", tipo:'show',       horario:'Contínuo', local:'Diagon Alley (USO)', duracao:'10 min', dica:'Ollivander escolhe UMA criança para ser selecionada por varinha mágica | MÁGICO!' },
+    {n:"The Bourne Stuntacular",tipo:"show",horario:"Varios horarios - ver app",local:"Sound Stage",dica:"Espetaculo revolucionario | Atores ao vivo + telas gigantes | 30 min | Imperdivel",desc:"Espetaculo revolucionario que mistura atores ao vivo, telas gigantes e efeitos especiais." },
+    {n:"Animal Actors on Location!",tipo:"show",horario:"Varios horarios",local:"Animal Actors Stage",dica:"Animais treinados para o cinema | 20 min | Otimo para criancas",desc:"Show divertido com caes, gatos, aves e outros animais treinados para o cinema." },
+    {n:"Universal Orlando Horror Make-Up Show",tipo:"show",horario:"Varios horarios",local:"Hollywood Theater",dica:"Efeitos especiais de filmes de terror | 25 min | Divertido e educativo",desc:"Demonstracao dos efeitos especiais e maquiagens utilizadas em filmes de terror." },
+    {n:"Celestina Warbeck and the Banshees",tipo:"show",horario:"Varios horarios - ver app",local:"Beco Diagonal",dica:"Show musical do universo Harry Potter | Beco Diagonal | Muito imersivo",desc:"Show musical no Beco Diagonal inspirado no universo Harry Potter." },
+    {n:"The Tales of Beedle the Bard",tipo:"show",horario:"Varios horarios",local:"Beco Diagonal",dica:"Espetaculo com marionetes | Historias do mundo bruxo | Para toda a familia",desc:"Espetaculo com marionetes apresentando historias do mundo bruxo." },
+    {n:"Ollivander's Wand Experience (Diagon)",tipo:"show",horario:"Continuo",local:"Diagon Alley",dica:"A varinha escolhe o bruxo | Muito procurado | Chegar cedo",desc:"Loja onde acontece a famosa ceremonia da varinha escolher o bruxo." },
+    // Personagens
+    {n:"Minions",tipo:"meet-greet",horario:"Verificar app",local:"Minion Land",dica:"Encontro proximo ao Minion Land",desc:"Encontro proximo ao Minion Land." },
+    {n:"Gru, Lucy e meninas",tipo:"meet-greet",horario:"Verificar app",local:"Minion Land",dica:"Personagens de Meu Malvado Favorito",desc:"Personagens de Meu Malvado Favorito." },
+    {n:"Homer, Bart, Lisa e Simpsons",tipo:"meet-greet",horario:"Verificar app",local:"Springfield",dica:"Encontros na area Springfield",desc:"Encontros na area Springfield." },
+    {n:"Scooby-Doo e Salsicha",tipo:"meet-greet",horario:"Verificar app",local:"Hollywood Boulevard",dica:"Encontro na Hollywood Boulevard",desc:"Encontro na Hollywood Boulevard." },
+    {n:"Transformers (Optimus e Bumblebee)",tipo:"meet-greet",horario:"Verificar app",local:"Transformers area",dica:"Encontro proximo a atracao Transformers",desc:"Encontro proximo a atracao Transformers." },
+    {n:"Marilyn Monroe",tipo:"meet-greet",horario:"Verificar app",local:"Hollywood",dica:"Personagem classico circulando pelo parque",desc:"Personagem classico circulando pelo parque." },
+    {n:"Beetlejuice",tipo:"meet-greet",horario:"Verificar app",local:"Hollywood",dica:"Muito procurado pelos visitantes",desc:"Muito procurado pelos visitantes." },
   ],
   IOA:[
-    {n:"Ollivander\'s (Hogsmeade)",     tipo:'show',       horario:'Contínuo', local:'Hogsmeade', duracao:'10 min', dica:'Ollivander\'s em Hogsmeade | Mesma experiência mágica do IOA' },
-    {n:"Poseidon\'s Fury",              tipo:'show',       horario:'Vários horários', local:'Lost Continent', duracao:'17 min', dica:'Show especial efeitos com água e laser | Muito impactante' },
+    {n:"Ollivander's (Hogsmeade)",tipo:"show",horario:"Continuo",local:"Hogsmeade",dica:"A varinha escolhe o bruxo | Experiencia magica | 10 min | Sempre lotado",desc:"Ceremonia magica onde a varinha escolhe o bruxo." },
+    {n:"The Frog Choir",tipo:"show",horario:"Varios horarios - ver app",local:"Hogsmeade",dica:"Coral de estudantes de Hogwarts com sapos cantores | 20 min | Muito especial",desc:"Coral de estudantes de Hogwarts acompanhado pelos famosos sapos cantores." },
+    {n:"Triwizard Spirit Rally",tipo:"show",horario:"Varios horarios - ver app",local:"Hogsmeade",dica:"Beauxbatons e Durmstrang | Inspirado no Torneio Tribruxo | Dinamico",desc:"Apresentacao inspirada no Torneio Tribruxo com Beauxbatons e Durmstrang." },
+    {n:"Animal Encounters",tipo:"show",horario:"Varios horarios",local:"Varios pontos",dica:"Apresentacoes educativas com animais | Para criancas",desc:"Pequenas apresentacoes educativas com animais." },
+    // Personagens
+    {n:"Homem-Aranha",tipo:"meet-greet",horario:"Verificar app",local:"Marvel Super Hero Island",dica:"Encontro na Marvel Super Hero Island | Muito popular",desc:"Encontro na Marvel Super Hero Island." },
+    {n:"Capitao America",tipo:"meet-greet",horario:"Verificar app",local:"Marvel Island",dica:"Um dos encontros mais populares da area Marvel",desc:"Um dos encontros mais populares da area Marvel." },
+    {n:"Wolverine",tipo:"meet-greet",horario:"Verificar app",local:"Marvel Island",dica:"Disponivel em horarios especificos",desc:"Personagem disponivel em horarios especificos." },
+    {n:"Ciclope",tipo:"meet-greet",horario:"Verificar app",local:"Marvel Island",dica:"Encontro com os X-Men",desc:"Encontro com os X-Men." },
+    {n:"Popeye e Olivia Palito",tipo:"meet-greet",horario:"Verificar app",local:"Toon Lagoon",dica:"Encontro na Toon Lagoon",desc:"Encontro na Toon Lagoon." },
+    {n:"Gato de Chapeu (Cat in the Hat)",tipo:"meet-greet",horario:"Verificar app",local:"Seuss Landing",dica:"Personagem do Dr. Seuss | Seuss Landing",desc:"Personagem do Dr. Seuss." },
+    {n:"Blue (Jurassic World)",tipo:"meet-greet",horario:"Verificar app",local:"Jurassic Park",dica:"Encontro com a velociraptor Blue",desc:"Encontro com o velociraptor Blue em Jurassic Park." },
+    {n:"Oh! The Stories You'll Hear!",tipo:"show",horario:"Varios horarios",local:"Seuss Landing",dica:"Show infantil com personagens do Dr. Seuss | Para criancas pequenas",desc:"Show infantil com personagens do Dr. Seuss." },
+    {n:"Tempestade",tipo:"meet-greet",horario:"Verificar app",local:"Marvel Island",dica:"Personagem da Marvel | X-Men",desc:"Personagem da Marvel." },
+    {n:"Doutor Destino",tipo:"meet-greet",horario:"Verificar app",local:"Marvel Super Hero Island",dica:"Vilao da Marvel Super Hero Island",desc:"Vilao da Marvel Super Hero Island." },
+    {n:"Grinch (Natal)",tipo:"meet-greet",horario:"Verificar app",local:"Seuss Landing",dica:"Muito procurado durante o Holidays at Universal | Sazonal",desc:"Muito procurado durante o Holidays at Universal." },
   ],
   EU:[
-    {n:"The Untrainable Dragon (show)", tipo:'show',        horario:'Vários horários', local:'Isle of Berk', duracao:'20 min', dica:'Dragão animatrônico ao vivo! How to Train Your Dragon | 2025 | Impressionante' },
-    {n:"Celestial Park Entertainment",  tipo:'show',        horario:'Variável', local:'Celestial Park (hub)', duracao:'15-25 min', dica:'Shows e entretenimento no hub central do Epic Universe | 2025' },
+    {n:"The Untrainable Dragon",tipo:"show",horario:"Varios horarios - ver app",local:"Isle of Berk",dica:"Dragao animatronico em tamanho real | Como Treinar Seu Dragao | Impressionante",desc:"Show ao vivo baseado em Como Treinar o Seu Dragao com dragoees em tamanho real." },
+    {n:"Le Cirque Arcanus",tipo:"show",horario:"Varios horarios - ver app",local:"Ministry of Magic",dica:"Espetaculo imersivo | Animais Fantasticos | Efeitos especiais + criaturas magicas",desc:"Grande espetaculo inspirado em Animais Fantasticos com efeitos especiais e criaturas magicas." },
+    {n:"Fountain Shows - Celestial Park",tipo:"show-noturno",horario:"Ao longo do dia e a noite",local:"Celestial Park",dica:"Espetaculos de fontes luminosas | Gratuito | Varios momentos ao longo do dia",desc:"Espetaculos de fontes luminosas realizados ao longo do dia e a noite." },
+    // Personagens
+    {n:"Mario",tipo:"meet-greet",horario:"Verificar app",local:"Super Nintendo World",dica:"Encontro no Super Nintendo World | Muito procurado",desc:"Encontro no Super Nintendo World." },
+    {n:"Luigi",tipo:"meet-greet",horario:"Verificar app",local:"Super Nintendo World",dica:"Meet and Greet na area Nintendo",desc:"Meet & Greet na area Nintendo." },
+    {n:"Princess Peach",tipo:"meet-greet",horario:"Verificar app",local:"Super Nintendo World",dica:"Encontro em Super Nintendo World",desc:"Encontro em Super Nintendo World." },
+    {n:"Donkey Kong",tipo:"meet-greet",horario:"Verificar app",local:"Donkey Kong Country",dica:"Personagem exclusivo da Donkey Kong Country",desc:"Personagem exclusivo da Donkey Kong Country." },
+    {n:"Toothless (Banguela)",tipo:"meet-greet",horario:"Verificar app",local:"Isle of Berk",dica:"Encontro com o dragao mais famoso de Berk",desc:"Encontro com o dragao mais famoso de Berk." },
+    {n:"Hiccup",tipo:"meet-greet",horario:"Verificar app",local:"Isle of Berk",dica:"Personagem principal de Como Treinar o Seu Dragao",desc:"Personagem principal de Como Treinar o Seu Dragao." },
+    {n:"Frankenstein's Monster",tipo:"meet-greet",horario:"Verificar app",local:"Dark Universe",dica:"Personagem classico da Dark Universe",desc:"Personagem classico da Dark Universe." },
+    {n:"Dracula",tipo:"meet-greet",horario:"Verificar app",local:"Dark Universe",dica:"Encontro em Dark Universe | Sujeito a programacao",desc:"Encontro em Dark Universe, sujeito a programacao." },
   ],
   SEA:[
     {n:"Dolphin Days",                  tipo:'show',        horario:'Vários horários', local:'Dolphin Theater', duracao:'25 min', dica:'Show com golfinhos | Educativo e emocionante | Golfinhos bem treinados' },
@@ -1542,10 +1654,9 @@ const SHOWS = {
 // ══════════════════════════════════════════════════════════════════════════
 const ATIVIDADES = {
   MK:[
-    {n:"Bibbidi Bobbidi Boutique",      tipo:'experiencia', reserva:true,  custo:'$$$$', dica:'🏆 Transformação em princesa ou cavaleiro! RESERVAR MESES antes | Crianças 3-12 | Pacotes a partir de $70' },
-    {n:"Pirates League",               tipo:'experiencia', reserva:true,  custo:'$$',   dica:'Transformação em pirata | Maquiagem + fantasia + cerimônia | Reservar! A partir de $35' },
-    {n:"Mickey & Minnie Meet (Town Square)", tipo:'meet-greet', reserva:false, custo:'grátis', dica:'Mickey e Minnie na Town Square Theater | LL disponível | Fila pode ser longa' },
-    {n:"Character Cavalcade",          tipo:'meet-greet', reserva:false, custo:'grátis', dica:'Micro-desfile surpresa pelo Hub várias vezes ao dia | Verificar app' },
+    {n:"Bibbidi Bobbidi Boutique",      tipo:'experiencia', reserva:true,  custo:'$$$$', dica:'🏆 Transformação de princesa/cavaleiro | Reservar com meses de antecedência',desc:'Salão de transformação onde crianças podem se tornar princesas ou cavaleiros mediante reserva.' },
+    {n:"Harmony Barber Shop",           tipo:'experiencia', reserva:false, custo:'$$',   dica:'Barbearia temática na Main Street | Primeiro corte de cabelo infantil com pixie dust',desc:'Barbearia temática localizada na Main Street, famosa pelo primeiro corte de cabelo infantil.' },
+    {n:"A Pirate\'s Adventure",        tipo:'atividade',   reserva:false, custo:'grátis',dica:'Caça ao tesouro interativa gratuita | Pegar mapa em Adventureland',desc:'Caça ao tesouro interativa gratuita utilizando um mapa e pistas espalhadas pela Adventureland.' },
   ],
   EPCOT:[
     {n:"Kidcot Fun Stops",             tipo:'atividade',  reserva:false, custo:'grátis', dica:'Passaporte gratuito carimbar em cada pavilhão | Pegar no Mexico | Crianças adoram!' },
@@ -1897,82 +2008,114 @@ let _encSearchTimer = null;
 function initIntegracao() {
   try {
     _integChannel = new BroadcastChannel('desenrola_integracao');
-    _integChannel.onmessage = (event) => {
-      const { tipo, payload } = event.data || {};
-      if (tipo === 'CRIAR_GRUPO_GUIAMENTO') {
-        criarGrupoFromSistema(payload);
-      } else if (tipo === 'PING') {
-        _integChannel.postMessage({ tipo: 'PONG', sistema: 'guiamento', versao: '2.2' });
+    _integChannel.onmessage = function(ev) {
+      if(!ev.data) return;
+      var tipo = ev.data.type || ev.data.tipo; // aceita ambos os formatos
+      var payload = ev.data.payload;
+      if(tipo === 'PING') {
+        _integChannel.postMessage({ type: 'PONG' });
+      }
+      if(tipo === 'CRIAR_GRUPO_GUIAMENTO') {
+        processarPendingLocal(payload, ev.data.origemId);
       }
     };
-    // Firebase listener para criações pendentes vindas do Desenrola Sistema
-    if (_fbDb) {
+    // Firebase listener — guiamento_pending (Parte 2 do spec)
+    if(_fbDb) {
       _fbDb.ref('desenrola_v3/integrations/guiamento_pending').off('child_added');
-    _fbDb.ref('desenrola_v3/integrations/guiamento_pending').on('child_added', snap => {
-        const task = snap.val();
-        if (task && task.tipo === 'CRIAR_GRUPO') {
-          criarGrupoFromSistema(task.payload);
-          // Remover da fila após processar
-          snap.ref.remove();
-        }
+      _fbDb.ref('desenrola_v3/integrations/guiamento_pending').on('child_added', function(snap) {
+        var item = snap.val();
+        if(!item || item.tipo !== 'CRIAR_GRUPO') return;
+        processarPending(snap.key, item);
       });
     }
   } catch(e) { console.warn('BroadcastChannel indisponivel:', e.message); }
 }
+
+// Notifica o Desenrola Sistema via BroadcastChannel (Parte 3 do spec)
+function _notificarDesenrola(tipo, dados) {
+  if(!_integChannel) return;
+  try { _integChannel.postMessage(Object.assign({type: tipo}, dados)); }
+  catch(e) { console.warn('BroadcastChannel postMessage error:', e); }
+}
+
 
 /**
  * Cria um grupo no sistema de guiamento a partir de dados do Desenrola Sistema.
  * Chamado automaticamente após venda com guiamento virtual.
  * @param {Object} dados - { nome, responsavel, whatsapp, guia, numAdultos, numCriancas, parques[], observacoes }
  */
+// Cria grupo a partir do Sistema (Firebase pending ou BroadcastChannel direto)
+// Retorna o grupo criado, ou 'ja_existe', ou lança erro
 async function criarGrupoFromSistema(dados) {
-  if (!dados || !dados.nome) return;
-  
-  // Verificar se grupo já existe (evitar duplicatas)
-  const origemId = dados.origemId || null;
-  const jaExiste = (DB.grupos||[]).find(g2 =>
-    (origemId && g2.origemId === origemId) || (!origemId && g2.nome===dados.nome && g2.responsavel===dados.responsavel));
-  if (jaExiste) { if (_integChannel) _integChannel.postMessage({tipo:'GRUPO_JA_EXISTE',grupoId:jaExiste.id}); return; }
+  if(!dados || !dados.nome) return null;
+  var origemId = dados.origemId || null;
+  // Deduplicação por origemId (aceita venda_X e manual_X_XXXXX)
+  var jaExiste = (DB.grupos||[]).find(function(g2) {
+    return origemId ? g2.origemId === origemId
+                    : (g2.nome === dados.nome && g2.responsavel === dados.responsavel);
+  });
+  if(jaExiste) return 'ja_existe';
 
-  const novoGrupo = {
-    id:           'g_' + Date.now(),
-    nome:         dados.nome || '',
-    responsavel:  dados.responsavel || '',
-    whatsapp:     dados.whatsapp || '',
-    guia:         dados.guia || '',
-    numAdultos:   parseInt(dados.numAdultos) || 0,
-    numCriancas:  parseInt(dados.numCriancas) || 0,
-    parques:      (dados.parques || []).map(p => ({
-                    parque: p.parque || p,
-                    data:   p.data || ''
-                  })),
-    status:       'pago',          // status financeiro = pago
-    statusGuia:   'em_preparacao', // status operacional = em preparação
-    origem:       'sistema_gestao', // rastrear que veio do sistema principal
-    criadoEm:     new Date().toISOString(),
-    observacoes:  dados.observacoes || ''
+  var novoGrupo = {
+    id:          'g_' + Date.now(),
+    nome:        dados.nome || '',
+    responsavel: dados.responsavel || '',
+    whatsapp:    dados.whatsapp || '',
+    guia:        dados.guia || '',
+    numAdultos:  parseInt(dados.numAdultos)  || 0,
+    numCriancas: parseInt(dados.numCriancas) || 0,
+    parques:     (dados.parques || []).map(function(p) {
+                   return { parque: p.parque || p, data: p.data || '' };
+                 }),
+    status:      dados.status      || 'pago',
+    statusGuia:  dados.statusGuia  || 'em_preparacao',
+    origemId:    origemId,           // rastreabilidade (Parte 4 do spec)
+    origem:      'sistema_gestao',
+    criadoEm:    new Date().toISOString(),
+    observacoes: dados.observacoes || ''
   };
 
   DB.grupos = [...(DB.grupos||[]), novoGrupo];
   await saveData();
-  
-  // Notificar usuário
-  toast('Grupo criado automaticamente: ' + novoGrupo.nome + ' ✅');
-  
-  // Atualizar agenda se estiver na tela
-  if (curPage === 'agenda') renderAgenda();
-  if (curPage === 'grupos') renderGrupos();
-  
-  // Confirmar para o Desenrola Sistema
-  if (_integChannel) {
-    _integChannel.postMessage({
-      tipo: 'GRUPO_CRIADO',
-      grupoId: novoGrupo.id,
-      nome: novoGrupo.nome
-    });
-  }
-
+  toast('Grupo criado: ' + novoGrupo.nome + ' ✅');
+  if(curPage === 'agenda') renderAgenda();
+  if(curPage === 'grupos') renderGrupos();
   return novoGrupo;
+}
+
+// Processa item de guiamento_pending (Firebase child_added) — Parte 2 do spec
+async function processarPending(key, item) {
+  var payload = item.payload || {};
+  try {
+    var res = await criarGrupoFromSistema(payload);
+    if(res === 'ja_existe') {
+      _notificarDesenrola('GRUPO_JA_EXISTE', { origemId: payload.origemId });
+    } else if(res) {
+      _notificarDesenrola('GRUPO_CRIADO', { nomeGrupo: res.nome, origemId: payload.origemId });
+    }
+  } catch(e) {
+    console.error('processarPending erro:', e);
+    _notificarDesenrola('GRUPO_ERRO', { mensagem: e.message || 'Erro desconhecido', origemId: payload.origemId });
+  } finally {
+    // SEMPRE remover da fila (Parte 2.2 do spec)
+    if(_fbDb) _fbDb.ref('desenrola_v3/integrations/guiamento_pending/'+key).remove();
+  }
+}
+
+// Processa via BroadcastChannel (mesmo device, sem Firebase pending) — Parte 3.1
+async function processarPendingLocal(payload, origemId) {
+  if(!payload) return;
+  if(origemId) payload.origemId = origemId;
+  try {
+    var res = await criarGrupoFromSistema(payload);
+    if(res === 'ja_existe') {
+      _notificarDesenrola('GRUPO_JA_EXISTE', { origemId: origemId });
+    } else if(res) {
+      _notificarDesenrola('GRUPO_CRIADO', { nomeGrupo: res.nome, origemId: origemId });
+    }
+  } catch(e) {
+    _notificarDesenrola('GRUPO_ERRO', { mensagem: e.message || 'Erro', origemId: origemId });
+  }
 }
 
 /**
@@ -2127,7 +2270,7 @@ async function doLogin(e) {
     }
     showLoading(false);
     if(!found){ g('lerr').textContent='Usuario ou senha invalidos.'; return; }
-    if((found.status||'ativo')!=='ativo'){ g('lerr').textContent='Acesso desativado.'; return; }
+    if(found.status === 'inativo'){ g('lerr').textContent='Conta inativa. Contate o administrador.'; _loginBusy=false; return; }
     if(!podeAcessarGuiamento(found)){ g('lerr').textContent='Seu perfil nao tem acesso ao Sistema de Guiamento.'; return; }
     U = Object.assign({},found);
     if(!Array.isArray(U.perfis)) U.perfis = U.perfil?[U.perfil]:['guia'];
@@ -2151,6 +2294,17 @@ function _loginEntrar() {
   fillGuiaSelects();
   applyRoleAccess();
   showPage(isAdmUser(U)||isGuiaUser(U)?'dashboard':isMktUser(U)?'agenda':'dia');
+  // Listener em tempo real para desativação da conta (Parte 1C do spec)
+  if(_fbDb && U.id) {
+    _fbDb.ref('desenrola_v3/usuarios/'+U.id+'/status').off('value');
+    _fbDb.ref('desenrola_v3/usuarios/'+U.id+'/status').on('value', function(snap) {
+      if(snap.val() === 'inativo') {
+        _fbDb.ref('desenrola_v3/usuarios/'+U.id+'/status').off('value');
+        toast('Sua conta foi desativada pelo administrador.','warn');
+        setTimeout(function(){ doLogout(); }, 2000);
+      }
+    });
+  }
 }
 
 function doLogout() {
@@ -2187,7 +2341,11 @@ async function saveData() {
   saveLocal();
   setSyncStatus('sy');
   try {
-    if (_fbDb) { await _fbDb.ref(FB_PATH).set(DB); setSyncStatus('ok'); }
+    if (_fbDb) {
+      // _token necessário pelas Firebase Rules (não armazenado no DB local)
+      await _fbDb.ref(FB_PATH).set(Object.assign({_token:'DTurismo2026!Secure#v3'}, DB));
+      setSyncStatus('ok');
+    }
   } catch(e) { setSyncStatus('er'); toast('Firebase indisponivel — salvo localmente','warn'); }
 }
 
@@ -2199,7 +2357,7 @@ function subscribeUpdates() {
     const r = snap.val();
     if ((r._lastSaved||0) > (DB._lastSaved||0) + 1000) {
       if (_editando) { _pendingRemoteUpdate = r; return; }
-      DB = r; saveLocal();
+      delete r._token; DB = r; saveLocal();
       renderCurrentPage();
       updateDiaBadge();
     }
@@ -3174,7 +3332,7 @@ async function saveGuia() {
   var cor=(g('gm-cor')?g('gm-cor').value:'#3498db');
   var parques=Array.from(document.querySelectorAll('input[name="gm-pk"]:checked')).map(function(i){ return i.value; });
   if(!DB.perfis_guias) DB.perfis_guias={};
-  DB.perfis_guias[editGuiaId]={ id:editGuiaId, wa:wa, bio:bio, cor:cor, parques:parques };
+  DB.perfis_guias[editGuiaId]={ id:editGuiaId, wa:wa, bio:bio, cor:cor, parques:parques, status:(DB.perfis_guias[editGuiaId]&&DB.perfis_guias[editGuiaId].status)||'ativo' };
   await saveData();
   toast('Perfil salvo ✅');
   closeModal('mo-guia');
@@ -3589,10 +3747,35 @@ function renderAtracoes() {
       if(search&&!s.n.toLowerCase().includes(search)) return;
       items.push({...s, pk:s.parque, custom:true});
     });
+    // Separar shows de personagens
+    var shows_items = items.filter(function(i){ return i.tipo !== 'meet-greet'; });
+    var meet_items  = items.filter(function(i){ return i.tipo === 'meet-greet'; });
     if(!items.length){body.innerHTML='<div class="emp"><div class="emp-i">🎭</div><div class="emp-t">Nenhum show encontrado</div></div>';return;}
-    body.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px">${items.map(s=>renderEncCard(s,'show')).join('')}</div>`;
-  }
-  else if (encTab === 'atividades') {
+    var mkCard = function(item) {
+        var foto = getFoto(item.n, item.pk);
+        return '<div class="atr-enc-card" style="border-top:3px solid '+(item.tipo==='show-noturno'?'#6366f1':'var(--acc2)')+'">'+
+          (foto ? '<img class="enc-photo" src="'+esc(foto)+'" alt="'+esc(item.n)+'" loading="lazy" onerror="this.style.display=\'none\'">' : '')+
+          '<div class="enc-info">'+
+            '<div class="fcb" style="flex-wrap:wrap;gap:4px"><span class="enc-name">'+esc(item.n)+'</span><span class="tag-pk pk-'+item.pk+'" style="font-size:10px">'+esc(item.pk)+'</span></div>'+
+            (item.tipo?'<span style="font-size:10px;color:#888;font-weight:600">'+esc(item.tipo.replace('show-noturno','🌙 Noturno').replace('show','🎭 Show').replace('desfile','🎉 Desfile').replace('meet-greet','👑 Personagem'))+'</span>':'')+
+            (item.horario?'<div style="font-size:11px;color:#6366f1;margin-top:2px">🕐 '+esc(item.horario)+'</div>':'')+
+            (item.local?'<div style="font-size:11px;color:#888">📍 '+esc(item.local)+'</div>':'')+
+            (item.desc?'<div class="enc-desc">'+esc(item.desc)+'</div>':'')+
+            (item.dica?'<div class="enc-dica">💡 '+esc(item.dica)+'</div>':'')+
+          '</div></div>';
+      };
+      var html = '';
+      if (shows_items.length) {
+        html += '<div style="font-weight:700;color:var(--acc);font-size:13px;padding:4px 0 8px;border-bottom:2px solid var(--acc);margin-bottom:12px">🎭 Espetáculos & Desfiles ('+shows_items.length+')</div>';
+        html += '<div class="enc-grid">'+shows_items.map(mkCard).join('')+'</div>';
+      }
+      if (meet_items.length) {
+        html += '<div style="font-weight:700;color:#8b5cf6;font-size:13px;padding:12px 0 8px;border-bottom:2px solid #8b5cf6;margin-bottom:12px;margin-top:'+(shows_items.length?'20px':'4px')+'">👑 Encontros de Personagens ('+meet_items.length+')</div>';
+        html += '<div class="enc-grid">'+meet_items.map(mkCard).join('')+'</div>';
+      }
+      body.innerHTML = html;
+    }
+    else if (encTab === 'atividades') {
     let items = [];
     Object.entries(ATIVIDADES).forEach(([pk, atvs]) => {
       if (fPk && pk !== fPk) return;
@@ -3609,6 +3792,70 @@ function renderAtracoes() {
     if(!items.length){body.innerHTML='<div class="emp"><div class="emp-i">🎨</div><div class="emp-t">Nenhuma atividade encontrada</div></div>';return;}
     body.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px">${items.map(a=>renderEncCard(a,'atividade')).join('')}</div>`;
   }
+
+  if (encTab === 'lojas') {
+    const lojas_pk = fPk ? (LOJAS[fPk]||[]) : Object.entries(LOJAS).flatMap(([pk,ls])=>ls.map(function(l){return Object.assign({},l,{pk:pk});}));
+    const lojas_f  = lojas_pk.filter(function(l){ return !search||(l.n||'').toLowerCase().includes(search); });
+    if (!lojas_f.length) { body.innerHTML='<div class="emp"><div class="emp-i">🛍️</div><div class="emp-t">Nenhuma loja encontrada</div></div>'; return; }
+    body.innerHTML = '<div class="enc-grid">'+lojas_f.map(function(lj){
+      var pk=lj.pk||fPk||'MK';
+      var foto=FOTOS[lj.n]||lj.foto||FOTOS[pk]||'';
+      return '<div class="atr-enc-card" style="border-top:3px solid var(--acc2)">'+
+        (foto?'<img class="enc-photo" src="'+esc(foto)+'" alt="'+esc(lj.n)+'" loading="lazy" onerror="this.style.display=\'none\'">':'')+
+        '<div class="enc-info">'+
+          '<div class="fcb" style="flex-wrap:wrap;gap:6px"><span class="enc-name">'+esc(lj.n)+'</span><span class="tag-pk pk-'+pk+'" style="font-size:10px">'+esc(pk)+'</span></div>'+
+          (lj.local?'<div style="color:#6366f1;font-size:11px;margin-top:2px">📍 '+esc(lj.local)+'</div>':'')+
+          (lj.desc?'<div class="enc-desc">'+esc(lj.desc)+'</div>':'')+
+          (lj.dica?'<div class="enc-dica">💡 '+esc(lj.dica)+'</div>':'')+
+        '</div></div>';
+    }).join('')+'</div>';
+    return;
+  }
+
+  if (encTab === 'servicos') {
+    const serv_pk = fPk ? (SERVICOS[fPk]||[]) : Object.entries(SERVICOS).flatMap(([pk,ss])=>ss.map(function(s){return Object.assign({},s,{pk:pk});}));
+    const serv_f  = serv_pk.filter(function(s){ return !search||(s.n||'').toLowerCase().includes(search); });
+    if (!serv_f.length) { body.innerHTML='<div class="emp"><div class="emp-i">🏥</div><div class="emp-t">Nenhum serviço encontrado</div></div>'; return; }
+    body.innerHTML = '<div style="display:flex;flex-direction:column;gap:10px;padding:4px">'+serv_f.map(function(sv){
+      var pk=sv.pk||fPk||'MK';
+      return '<div class="atr-enc-card" style="flex-direction:row;align-items:flex-start;gap:14px;border-left:4px solid var(--grn)">'+
+        '<div style="font-size:32px;line-height:1;min-width:40px;text-align:center;padding-top:4px">'+(sv.icone||'ℹ️')+'</div>'+
+        '<div class="enc-info" style="flex:1">'+
+          '<div class="fcb" style="flex-wrap:wrap;gap:6px"><span class="enc-name">'+esc(sv.n)+'</span><span class="tag-pk pk-'+pk+'" style="font-size:10px">'+esc(pk)+'</span></div>'+
+          (sv.local?'<div style="color:#6366f1;font-size:11px;margin-top:2px">📍 '+esc(sv.local)+'</div>':'')+
+          (sv.desc?'<div class="enc-desc">'+esc(sv.desc)+'</div>':'')+
+          (sv.dica?'<div class="enc-dica">💡 '+esc(sv.dica)+'</div>':'')+
+          (sv.link?'<a href="'+esc(sv.link)+'" target="_blank" rel="noopener" style="margin-top:6px;display:inline-block;background:var(--acc);color:#fff;border-radius:6px;padding:4px 10px;font-size:11px;text-decoration:none">🔗 Ver no Disney</a>':'')+
+        '</div></div>';
+    }).join('')+'</div>';
+    return;
+  }
+
+
+  if (encTab === 'festivais') {
+    const fest_pk = fPk ? (FESTIVAIS[fPk]||[]) : Object.entries(FESTIVAIS).flatMap(([pk,fs])=>fs.map(function(f){return Object.assign({},f,{pk:pk});}));
+    const fest_f  = fest_pk.filter(function(f){ return !search||(f.n||'').toLowerCase().includes(search); });
+    if (!fest_f.length) { body.innerHTML='<div class="emp"><div class="emp-i">🌸</div><div class="emp-t">Nenhum festival encontrado</div><div class="emp-s">Festivais disponíveis somente para EPCOT</div></div>'; return; }
+    body.innerHTML = '<div style="display:flex;flex-direction:column;gap:12px;padding:4px">'+fest_f.map(function(fv){
+      var pk=fv.pk||fPk||'EPCOT';
+      var colors={'🎨':'#8b5cf6','🌸':'#ec4899','🍷':'#dc2626','🎄':'#16a34a'};
+      var cor=colors[fv.icone||'🌸']||'var(--acc)';
+      return '<div class="atr-enc-card" style="flex-direction:row;align-items:flex-start;gap:14px;border-left:4px solid '+cor+';width:auto;max-width:100%">'+
+        '<div style="font-size:40px;line-height:1;min-width:50px;text-align:center;padding-top:6px">'+(fv.icone||'🌸')+'</div>'+
+        '<div class="enc-info" style="flex:1">'+
+          '<div class="fcb" style="flex-wrap:wrap;gap:6px">'+
+            '<span class="enc-name">'+esc(fv.n)+'</span>'+
+            '<span style="background:'+cor+';color:#fff;border-radius:12px;padding:2px 8px;font-size:11px;font-weight:700">'+esc(fv.periodo||'')+'</span>'+
+            '<span class="tag-pk pk-'+pk+'" style="font-size:10px">'+esc(pk)+'</span>'+
+          '</div>'+
+          (fv.desc?'<div class="enc-desc">'+esc(fv.desc)+'</div>':'')+
+          (fv.dica?'<div class="enc-dica">💡 '+esc(fv.dica)+'</div>':'')+
+          (fv.link?'<a href="'+esc(fv.link)+'" target="_blank" rel="noopener" style="margin-top:6px;display:inline-block;background:'+cor+';color:#fff;border-radius:6px;padding:4px 10px;font-size:11px;text-decoration:none">🔗 Ver no Disney</a>':'')+
+        '</div></div>';
+    }).join('')+'</div>';
+    return;
+  }
+
 }
 
 function intensidadeBar(n) {
@@ -3861,6 +4108,9 @@ function openEncModalItem(itemData) {
     openEncModal(id, secao);
     return;
   }
+
+
+
   // Item builtin: pré-preencher com dados conhecidos
   encEditId = null;
   g('guia-modal-title') && (g('enc-modal-title').textContent = 'Personalizar: ' + n);
@@ -4259,6 +4509,146 @@ function fillRoteiroDataLists(pk) {
 // ══════════════════════════════════════════════════════════════════════════
 // ESTACIONAMENTO (para PDF)
 // ══════════════════════════════════════════════════════════════════════════
+
+// ── LOJAS (não aparecem no Dia D nem no Roteiro) ─────────────────────
+const LOJAS = {
+  MK:[
+    {n:"Emporium",             local:"Main Street U.S.A.",dica:"Maior loja do MK | Roupas, pelúcias, acessórios e lembranças Disney | Entrada e saída pela Main Street",desc:"Maior loja do Magic Kingdom, com roupas, pelúcias, acessórios e lembranças Disney." },
+    {n:"Star Traders",         local:"Tomorrowland",      dica:"Especializada em Star Wars, Buzz Lightyear e ficção científica | Produtos exclusivos de Tomorrowland",desc:"Loja da Tomorrowland especializada em produtos de ficção científica, Star Wars e Buzz Lightyear." },
+    {n:"Big Top Souvenirs",    local:"Storybook Circus",  dica:"Temática de circo | Doces e produtos exclusivos | Próxima ao Dumbo e Barnstormer",desc:"Loja temática do circo na Fantasyland, famosa pelos doces e produtos exclusivos." },
+    {n:"Memento Mori",         local:"Liberty Square",    dica:"Temática da Haunted Mansion | Souvenirs exclusivos da atração | Muito popular",desc:"Loja temática da Haunted Mansion com souvenirs exclusivos da atração." },
+    {n:"Ye Olde Christmas Shoppe",local:"Liberty Square", dica:"Artigos natalinos abertos o ano todo | Enfeites personalizados com nome",desc:"Loja de artigos natalinos aberta durante todo o ano na Liberty Square." },
+  ],
+  EPCOT:[
+    {n:"Creations Shop",local:"Future World — entrada",dica:"Maior loja do EPCOT | Grande variedade de produtos Disney exclusivos | Próximo ao Spaceship Earth",desc:"Maior loja do EPCOT, com grande variedade de produtos Disney exclusivos." },
+    {n:"Mitsukoshi Department Store",local:"Pavilhão do Japão",dica:"Doces japoneses, utensílios, roupas e colecionáveis | Uma das melhores lojas do World Showcase",desc:"Loja japonesa com doces, utensílios, roupas, eletrônicos e artigos colecionáveis." },
+    {n:"Karamell-Küche",local:"Pavilhão da Alemanha",dica:"Doces de caramelo Werther's | Fila sempre grande | Maçã caramelizada é ícone",desc:"Loja especializada em doces de caramelo produzidos pela Werther's Original." },
+    {n:"The Fjording",local:"Pavilhão da Noruega",dica:"Produtos de Frozen e artigos escandinavos | Junto à Anna e Elsa",desc:"Loja da Noruega com produtos de Frozen e artigos escandinavos." },
+    {n:"Les Halles Boutique",local:"Pavilhão da França",dica:"Produtos gastronômicos e lembranças francesas | Junto à padaria",desc:"Loja francesa com produtos gastronômicos e lembranças temáticas." },
+    {n:"Plaza de los Amigos",local:"Pavilhão do México",dica:"Artesanato, sombreros, tequila e souvenirs | Dentro da pirâmide",desc:"Loja mexicana com artesanato, sombreros, tequila e souvenirs." },
+    {n:"ImageWorks",local:"Imagination Pavilion",dica:"Brinquedos e produtos do Figment | Saída do Journey Into Imagination",desc:"Loja conectada ao pavilhão Journey Into Imagination com brinquedos e produtos do Figment." },
+  ],
+  HS:[
+    {n:"Mickey's of Hollywood",local:"Hollywood Blvd",dica:"Principal loja do parque | Roupas, pelucias e souvenirs Disney | Proximo a entrada",desc:"Principal loja do parque com roupas, pelucias e souvenirs Disney." },
+    {n:"Keystone Clothiers",local:"Hollywood Blvd",dica:"Roupas, acessorios e orelhas do Mickey | Hollywood Blvd",desc:"Loja especializada em roupas, acessorios e orelhas do Mickey." },
+    {n:"Tatooine Traders",local:"Saida do Star Tours",dica:"Loja de Star Wars | Saida do Star Tours | Lightsabers e personalizacoes",desc:"Loja de Star Wars localizada na saida do Star Tours." },
+    {n:"Droid Depot",local:"Galaxy's Edge",dica:"Construa seu proprio droide personalizado | Experiencia interativa",desc:"Experiencia para montar um droide personalizado em Galaxy's Edge." },
+    {n:"Savi's Workshop",local:"Galaxy's Edge",dica:"Oficina de sabre de luz personalizado | Reserva obrigatoria | Experiencia premium",desc:"Oficina onde os visitantes constroem seu proprio sabre de luz mediante reserva." },
+    {n:"Dok-Ondar's Den of Antiquities",local:"Galaxy's Edge",dica:"Itens colecionaveis e sabres de luz de personagens de Star Wars",desc:"Loja com itens colecionaveis e sabres de luz de personagens de Star Wars." },
+  ],
+  AK:[
+    {n:"Island Mercantile",local:"Discovery Island",dica:"Principal loja do parque | Roupas, pelucias e lembranças Disney",desc:"Principal loja do parque com roupas, pelucias e lembrancas Disney." },
+    {n:"Windtraders",local:"Pandora - The World of Avatar",dica:"Banshees interativos, brinquedos e produtos de Avatar | Proximo ao Flight of Passage",desc:"Loja tematica de Pandora com banshees interativos, brinquedos e produtos de Avatar." },
+    {n:"Ziwani Traders",local:"Proximo ao Kilimanjaro Safaris",dica:"Artigos africanos | Saida do Kilimanjaro Safaris",desc:"Loja proxima ao Kilimanjaro Safaris com artigos africanos." },
+    {n:"Discovery Trading Company",local:"Discovery Island",dica:"Grande loja na Discovery Island | Grande variedade de produtos",desc:"Grande loja localizada na Discovery Island." },
+    {n:"Serka Zong Bazaar",local:"Saida da Expedition Everest",dica:"Produtos exclusivos da Expedition Everest | Asia",desc:"Loja na saida da Expedition Everest com produtos exclusivos da atracao." },
+  ],
+
+  USO:[
+    {n:"Ollivanders (Diagon Alley)",local:"Beco Diagonal",dica:"Ceremonia da varinha | A varinha escolhe o bruxo | Muito procurado",desc:"Loja onde acontece a famosa ceremonia da varinha escolher o bruxo." },
+    {n:"Wiseacre's Wizarding Equipment",local:"Beco Diagonal",dica:"Equipamentos e acessorios do Mundo Bruxo",desc:"Equipamentos e acessorios do Mundo Bruxo." },
+    {n:"Borgin and Burkes",local:"Beco Diagonal",dica:"Loja das Artes das Trevas | Produtos exclusivos",desc:"Loja dedicada as Artes das Trevas no Beco Diagonal." },
+    {n:"Universal Studios Store",local:"Entrada do parque",dica:"Principal loja do parque | Produtos de diversas franquias",desc:"Principal loja do parque com produtos de diversas franquias." },
+    {n:"Supply Vault (Minions)",local:"Saida do Minion Mayhem",dica:"Loja dos Minions | Saida da atracao principal",desc:"Loja dos Minions localizada na saida da atracao principal." },
+  ],
+  IOA:[
+    {n:"Ollivanders (Hogsmeade)",local:"Hogsmeade",dica:"Ceremonia da varinha em Hogsmeade | Muito procurado",desc:"Ceremonia onde a varinha escolhe o bruxo em Hogsmeade." },
+    {n:"Dervish and Banges",local:"Hogsmeade",dica:"Equipamentos e artigos magicos | Produtos de Harry Potter",desc:"Equipamentos e artigos magicos." },
+    {n:"Honeydukes",local:"Hogsmeade",dica:"Loja de doces do universo Harry Potter | Bertie Bott's e outros",desc:"Loja de doces do universo Harry Potter." },
+    {n:"Jurassic Outfitters",local:"Jurassic Park",dica:"Produtos exclusivos de Jurassic Park",desc:"Produtos exclusivos de Jurassic Park." },
+    {n:"Marvel Alterniverse Store",local:"Marvel Super Hero Island",dica:"Loja especializada em produtos Marvel",desc:"Loja especializada em produtos Marvel." },
+  ],
+  EU:[
+    {n:"Nintendo Super Star Store",local:"Super Nintendo World",dica:"Mario, Luigi, Zelda, Pokemon e outros | Loja imperdivel",desc:"Produtos oficiais de Mario, Luigi, Zelda, Pokemon e outros personagens Nintendo." },
+    {n:"Toothless's Treasures",local:"Isle of Berk",dica:"Loja do universo de Como Treinar o Seu Dragao",desc:"Loja dedicada ao universo de Como Treinar o Seu Dragao." },
+    {n:"Darkmoor Monster Makeup",local:"Dark Universe",dica:"Experiencia de maquiagem como monstros classicos | Atividade exclusiva",desc:"Experiencia onde os visitantes podem ser maquiados como monstros classicos." },
+    {n:"Moonship Chocolates",local:"Celestial Park",dica:"Chocolates e doces exclusivos de Celestial Park",desc:"Chocolates e doces exclusivos de Celestial Park." },
+    {n:"Cosmo's Market",local:"Celestial Park",dica:"Loja principal do parque | Produtos exclusivos do Epic Universe",desc:"Loja principal do parque com produtos exclusivos do Epic Universe." },
+  ],
+};
+
+// ── SERVIÇOS ÚTEIS (não aparecem no Dia D nem no Roteiro) ─────────────
+const SERVICOS = {
+  MK:[
+    {n:"Guest Relations",local:"Town Square - entrada",icone:"❓",dica:"Duvidas, suporte, trocas de ingressos | Sempre util checar no inicio do dia",desc:"Atendimento ao visitante para duvidas, suporte e ingressos.",link:"https://disneyworld.disney.go.com/guest-services/guest-relations/" },
+    {n:"Baby Care Center",local:"Perto do First Aid / Main Street",icone:"👶",dica:"Amamentacao, troca de fraldas, micro-ondas | Ar condicionado",desc:"Espaco para alimentacao, troca de fraldas e cuidados com bebes.",link:"https://disneyworld.disney.go.com/guest-services/baby-care-centers/" },
+    {n:"First Aid",local:"Main Street U.S.A.",icone:"🏥",dica:"Enfermeiros disponiveis | Medicamentos basicos | Primeiros socorros",desc:"Atendimento basico de saude realizado por enfermeiros.",link:"https://disneyworld.disney.go.com/guest-services/first-aid/" },
+    {n:"Lockers",local:"Proximo a entrada do parque",icone:"🔒",dica:"Armarios para aluguel | Util para mochilas pesadas",desc:"Armarios para aluguel proximos a entrada do parque.",link:"https://disneyworld.disney.go.com/guest-services/locker-rentals/" },
+    {n:"Rider Switch",local:"Atracoes com restricao de altura",icone:"🔄",dica:"Adultos revezam sem a crianca enfrentar fila novamente",desc:"Servico que permite revezamento em atracoes sem que a crianca enfrente a fila.",link:"https://disneyworld.disney.go.com/guest-services/rider-switch/" },
+    {n:"DAS (Disability Access Service)",local:"Guest Relations - entrada",icone:"♿",dica:"Para visitantes com necessidades especiais | Solicitar no app ou no balcao",desc:"Servico destinado a visitantes elegiveis que necessitam de adaptacoes.",link:"https://disneyworld.disney.go.com/guest-services/disability-access-service/" },
+    {n:"PhotoPass",local:"Distribuido pelo parque",icone:"📷",dica:"Fotografos Disney em pontos estrategicos | Escanear MagicBand ou app",desc:"Servico oficial de fotografos da Disney distribuidos pelo parque.",link:"https://disneyworld.disney.go.com/photopass/" },
+    {n:"Memory Maker",local:"Pacote digital",icone:"🎞️",dica:"Baixar TODAS as fotos do PhotoPass | Comprar antes com desconto",desc:"Pacote que permite baixar todas as fotos e videos registrados pelo PhotoPass.",link:"https://disneyworld.disney.go.com/memory-maker/" },
+  ],
+  EPCOT:[
+    {n:"Guest Relations",local:"Entrada do parque - Main Entrance",icone:"❓",dica:"Proximo ao Spaceship Earth | Duvidas, ingressos e suporte",desc:"Atendimento ao visitante para duvidas, suporte e ingressos.",link:"https://disneyworld.disney.go.com/guest-services/guest-relations/" },
+    {n:"Baby Care Center",local:"Odyssey Events Pavilion",icone:"👶",dica:"Proximo ao World Celebration | Amamentacao e cuidados",desc:"Espaco para cuidados com bebes.",link:"https://disneyworld.disney.go.com/guest-services/baby-care-centers/" },
+    {n:"First Aid",local:"Proximo ao Odyssey / World Discovery",icone:"🏥",dica:"Enfermeiros disponiveis",desc:"Atendimento basico de saude.",link:"https://disneyworld.disney.go.com/guest-services/first-aid/" },
+    {n:"Lockers",local:"Proximo a entrada do parque",icone:"🔒",dica:"Armarios para aluguel | Util durante shows noturnos",desc:"Armarios para aluguel.",link:"https://disneyworld.disney.go.com/guest-services/locker-rentals/" },
+    {n:"Rider Switch",local:"Atracoes com restricao",icone:"🔄",dica:"Disponivel em Mission: SPACE, Test Track, Guardians",desc:"Servico de revezamento em atracoes.",link:"https://disneyworld.disney.go.com/guest-services/rider-switch/" },
+    {n:"DAS",local:"Guest Relations - entrada",icone:"♿",dica:"Solicitar no app ou no balcao Guest Relations",desc:"Servico de adaptacoes para acesso as atracoes.",link:"https://disneyworld.disney.go.com/guest-services/disability-access-service/" },
+    {n:"PhotoPass",local:"Pontos estrategicos do parque",icone:"📷",dica:"Otimas fotos na frente do Spaceship Earth e no World Showcase",desc:"Fotografos oficiais Disney distribuidos pelo parque.",link:"https://disneyworld.disney.go.com/photopass/" },
+    {n:"Memory Maker",local:"Pacote digital",icone:"🎞️",dica:"Inclui fotos e videos de todos os parques | Comprar antes",desc:"Pacote de fotos e videos do PhotoPass.",link:"https://disneyworld.disney.go.com/memory-maker/" },
+  ],
+  HS:[
+    {n:"Guest Relations",local:"Entrada do parque - Hollywood Blvd",icone:"❓",dica:"Logo na entrada | Duvidas, ingressos e suporte",desc:"Atendimento ao visitante para duvidas, suporte e ingressos.",link:"https://disneyworld.disney.go.com/guest-services/guest-relations/" },
+    {n:"Baby Care Center",local:"Proximo a entrada - Hollywood Blvd",icone:"👶",dica:"Amamentacao e cuidados com bebes",desc:"Espaco para cuidados com bebes.",link:"https://disneyworld.disney.go.com/guest-services/baby-care-centers/" },
+    {n:"First Aid",local:"Hollywood Blvd - proximo a entrada",icone:"🏥",dica:"Enfermeiros disponiveis",desc:"Atendimento basico de saude.",link:"https://disneyworld.disney.go.com/guest-services/first-aid/" },
+    {n:"Lockers",local:"Proximo a entrada do parque",icone:"🔒",dica:"Armarios para aluguel | Util para shows como Fantasmic!",desc:"Armarios para aluguel.",link:"https://disneyworld.disney.go.com/guest-services/locker-rentals/" },
+    {n:"Rider Switch",local:"Atracoes com restricao",icone:"🔄",dica:"Tower of Terror, Rock n Roller Coaster, Slinky Dog",desc:"Servico de revezamento em atracoes.",link:"https://disneyworld.disney.go.com/guest-services/rider-switch/" },
+    {n:"DAS",local:"Guest Relations - entrada",icone:"♿",dica:"Solicitar no app ou no balcao Guest Relations",desc:"Servico de adaptacoes para acesso as atracoes.",link:"https://disneyworld.disney.go.com/guest-services/disability-access-service/" },
+    {n:"PhotoPass",local:"Distribuido pelo parque",icone:"📷",dica:"Fotos epicas em Galaxy's Edge e na Tower of Terror",desc:"Fotografos oficiais Disney.",link:"https://disneyworld.disney.go.com/photopass/" },
+    {n:"Memory Maker",local:"Pacote digital",icone:"🎞️",dica:"Inclui fotos nos simuladores como Star Wars e Star Tours",desc:"Pacote de fotos e videos do PhotoPass.",link:"https://disneyworld.disney.go.com/memory-maker/" },
+  ],
+  AK:[
+    {n:"Guest Relations",local:"Oasis - entrada do parque",icone:"❓",dica:"Proximo a entrada pelo Oasis | Duvidas, ingressos e suporte",desc:"Atendimento ao visitante para duvidas, suporte e ingressos.",link:"https://disneyworld.disney.go.com/guest-services/guest-relations/" },
+    {n:"Baby Care Center",local:"Discovery Island",icone:"👶",dica:"Perto do Tree of Life | Amamentacao e cuidados com bebes",desc:"Espaco para cuidados com bebes.",link:"https://disneyworld.disney.go.com/guest-services/baby-care-centers/" },
+    {n:"First Aid",local:"Discovery Island",icone:"🏥",dica:"Enfermeiros disponiveis | Proximo ao Discovery Island",desc:"Atendimento basico de saude.",link:"https://disneyworld.disney.go.com/guest-services/first-aid/" },
+    {n:"Lockers",local:"Proximo a entrada do parque",icone:"🔒",dica:"Util para o Kali River Rapids (molha!) e Safaris",desc:"Armarios para aluguel.",link:"https://disneyworld.disney.go.com/guest-services/locker-rentals/" },
+    {n:"Rider Switch",local:"Atracoes com restricao",icone:"🔄",dica:"Expedition Everest, Flight of Passage, Kali River Rapids",desc:"Servico de revezamento em atracoes.",link:"https://disneyworld.disney.go.com/guest-services/rider-switch/" },
+    {n:"DAS",local:"Guest Relations - entrada",icone:"♿",dica:"Solicitar no app ou no balcao Guest Relations",desc:"Servico de adaptacoes para acesso as atracoes.",link:"https://disneyworld.disney.go.com/guest-services/disability-access-service/" },
+    {n:"PhotoPass",local:"Distribuido pelo parque",icone:"📷",dica:"Fotos incriveis no Kilimanjaro Safaris e em Pandora",desc:"Fotografos oficiais Disney.",link:"https://disneyworld.disney.go.com/photopass/" },
+    {n:"Memory Maker",local:"Pacote digital",icone:"🎞️",dica:"Inclui fotos no Flight of Passage e no Expedition Everest",desc:"Pacote de fotos e videos do PhotoPass.",link:"https://disneyworld.disney.go.com/memory-maker/" },
+  ],
+
+  USO:[
+    {n:"Guest Services",local:"Entrada - Hollywood",icone:"❓",dica:"Duvidas, ingressos, Express Pass e suporte",desc:"Atendimento ao visitante.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
+    {n:"Family Services",local:"Proximo a entrada",icone:"👶",dica:"Espaco para familias com bebes",desc:"Area para familias com bebes.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
+    {n:"First Aid",local:"Hollywood Blvd",icone:"🏥",dica:"Atendimento medico basico | Enfermeiros disponiveis",desc:"Atendimento medico basico.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
+    {n:"Lockers",local:"Entrada e atracoes selecionadas",icone:"🔒",dica:"Obrigatorios em algumas atracoes (Rip Ride Rockit, etc.)",desc:"Armarios para aluguel.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
+    {n:"Child Swap",local:"Atracoes com restricao",icone:"🔄",dica:"Revezamento para familias com criancas pequenas",desc:"Sistema de revezamento para familias.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
+    {n:"Attraction Assistance Pass",local:"Guest Services - entrada",icone:"♿",dica:"Programa de acessibilidade da Universal",desc:"Programa de acessibilidade da Universal.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/accessibility-information" },
+  ],
+  IOA:[
+    {n:"Guest Services",local:"Port of Entry - entrada",icone:"❓",dica:"Duvidas, ingressos, Express Pass e suporte",desc:"Atendimento ao visitante.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
+    {n:"Family Services",local:"Port of Entry",icone:"👶",dica:"Espaco para familias com bebes",desc:"Area para familias com bebes.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
+    {n:"First Aid",local:"Port of Entry",icone:"🏥",dica:"Atendimento medico basico",desc:"Atendimento medico basico.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
+    {n:"Lockers",local:"Entrada e atracoes selecionadas",icone:"🔒",dica:"Obrigatorios em Hagrid's, Hulk, VelociCoaster | Locker Day Use disponivel",desc:"Armarios para aluguel.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
+    {n:"Child Swap",local:"Atracoes com restricao",icone:"🔄",dica:"Hagrid's, VelociCoaster, Hulk Coaster",desc:"Sistema de revezamento para familias.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
+    {n:"Attraction Assistance Pass",local:"Guest Services - entrada",icone:"♿",dica:"Programa de acessibilidade | Solicitar na entrada",desc:"Programa de acessibilidade da Universal.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/accessibility-information" },
+  ],
+  EU:[
+    {n:"Guest Services",local:"Celestial Park - entrada",icone:"❓",dica:"Duvidas, ingressos, Express Pass | Novo parque 2025",desc:"Atendimento ao visitante.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
+    {n:"Family Services",local:"Celestial Park",icone:"👶",dica:"Espaco para familias com bebes",desc:"Area para familias com bebes.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
+    {n:"First Aid",local:"Celestial Park",icone:"🏥",dica:"Atendimento medico basico",desc:"Atendimento medico basico.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
+    {n:"Lockers",local:"Entrada e atracoes selecionadas",icone:"🔒",dica:"Obrigatorios em Stardust Racers e Battle at Ministry",desc:"Armarios para aluguel.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
+    {n:"Child Swap",local:"Atracoes com restricao",icone:"🔄",dica:"Stardust Racers, Battle at Ministry",desc:"Sistema de revezamento para familias.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
+    {n:"Attraction Assistance Pass",local:"Guest Services - entrada",icone:"♿",dica:"Programa de acessibilidade | Solicitar na entrada",desc:"Programa de acessibilidade da Universal.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/accessibility-information" },
+  ],
+};
+
+
+
+
+// ── FESTIVAIS (não aparecem no Dia D nem no Roteiro) ─────────────────
+const FESTIVAIS = {
+  EPCOT:[
+    {n:"EPCOT International Festival of the Arts",  periodo:"Jan–Fev",  dica:"Artes visuais, gastronomia artística e apresentações ao vivo | DCP: Disney on Broadway | Shows exclusivos",desc:"Festival de artes visuais, gastronomia e apresentações ao vivo realizado no início do ano.",link:"https://disneyworld.disney.go.com/events-tours/epcot/epcot-international-festival-of-the-arts/",icone:"🎨" },
+    {n:"EPCOT International Flower & Garden Festival",periodo:"Mar–Jun", dica:"Jardins temáticos, topiárias dos personagens Disney | Quiosques gastronômicos sazonais | Shows de música outdoor",desc:"Evento com jardins temáticos, topiárias dos personagens Disney, shows e quiosques gastronômicos.",link:"https://disneyworld.disney.go.com/events-tours/epcot/epcot-international-flower-and-garden-festival/",icone:"🌸" },
+    {n:"EPCOT International Food & Wine Festival",   periodo:"Jul–Nov",  dica:"O maior festival gastronômico da Disney | Pratos de países do mundo todo | Concerts Series incluído",desc:"O maior festival gastronômico da Disney, reunindo pratos e bebidas de diversos países.",link:"https://disneyworld.disney.go.com/events-tours/epcot/epcot-international-food-and-wine-festival/",icone:"🍷" },
+    {n:"EPCOT International Festival of the Holidays",periodo:"Nov–Dez", dica:"Celebração natalina com culinária típica | Contadores de histórias de cada país | Decoração especial",desc:"Celebração natalina com culinária típica, contadores de histórias e apresentações culturais.",link:"https://disneyworld.disney.go.com/events-tours/epcot/epcot-international-festival-of-the-holidays/",icone:"🎄" },
+  ],
+};
+
 const PARKING = {
   MK:  {nome:'Transportation & Ticket Center',preco:'Standard: ~$30/dia · Preferencial: ~$45/dia',
         maps:'https://maps.google.com/?q=Walt+Disney+World+Transportation+Ticket+Center+Parking+Orlando+FL',
@@ -4541,84 +4931,227 @@ function enviarMsgCard(grupoId, data, idx) {
 // Wikipedia Commons: licença livre (CC-BY-SA)
 // ══════════════════════════════════════════════════════════════════════════
 const FOTOS = {
-  // ── PARQUES ──────────────────────────────────────────────────────────
-  'MK':   'https://upload.wikimedia.org/wikipedia/commons/e/e6/Cinderella_Castle%2C_Magic_Kingdom_%282026%29.jpg',
-  'EPCOT':'https://upload.wikimedia.org/wikipedia/commons/7/73/Spaceship_Earth%2C_EPCOT.jpg',
-  'HS':   'https://upload.wikimedia.org/wikipedia/commons/a/a0/The_Twilight_Zone_Tower_of_Terror%2C_2024.jpg',
-  'AK':   'https://upload.wikimedia.org/wikipedia/commons/a/a4/Tree_of_Life%2C_Disney%27s_Animal_Kingdom.jpg',
-  'USO':  'https://file.notion.so/f/f/d2155671-f1b1-421d-bf4d-d71dd4369b5e/763f8d31-404e-4fc4-bc90-65c781c35728/universals_tudyos.avif',
-  'IOA':  'https://sage-wormhole-561.notion.site/image/attachment%3A839466a2-d139-4d7b-8340-811e29a7f74d%3Aisland_of_adventure.jpg',
-  'EU':   'https://file.notion.so/f/f/d2155671-f1b1-421d-bf4d-d71dd4369b5e/93ad0ffc-f649-4c3a-8207-67f1257a2fa9/epic_universe.avif',
-  'SEA':  'https://upload.wikimedia.org/wikipedia/commons/6/6b/Seaworld-Orlando-Shamu-1527.jpg',
-  'BGT':  'https://upload.wikimedia.org/wikipedia/commons/6/6a/Busch_Gardens_Tampa_Bay.jpg',
-  'BB':   'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Summit-Plummet.jpg/800px-Summit-Plummet.jpg',
-  'TL':   'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Typhoon_Lagoon_Surf_Pool.jpg/800px-Typhoon_Lagoon_Surf_Pool.jpg',
-  'KSC':  'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Space_Shuttle_Atlantis_at_KSC.jpg/800px-Space_Shuttle_Atlantis_at_KSC.jpg',
-
-  // ── MAGIC KINGDOM ─────────────────────────────────────────────────────
-  'TRON Lightcycle Run': 'https://upload.wikimedia.org/wikipedia/commons/5/52/Tron_Lightcycle_Power_Run_%28Magic_Kingdom%29_4.jpg',
-  'Seven Dwarfs Mine Train': 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Seven_Dwarfs_Mine_Train.jpg',
-  "Tiana's Bayou Adventure": 'https://upload.wikimedia.org/wikipedia/commons/c/cc/Tiana%27s_Bayou_Adventure_The_Magic_Kingdom_54164522834.jpg',
-  'Big Thunder Mountain Railroad': 'https://upload.wikimedia.org/wikipedia/commons/1/1e/Big_Thunder_Mountain_Railroad_2.jpg',
-  "Peter Pan's Flight": 'https://upload.wikimedia.org/wikipedia/commons/1/15/Dlp_peter_pan.jpg',
-  'Space Mountain': 'https://upload.wikimedia.org/wikipedia/commons/7/7a/Space_Mountain_at_the_Magic_Kingdom.jpg',
-  'Haunted Mansion': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Haunted_Mansion_in_WDW.jpg/800px-Haunted_Mansion_in_WDW.jpg',
-  'Pirates of the Caribbean': 'https://upload.wikimedia.org/wikipedia/commons/9/97/Pirates_of_the_Caribbean_-_The_Attack.jpg',
-  'Jungle Cruise': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Disneyland_park_-_Anaheim_Los_Angeles_California_USA_%289894255866%29.jpg/800px-Disneyland_park_-_Anaheim_Los_Angeles_California_USA_%289894255866%29.jpg',
-  "The Many Adventures of Winnie the Pooh": 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Winnie_the_Pooh_ride_entrance.jpg/800px-Winnie_the_Pooh_ride_entrance.jpg',
-
-  // ── EPCOT ─────────────────────────────────────────────────────────────
+  'MK': 'https://upload.wikimedia.org/wikipedia/commons/e/e6/Cinderella_Castle%2C_Magic_Kingdom_%282026%29.jpg',
+  'EPCOT': 'https://upload.wikimedia.org/wikipedia/commons/7/73/Spaceship_Earth%2C_EPCOT.jpg',
+  'HS': 'https://upload.wikimedia.org/wikipedia/commons/a/a0/The_Twilight_Zone_Tower_of_Terror%2C_2024.jpg',
+  'AK': 'https://upload.wikimedia.org/wikipedia/commons/a/a4/Tree_of_Life%2C_Disney%27s_Animal_Kingdom.jpg',
+  'USO': 'https://file.notion.so/f/f/d2155671-f1b1-421d-bf4d-d71dd4369b5e/763f8d31-404e-4fc4-bc90-65c781c35728/universals_tudyos.avif',
+  'IOA': 'https://sage-wormhole-561.notion.site/image/attachment%3A839466a2-d139-4d7b-8340-811e29a7f74d%3Aisland_of_adventure.jpg',
+  'EU': 'https://file.notion.so/f/f/d2155671-f1b1-421d-bf4d-d71dd4369b5e/93ad0ffc-f649-4c3a-8207-67f1257a2fa9/epic_universe.avif',
+  'SEA': 'https://upload.wikimedia.org/wikipedia/commons/6/6b/Seaworld-Orlando-Shamu-1527.jpg',
+  'BGT': 'https://upload.wikimedia.org/wikipedia/commons/6/6a/Busch_Gardens_Tampa_Bay.jpg',
+  'BB': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Summit-Plummet.jpg/800px-Summit-Plummet.jpg',
+  'TL': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Typhoon_Lagoon_Surf_Pool.jpg/800px-Typhoon_Lagoon_Surf_Pool.jpg',
+  'KSC': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Space_Shuttle_Atlantis_at_KSC.jpg/800px-Space_Shuttle_Atlantis_at_KSC.jpg',
   'Guardians of the Galaxy: Cosmic Rewind': 'https://upload.wikimedia.org/wikipedia/commons/f/f6/Guardians_of_the_Galaxy_Cosmic_Rewind-Cast_Preview_%2852030963400%29_%28cropped%29.jpg',
   'Frozen Ever After': 'https://upload.wikimedia.org/wikipedia/commons/8/86/Frozen_Ever_After_HK_08.jpg',
-  "Remy's Ratatouille Adventure": 'https://upload.wikimedia.org/wikipedia/commons/0/08/Epcot_-_54163015047.jpg',
-  "Soarin' Across America": 'https://upload.wikimedia.org/wikipedia/commons/0/04/Soarin_Over_California_Exterior.jpg',
-  "Soarin' Around the World": 'https://upload.wikimedia.org/wikipedia/commons/0/04/Soarin_Over_California_Exterior.jpg',
   'Test Track': 'https://upload.wikimedia.org/wikipedia/commons/5/53/Epcot_Test_Track.jpg',
   'Spaceship Earth': 'https://upload.wikimedia.org/wikipedia/commons/7/73/Spaceship_Earth%2C_EPCOT.jpg',
-
-  // ── HOLLYWOOD STUDIOS ─────────────────────────────────────────────────
   'Star Wars: Rise of the Resistance': 'https://upload.wikimedia.org/wikipedia/commons/2/23/Star_Wars_Rise_of_the_Resistance_queue.jpg',
   'Slinky Dog Dash': 'https://upload.wikimedia.org/wikipedia/commons/0/0a/Slinky_Dog_Dash_%2829262611338%29_%28cropped%29.jpg',
-  "Rock 'n' Roller Coaster Starring The Muppets": 'https://upload.wikimedia.org/wikipedia/commons/f/f1/Rock_%27n%27_Roller_Coaster_starring_Aerosmith_1.jpg',
   'The Twilight Zone Tower of Terror': 'https://upload.wikimedia.org/wikipedia/commons/a/a0/The_Twilight_Zone_Tower_of_Terror%2C_2024.jpg',
   'Millennium Falcon: Smugglers Run': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Millennium_Falcon_Smuggler%27s_Run_-_Walt_Disney_World.jpg/800px-Millennium_Falcon_Smuggler%27s_Run_-_Walt_Disney_World.jpg',
-  "Mickey & Minnie's Runaway Railway": 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Mickey_and_Minnie%27s_Runaway_Railway_-_exterior.jpg/800px-Mickey_and_Minnie%27s_Runaway_Railway_-_exterior.jpg',
   'Indiana Jones Stunt Spectacular': 'https://upload.wikimedia.org/wikipedia/commons/3/34/Indiana_Jones_Stunt_Spectacular_%2842346735095%29.jpg',
   'Festival of Fantasy': 'https://upload.wikimedia.org/wikipedia/commons/6/67/Princess_Garden%2C_Festival_of_Fantasy_Parade_%2816398355087%29.jpg',
   'Fantasmic!': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Fantasmic%21_at_Disney%27s_Hollywood_Studios_%2840028059053%29.jpg/800px-Fantasmic%21_at_Disney%27s_Hollywood_Studios_%2840028059053%29.jpg',
-
-  // ── ANIMAL KINGDOM ────────────────────────────────────────────────────
   'Avatar: Flight of Passage': 'https://upload.wikimedia.org/wikipedia/commons/f/f1/Avatar_Flight_of_Passage_%2833825577724%29.jpg',
-  "Na'vi River Journey": 'https://upload.wikimedia.org/wikipedia/commons/8/8b/Na%27vi_River_Journey_-_Disney%27s_Animal_Kingdom_01.jpg',
   'Kilimanjaro Safaris': 'https://upload.wikimedia.org/wikipedia/commons/3/3c/Kilimanjaro_Safaris_truck_%281%29.jpg',
   'Expedition Everest': 'https://upload.wikimedia.org/wikipedia/commons/8/8b/Expedition_Everest.jpg',
   'Festival of the Lion King': 'https://upload.wikimedia.org/wikipedia/commons/2/26/LionKingDisneyWorld.JPG',
-
-  // ── UNIVERSAL STUDIOS FLORIDA ─────────────────────────────────────────
-  "Hagrid's Magical Creatures Motorbike Adventure": 'https://upload.wikimedia.org/wikipedia/commons/2/21/HagridsMagicalCreaturesMotorbikeAdventureEntrance.jpg',
   'Hollywood Rip Ride Rockit': 'https://upload.wikimedia.org/wikipedia/commons/4/47/Hollywood_Rip_Ride_Rockit_-_panoramio.jpg',
-  "Harry Potter — Escape from Gringotts": 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Harry_Potter_Escape_from_Gringotts_queue.jpg/800px-Harry_Potter_Escape_from_Gringotts_queue.jpg',
   'Revenge of the Mummy': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Revenge_of_the_Mummy_Universal_Studios_Florida_%2830437817842%29.jpg/800px-Revenge_of_the_Mummy_Universal_Studios_Florida_%2830437817842%29.jpg',
   'The Simpsons Ride': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/The_Simpsons_Ride_-_Universal_Studios_Florida.jpg/800px-The_Simpsons_Ride_-_Universal_Studios_Florida.jpg',
-
-  // ── ISLANDS OF ADVENTURE ─────────────────────────────────────────────
   'Jurassic World VelociCoaster': 'https://upload.wikimedia.org/wikipedia/commons/1/18/Islands_of_Adventure_Orlando_%2851149417278%29_%28cropped%29.jpg',
   'Harry Potter and the Forbidden Journey': 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Wizarding_World_of_Harry_Potter_-_Hogwarts_castle_%285013698317%29.jpg',
   'The Amazing Adventures of Spider-Man': 'https://upload.wikimedia.org/wikipedia/commons/7/75/Amazing_Adventures_of_Spider-Man_ride_vehicle_IOA.jpg',
   'The Incredible Hulk Coaster': 'https://upload.wikimedia.org/wikipedia/commons/a/af/The_Incredible_Hulk_at_Islands_of_Adventure_04.jpg',
-
-  // ── SEAWORLD ──────────────────────────────────────────────────────────
   'Mako': 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Mako_%28SeaWorld_Orlando%29_1.jpg',
   'Kraken (VR coaster)': 'https://upload.wikimedia.org/wikipedia/commons/2/2e/Kraken_%28SeaWorld_Orlando%29_01.jpg',
   'Infinity Falls': 'https://upload.wikimedia.org/wikipedia/commons/b/bb/Infinity_Falls_layout_drop.jpg',
-
-  // ── BUSCH GARDENS ─────────────────────────────────────────────────────
   'Iron Gwazi': 'https://upload.wikimedia.org/wikipedia/commons/e/e6/Iron_Gwazi_Busch_Gardens_night_%281%29.jpg',
   'Cheetah Hunt': 'https://upload.wikimedia.org/wikipedia/commons/d/db/Cheetah_Hunt_%40_Busch_Gardens_Tampa_2012_-_panoramio.jpg',
   'Montu': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Montu_at_Busch_Gardens_Tampa.jpg/800px-Montu_at_Busch_Gardens_Tampa.jpg',
+  // ── FOTOS OFICIAIS DISNEY CDN (Magic Kingdom) ──────────────────────
+  // ── FOTOS OFICIAIS DISNEY CDN (EPCOT)
+  // ── FOTOS OFICIAIS DISNEY CDN (Hollywood Studios & Animal Kingdom)
+  // ── FOTOS UNIVERSAL ORLANDO ──────────────────────────────────────────
+  'Harry Potter and the Escape from Gringotts': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Harry_Potter_and_the_Escape_from_Gringotts_%28Hollywood_Studios%29.jpg/800px-Harry_Potter_and_the_Escape_from_Gringotts_%28Hollywood_Studios%29.jpg',
+  "Hagrid's Magical Creatures Motorbike Adventure": 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Hagrid%27s_Magical_Creatures_Motorbike_Adventure_%28IOA%2C_2019%29.jpg/800px-Hagrid%27s_Magical_Creatures_Motorbike_Adventure_%28IOA%2C_2019%29.jpg',
+  'Jurassic World VelociCoaster': 'https://upload.wikimedia.org/wikipedia/commons/1/18/Islands_of_Adventure_Orlando_%2851149417278%29_%28cropped%29.jpg',
+  'Harry Potter and the Forbidden Journey': 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Wizarding_World_of_Harry_Potter_-_Hogwarts_castle_%285013698317%29.jpg',
+  'The Amazing Adventures of Spider-Man': 'https://upload.wikimedia.org/wikipedia/commons/7/75/Amazing_Adventures_of_Spider-Man_ride_vehicle_IOA.jpg',
+  'The Incredible Hulk Coaster': 'https://upload.wikimedia.org/wikipedia/commons/a/af/The_Incredible_Hulk_at_Islands_of_Adventure_04.jpg',
+  'Hollywood Rip Ride Rockit': 'https://upload.wikimedia.org/wikipedia/commons/4/47/Hollywood_Rip_Ride_Rockit_-_panoramio.jpg',
+  'Revenge of the Mummy': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Revenge_of_the_Mummy_Universal_Studios_Florida_%2830437817842%29.jpg/800px-Revenge_of_the_Mummy_Universal_Studios_Florida_%2830437817842%29.jpg',
+  'The Simpsons Ride': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/The_Simpsons_Ride_-_Universal_Studios_Florida.jpg/800px-The_Simpsons_Ride_-_Universal_Studios_Florida.jpg',
+  'TRANSFORMERS: The Ride-3D': 'https://commons.wikimedia.org/wiki/Special:FilePath/Transformers_The_Ride-3D_Universal_Studios.jpg',
+  'MEN IN BLACK Alien Attack': 'https://commons.wikimedia.org/wiki/Special:FilePath/Men_in_Black_Alien_Attack_USF.jpg',
+  'Skull Island: Reign of Kong': 'https://commons.wikimedia.org/wiki/Special:FilePath/Skull_Island_Reign_of_Kong.jpg',
+  'Jurassic Park River Adventure': 'https://commons.wikimedia.org/wiki/Special:FilePath/Jurassic_Park_River_Adventure_IOA.jpg',
+  "Hogwarts Express (King's Cross)": 'https://commons.wikimedia.org/wiki/Special:FilePath/Hogwarts_Express_Kings_Cross_Universal.jpg',
+  "Hogwarts Express (Hogsmeade)": 'https://commons.wikimedia.org/wiki/Special:FilePath/Hogwarts_Express_Hogsmeade_Universal.jpg',
+  "Harry Potter and the Battle at the Ministry": 'https://commons.wikimedia.org/wiki/Special:FilePath/Ministry_of_Magic_Epic_Universe.jpg',
+  'Stardust Racers': 'https://commons.wikimedia.org/wiki/Special:FilePath/Stardust_Racers_Epic_Universe.jpg',
+  "Mario Kart: Bowser's Challenge": 'https://commons.wikimedia.org/wiki/Special:FilePath/Mario_Kart_Bowsers_Challenge_Epic_Universe.jpg',
+  'Star Wars: Rise of the Resistance': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/hollywood-studios/star-wars-rise-of-the-resistance/star-wars-rise-of-the-resistance-gallery02-sq.jpg',
+  'Millennium Falcon: Smugglers Run': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/hollywood-studios/millennium-falcon-smugglers-run/millennium-falcon-smugglers-run-gallery02-sq.jpg',
+  'Mickey & Minnie\'s Runaway Railway': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/hollywood-studios/mickey-and-minnies-runaway-railway/mickey-and-minnies-runaway-railway-gallery02-sq.jpg',
+  'Slinky Dog Dash': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/hollywood-studios/slinky-dog-dash/slinky-dog-dash-gallery02-sq.jpg',
+  'Alien Swirling Saucers': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/hollywood-studios/alien-swirling-saucers/alien-swirling-saucers-gallery02-sq.jpg',
+  'Toy Story Mania!': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/hollywood-studios/toy-story-mania/toy-story-mania-gallery02-sq.jpg',
+  'The Twilight Zone Tower of Terror': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/hollywood-studios/twilight-zone-tower-of-terror/twilight-zone-tower-of-terror-gallery02-sq.jpg',
+  'Rock \'n\' Roller Coaster Starring Aerosmith': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/hollywood-studios/rock-n-roller-coaster-starring-aerosmith/rock-n-roller-coaster-starring-aerosmith-gallery02-sq.jpg',
+  'Star Tours: The Adventures Continue': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/hollywood-studios/star-tours/star-tours-gallery02-sq.jpg',
+  'Fantasmic!': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/entertainment/hollywood-studios/fantasmic/fantasmic-gallery02-sq.jpg',
+  'Indiana Jones Epic Stunt Spectacular!': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/entertainment/hollywood-studios/indiana-jones-epic-stunt-spectacular/indiana-jones-epic-stunt-spectacular-gallery02-sq.jpg',
+  'Woody\'s Lunch Box': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/hollywood-studios/woodys-lunch-box/woodys-lunch-box-gallery02-sq.jpg',
+  'Backlot Express': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/hollywood-studios/backlot-express/backlot-express-gallery02-sq.jpg',
+  'Docking Bay 7 Food and Cargo': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/hollywood-studios/docking-bay-7-food-and-cargo/docking-bay-7-food-and-cargo-gallery02-sq.jpg',
+  'Ronto Roasters': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/hollywood-studios/ronto-roasters/ronto-roasters-gallery02-sq.jpg',
+  'Roundup Rodeo BBQ': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/hollywood-studios/roundup-rodeo-bbq/roundup-rodeo-bbq-gallery02-sq.jpg',
+  'Sci-Fi Dine-In Theater Restaurant': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/hollywood-studios/sci-fi-dine-in-theater/sci-fi-dine-in-theater-gallery02-sq.jpg',
+  '50\'s Prime Time Cafe': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/hollywood-studios/50s-prime-time-cafe/50s-prime-time-cafe-gallery02-sq.jpg',
+  '50\'s Prime Time Café': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/hollywood-studios/50s-prime-time-cafe/50s-prime-time-cafe-gallery02-sq.jpg',
+  'The Hollywood Brown Derby': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/hollywood-studios/hollywood-brown-derby/hollywood-brown-derby-gallery02-sq.jpg',
+  'Oga\'s Cantina': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/hollywood-studios/ogas-cantina/ogas-cantina-gallery02-sq.jpg',
+  'Mickey\'s of Hollywood': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/shops/hollywood-studios/mickeys-of-hollywood/mickeys-of-hollywood-gallery02-sq.jpg',
+  'Savi\'s Workshop': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/shops/hollywood-studios/savis-workshop/savis-workshop-gallery02-sq.jpg',
+  'Droid Depot': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/shops/hollywood-studios/droid-depot/droid-depot-gallery02-sq.jpg',
+  'Avatar Flight of Passage': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/animal-kingdom/avatar-flight-of-passage/avatar-flight-of-passage-gallery02-sq.jpg',
+  'Na\'vi River Journey': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/animal-kingdom/navi-river-journey/navi-river-journey-gallery02-sq.jpg',
+  'Kilimanjaro Safaris': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/animal-kingdom/kilimanjaro-safaris/kilimanjaro-safaris-gallery02-sq.jpg',
+  'Expedition Everest': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/animal-kingdom/expedition-everest/expedition-everest-gallery02-sq.jpg',
+  'DINOSAUR': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/animal-kingdom/dinosaur/dinosaur-gallery02-sq.jpg',
+  'Kali River Rapids': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/animal-kingdom/kali-river-rapids/kali-river-rapids-gallery02-sq.jpg',
+  'Festival of the Lion King': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/entertainment/animal-kingdom/festival-of-the-lion-king/festival-of-the-lion-king-gallery02-sq.jpg',
+  'Finding Nemo: The Big Blue... and Beyond!': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/entertainment/animal-kingdom/finding-nemo-the-big-blue-and-beyond/finding-nemo-the-big-blue-and-beyond-gallery02-sq.jpg',
+  'Feathered Friends in Flight!': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/entertainment/animal-kingdom/feathered-friends-in-flight/feathered-friends-in-flight-gallery02-sq.jpg',
+  'Satu\'li Canteen': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/animal-kingdom/satuli-canteen/satuli-canteen-gallery02-sq.jpg',
+  'Flame Tree Barbecue': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/animal-kingdom/flame-tree-barbecue/flame-tree-barbecue-gallery02-sq.jpg',
+  'Tiffins Restaurant': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/animal-kingdom/tiffins/tiffins-gallery02-sq.jpg',
+  'Tusker House Restaurant': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/animal-kingdom/tusker-house-restaurant/tusker-house-restaurant-gallery02-sq.jpg',
+  'Island Mercantile': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/shops/animal-kingdom/island-mercantile/island-mercantile-gallery02-sq.jpg',
+  'Windtraders': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/shops/animal-kingdom/windtraders/windtraders-gallery02-sq.jpg',
+  'Discovery Trading Company': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/shops/animal-kingdom/discovery-trading-company/discovery-trading-company-gallery02-sq.jpg',
+  'Guardians of the Galaxy: Cosmic Rewind': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/epcot/guardians-of-the-galaxy-cosmic-rewind/guardians-of-the-galaxy-cosmic-rewind-gallery02-sq.jpg',
+  'Spaceship Earth': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/epcot/spaceship-earth/spaceship-earth-gallery02-sq.jpg',
+  'Journey Into Imagination with Figment': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/epcot/journey-into-imagination-with-figment/journey-into-imagination-with-figment-gallery02-sq.jpg',
+  'The Seas with Nemo & Friends': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/epcot/the-seas-with-nemo-and-friends/the-seas-with-nemo-and-friends-gallery02-sq.jpg',
+  'Turtle Talk with Crush': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/epcot/turtle-talk-with-crush/turtle-talk-with-crush-gallery02-sq.jpg',
+  'Soarin\' Around the World': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/epcot/soarin/soarin-gallery02-sq.jpg',
+  'Soarin\' Across America': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/epcot/soarin/soarin-gallery02-sq.jpg',
+  'Living with the Land': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/epcot/living-with-the-land/living-with-the-land-gallery02-sq.jpg',
+  'Awesome Planet': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/epcot/awesome-planet/awesome-planet-gallery02-sq.jpg',
+  'Disney and Pixar Short Film Festival': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/epcot/disney-and-pixar-short-film-festival/disney-and-pixar-short-film-festival-gallery02-sq.jpg',
+  'Mission: SPACE Orange (intenso)': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/epcot/mission-space/mission-space-gallery02-sq.jpg',
+  'Mission: SPACE Green (suave)': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/epcot/mission-space/mission-space-gallery02-sq.jpg',
+  'Test Track': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/epcot/test-track/test-track-gallery02-sq.jpg',
+  'Gran Fiesta Tour Starring The Three Caballeros': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/epcot/gran-fiesta-tour-starring-the-three-caballeros/gran-fiesta-tour-starring-the-three-caballeros-gallery02-sq.jpg',
+  'Frozen Ever After': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/epcot/frozen-ever-after/frozen-ever-after-gallery02-sq.jpg',
+  'Remy\'s Ratatouille Adventure': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/epcot/remys-ratatouille-adventure/remys-ratatouille-adventure-gallery02-sq.jpg',
+  'Luminous: The Symphony of Us': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/entertainment/epcot/luminous-the-symphony-of-us/luminous-the-symphony-of-us-gallery02-sq.jpg',
+  'Voices of Liberty': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/entertainment/epcot/voices-of-liberty/voices-of-liberty-gallery02-sq.jpg',
+  'JAMMitors': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/entertainment/epcot/jammitors/jammitors-gallery02-sq.jpg',
+  'Matsuriza': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/entertainment/epcot/matsuriza/matsuriza-gallery02-sq.jpg',
+  'Mariachi Cobre': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/entertainment/epcot/mariachi-cobre/mariachi-cobre-gallery02-sq.jpg',
+  'Command Performance': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/entertainment/epcot/command-performance/command-performance-gallery02-sq.jpg',
+  'Creations Shop': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/shops/epcot/creations-shop/creations-shop-gallery02-sq.jpg',
+  'Mitsukoshi Department Store': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/shops/epcot/mitsukoshi-department-store/mitsukoshi-department-store-gallery02-sq.jpg',
+  'Karamell-Küche': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/shops/epcot/karamell-kuche/karamell-kuche-gallery02-sq.jpg',
+  'The Fjording': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/shops/epcot/the-fjording/the-fjording-gallery02-sq.jpg',
+  'ImageWorks': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/shops/epcot/imageworks/imageworks-gallery02-sq.jpg',
+  'Space 220 Restaurant': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/space-220/space-220-gallery02-sq.jpg',
+  'Le Cellier Steakhouse': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/le-cellier-steakhouse/le-cellier-steakhouse-gallery02-sq.jpg',
+  'Via Napoli Ristorante e Pizzeria': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/via-napoli/via-napoli-gallery02-sq.jpg',
+  'Chefs de France': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/chefs-de-france/chefs-de-france-gallery02-sq.jpg',
+  'La Crêperie de Paris': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/la-creperie-de-paris/la-creperie-de-paris-gallery02-sq.jpg',
+  'Biergarten Restaurant': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/biergarten-restaurant/biergarten-restaurant-gallery02-sq.jpg',
+  'Teppan Edo': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/teppan-edo/teppan-edo-gallery02-sq.jpg',
+  'San Angel Inn Restaurante': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/san-angel-inn-restaurante/san-angel-inn-restaurante-gallery02-sq.jpg',
+  'Rose & Crown Dining Room': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/rose-and-crown-dining-room/rose-and-crown-dining-room-gallery02-sq.jpg',
+  'Garden Grill Restaurant': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/garden-grill-restaurant/garden-grill-restaurant-gallery02-sq.jpg',
+  'Akershus Royal Banquet Hall': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/akershus-royal-banquet-hall/akershus-royal-banquet-hall-gallery02-sq.jpg',
+  'Coral Reef Restaurant': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/coral-reef-restaurant/coral-reef-restaurant-gallery02-sq.jpg',
+  'Shiki-Sai: Sushi Izakaya': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/shiki-sai-sushi-izakaya/shiki-sai-sushi-izakaya-gallery02-sq.jpg',
+  'Connections Eatery': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/connections-eatery/connections-eatery-gallery02-sq.jpg',
+  'Connections Café & Eatery': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/connections-eatery/connections-eatery-gallery02-sq.jpg',
+  'Sunshine Seasons': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/sunshine-seasons/sunshine-seasons-gallery02-sq.jpg',
+  'Regal Eagle Smokehouse': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/regal-eagle-smokehouse/regal-eagle-smokehouse-gallery02-sq.jpg',
+  'Yorkshire County Fish Shop': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/yorkshire-county-fish-shop/yorkshire-county-fish-shop-gallery02-sq.jpg',
+  'Les Halles Boulangerie-Patisserie': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/les-halles-boulangerie-patisserie/les-halles-boulangerie-patisserie-gallery02-sq.jpg',
+  'Katsura Grill': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/katsura-grill/katsura-grill-gallery02-sq.jpg',
+  'Lotus Blossom Café': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/lotus-blossom-cafe/lotus-blossom-cafe-gallery02-sq.jpg',
+  'La Cantina de San Angel': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/la-cantina-de-san-angel/la-cantina-de-san-angel-gallery02-sq.jpg',
+  'Cantina de San Angel': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/la-cantina-de-san-angel/la-cantina-de-san-angel-gallery02-sq.jpg',
+  'Kringla Bakeri Og Kafe': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/epcot/kringla-bakeri-og-kafe/kringla-bakeri-og-kafe-gallery02-sq.jpg',
 
-  // ── RESTAURANTES ─────────────────────────────────────────────────────
-  'Be Our Guest Restaurant': 'https://upload.wikimedia.org/wikipedia/commons/3/37/Be_Our_Guest_%2814249415155%29.jpg',
+  'Dumbo the Flying Elephant': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/dumbo-the-flying-elephant/dumbo-the-flying-elephant-gallery02-sq.jpg',
+  'It\'s a Small World': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/its-a-small-world/its-a-small-world-gallery02-sq.jpg',
+  'Peter Pan\'s Flight': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/peter-pans-flight/peter-pans-flight-gallery02-sq.jpg',
+  'The Many Adventures of Winnie the Pooh': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/many-adventures-of-winnie-the-pooh/many-adventures-of-winnie-the-pooh-gallery02-sq.jpg',
+  'Under the Sea – Journey of The Little Mermaid': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/under-the-sea-journey-of-the-little-mermaid/under-the-sea-journey-of-the-little-mermaid-gallery02-sq.jpg',
+  'Mad Tea Party': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/mad-tea-party/mad-tea-party-gallery02-sq.jpg',
+  'Prince Charming Regal Carrousel': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/prince-charming-regal-carrousel/prince-charming-regal-carrousel-gallery02-sq.jpg',
+  'Seven Dwarfs Mine Train': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/seven-dwarfs-mine-train/seven-dwarfs-mine-train-gallery02-sq.jpg',
+  'Mickey\'s PhilharMagic': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/mickeys-philharmagic/mickeys-philharmagic-gallery02-sq.jpg',
+  'Enchanted Tales with Belle': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/enchanted-tales-with-belle/enchanted-tales-with-belle-gallery02-sq.jpg',
+  'The Barnstormer': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/barnstormer/barnstormer-gallery02-sq.jpg',
+  'Tomorrowland Speedway': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/tomorrowland-speedway/tomorrowland-speedway-gallery02-sq.jpg',
+  'Buzz Lightyear\'s Space Ranger Spin': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/buzz-lightyears-space-ranger-spin/buzz-lightyears-space-ranger-spin-gallery02-sq.jpg',
+  'Space Mountain': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/space-mountain/space-mountain-gallery02-sq.jpg',
+  'TRON Lightcycle Run': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/866/488/75/vision-dam/digital/parks-platform/parks-global-assets/disney-world/attractions/tron/TRON_KV_LAUNCH-16x9.jpg',
+  'Astro Orbiter': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/astro-orbiter/astro-orbiter-gallery02-sq.jpg',
+  'Tomorrowland Transit Authority PeopleMover': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/tomorrowland-transit-authority-peoplemover/tomorrowland-transit-authority-peoplemover-gallery02-sq.jpg',
+  'Monsters Inc. Laugh Floor': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/monsters-inc-laugh-floor/monsters-inc-laugh-floor-gallery02-sq.jpg',
+  'Carousel of Progress': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/walt-disneys-carousel-of-progress/walt-disneys-carousel-of-progress-gallery02-sq.jpg',
+  'Jungle Cruise': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/jungle-cruise/jungle-cruise-gallery02-sq.jpg',
+  'Pirates of the Caribbean': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/pirates-of-the-caribbean/pirates-of-the-caribbean-gallery02-sq.jpg',
+  'Walt Disney\'s Enchanted Tiki Room': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/walt-disneys-enchanted-tiki-room/walt-disneys-enchanted-tiki-room-gallery02-sq.jpg',
+  'Swiss Family Treehouse': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/swiss-family-treehouse/swiss-family-treehouse-gallery02-sq.jpg',
+  'The Magic Carpets of Aladdin': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/the-magic-carpets-of-aladdin/the-magic-carpets-of-aladdin-gallery02-sq.jpg',
+  'Big Thunder Mountain Railroad': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/big-thunder-mountain-railroad/big-thunder-mountain-railroad-gallery02-sq.jpg',
+  'Tiana\'s Bayou Adventure': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/tianas-bayou-adventure/tianas-bayou-adventure-gallery02-sq.jpg',
+  'Country Bear Musical Jamboree': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/country-bear-musical-jamboree/country-bear-musical-jamboree-gallery02-sq.jpg',
+  'Haunted Mansion': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/haunted-mansion/haunted-mansion-gallery02-sq.jpg',
+  'Liberty Square Riverboat': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/liberty-square-riverboat/liberty-square-riverboat-gallery02-sq.jpg',
+  'Hall of Presidents': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/hall-of-presidents/hall-of-presidents-gallery02-sq.jpg',
+  'Walt Disney World Railroad': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/walt-disney-world-railroad/walt-disney-world-railroad-gallery02-sq.jpg',
+  'Main Street Vehicles': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/main-street-vehicles/main-street-vehicles-gallery02-sq.jpg',
+  'Main Street Cinema': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/attractions/magic-kingdom/main-street-cinema/main-street-cinema-gallery02-sq.jpg',
+  'Casey\'s Corner': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/magic-kingdom/caseys-corner/caseys-corner-gallery02-sq.jpg',
+  'Cosmic Ray\'s Starlight Café': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/magic-kingdom/cosmic-rays-starlight-cafe/cosmic-rays-starlight-cafe-gallery02-sq.jpg',
+  'Columbia Harbour House': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/magic-kingdom/columbia-harbour-house/columbia-harbour-house-gallery02-sq.jpg',
+  'Pecos Bill Tall Tale Inn & Café': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/magic-kingdom/pecos-bill-tall-tale-inn-and-cafe/pecos-bill-tall-tale-inn-and-cafe-gallery02-sq.jpg',
+  'Pinocchio Village Haus': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/magic-kingdom/pinocchio-village-haus/pinocchio-village-haus-gallery02-sq.jpg',
+  'Sleepy Hollow': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/magic-kingdom/sleepy-hollow/sleepy-hollow-gallery02-sq.jpg',
+  'The Friar\'s Nook': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/magic-kingdom/friars-nook/friars-nook-gallery02-sq.jpg',
+  'The Lunching Pad': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/magic-kingdom/the-lunching-pad/the-lunching-pad-gallery02-sq.jpg',
+  'Cheshire Café': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/magic-kingdom/cheshire-cafe/cheshire-cafe-gallery02-sq.jpg',
+  'Golden Oak Outpost': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/magic-kingdom/golden-oak-outpost/golden-oak-outpost-gallery02-sq.jpg',
+  'The Plaza Ice Cream Parlor': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/magic-kingdom/plaza-ice-cream-parlor/plaza-ice-cream-parlor-gallery02-sq.jpg',
+  'Storybook Treats': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/magic-kingdom/storybook-treats/storybook-treats-gallery02-sq.jpg',
+  'Cinderella\'s Royal Table': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/magic-kingdom/cinderella-royal-table/cinderella-royal-table-gallery02-sq.jpg',
+  'Be Our Guest Restaurant': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/magic-kingdom/be-our-guest-restaurant/be-our-guest-restaurant-gallery02-sq.jpg',
+  'Liberty Tree Tavern': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/magic-kingdom/liberty-tree-tavern/liberty-tree-tavern-gallery02-sq.jpg',
+  'The Crystal Palace': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/magic-kingdom/crystal-palace/crystal-palace-gallery02-sq.jpg',
+  'The Plaza Restaurant': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/magic-kingdom/plaza-restaurant/plaza-restaurant-gallery02-sq.jpg',
+  'Tony\'s Town Square Restaurant': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/magic-kingdom/tonys-town-square-restaurant/tonys-town-square-restaurant-gallery02-sq.jpg',
+  'Jungle Navigation Co. LTD Skipper Canteen': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/magic-kingdom/jungle-navigation-skipper-canteen/jungle-navigation-skipper-canteen-gallery02-sq.jpg',
+  'The Diamond Horseshoe': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/magic-kingdom/the-diamond-horseshoe/the-diamond-horseshoe-gallery02-sq.jpg',
+  'Aloha Isle': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/magic-kingdom/aloha-isle/aloha-isle-gallery02-sq.jpg',
+  'Main Street Bakery (Starbucks)': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/dining/magic-kingdom/main-street-bakery/main-street-bakery-gallery02-sq.jpg',
+  'Happily Ever After': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/entertainment/magic-kingdom/happily-ever-after/happily-ever-after-gallery02-sq.jpg',
+  'Mickey\'s Magical Friendship Faire': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/entertainment/magic-kingdom/mickeys-magical-friendship-faire/mickeys-magical-friendship-faire-gallery02-sq.jpg',
+  'Disney Adventure Friends Cavalcade': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/entertainment/magic-kingdom/disney-adventure-friends-cavalcade/disney-adventure-friends-cavalcade-gallery02-sq.jpg',
+  'Festival of Fantasy Parade': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/entertainment/magic-kingdom/festival-of-fantasy-parade/festival-of-fantasy-parade-gallery02-sq.jpg',
+  'The Dapper Dans': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/entertainment/magic-kingdom/dapper-dans/dapper-dans-gallery02-sq.jpg',
+  'Main Street Philharmonic': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/entertainment/magic-kingdom/main-street-philharmonic/main-street-philharmonic-gallery02-sq.jpg',
+  'Emporium': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/shops/magic-kingdom/emporium/emporium-gallery02-sq.jpg',
+  'Big Top Souvenirs': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/shops/magic-kingdom/big-top-souvenirs/big-top-souvenirs-gallery02-sq.jpg',
+  'Memento Mori': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/shops/magic-kingdom/memento-mori/memento-mori-gallery02-sq.jpg',
+  'Ye Olde Christmas Shoppe': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/shops/magic-kingdom/ye-olde-christmas-shoppe/ye-olde-christmas-shoppe-gallery02-sq.jpg',
+  'Bibbidi Bobbidi Boutique': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/shops/magic-kingdom/bibbidi-bobbidi-boutique/bibbidi-bobbidi-boutique-gallery02-sq.jpg',
+  'Harmony Barber Shop': 'https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/500/281/75/dam/wdpro-assets/gallery/shops/magic-kingdom/harmony-barber-shop/harmony-barber-shop-gallery02-sq.jpg',
 };
 // Função helper
 function getFoto(nome, parque) {
