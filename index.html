@@ -829,8 +829,15 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
       </div>
       <div class="section-sep">📋 Ordem das Atrações</div>
       <div class="fg">
-        <label class="fl">Ordem planejada <span style="font-size:10px;color:#888">(1 atração por linha, na ordem de visita)</span></label>
-        <textarea class="fc" id="mr-ordem-atracoes" placeholder="1. Seven Dwarfs Mine Train&#10;2. Space Mountain&#10;3. Tron Lightcycle / Run..." style="min-height:90px;font-size:12px"></textarea>
+        <label class="fl">Adicionar atração à ordem do dia</label>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <select class="fc" id="mr-atracoes-sel" style="flex:1"><option value="">— Selecione —</option></select>
+          <button type="button" class="btn btn-sec btn-sm" onclick="roteiroAddOrdemAtracoes()">+ Add</button>
+        </div>
+        <div id="mr-ordem-lista" style="border:1px solid #ddd;border-radius:8px;min-height:50px;padding:6px;background:#fafafa">
+          <div style="color:#999;font-size:12px;text-align:center;padding:8px">Adicione atrações acima</div>
+        </div>
+        <input type="hidden" id="mr-ordem-atracoes">
       </div>
       <div class="fg"><label class="fl">Estratégia / Notas Gerais</label><textarea class="fc" id="mr-notas" placeholder="Ordem das atrações, dicas, observações importantes..." style="min-height:80px"></textarea></div>
 
@@ -1134,6 +1141,24 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
 <!-- ═══ FIREBASE ══════════════════════════════════════════════════════════ -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+
+<!-- ═══ MODAL: BLOQUEAR DATA ══════════════════════════════════════════════ -->
+<div class="mo hid" id="mo-bloquear-data">
+  <div class="mc2" style="max-width:400px">
+    <div class="mh"><div class="mt">🔒 Bloquear / Desbloquear Data</div><button class="mcl" onclick="closeModal('mo-bloquear-data')">×</button></div>
+    <div class="mb">
+      <p style="font-size:12px;color:#666;margin-bottom:14px">Bloqueie datas em que não poderá fazer guiamentos. Somente você pode gerenciar suas datas bloqueadas.</p>
+      <div class="fg"><label class="fl">Data a bloquear *</label><input class="fc" type="date" id="bd-data"></div>
+      <div class="fg"><label class="fl">Motivo (opcional)</label><input class="fc" id="bd-motivo" placeholder="Férias, compromisso pessoal..."></div>
+      <div id="bd-lista" style="margin-top:14px;max-height:200px;overflow-y:auto"></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-sec" onclick="closeModal('mo-bloquear-data')">Fechar</button>
+      <button class="btn btn-danger" onclick="bloquearData()">🔒 Bloquear</button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ══════════════════════════════════════════════════════════════════════════
@@ -3054,13 +3079,22 @@ function exportarResumoDiaPDF(grupoId, data) {
 
   var blob = new Blob([html], {type:'text/html;charset=utf-8'});
   var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url; a.download = 'Resumo_DiaD_'+(grupo?.nome||'grupo').replace(/\s+/g,'_')+'_'+data+'.html';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
-  toast('📄 PDF do resumo gerado!','success');
-  // fechar modal se aberto
-  document.querySelectorAll('div[style*="fixed"][style*="9999"]').forEach(function(m){ m.remove(); });
+  var nomeArq = 'Resumo_DiaD_'+(grupo?.nome||'grupo').replace(/[^a-zA-Z0-9]/g,'_')+'_'+data+'.html';
+  var linkModal = document.createElement('div');
+  linkModal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px';
+  linkModal.innerHTML='<div style="background:#fff;border-radius:16px;padding:28px;max-width:440px;width:100%;text-align:center">'+
+    '<div style="font-size:36px;margin-bottom:12px">'+String.fromCodePoint(0x1F4C4)+'</div>'+
+    '<div style="font-weight:800;font-size:16px;margin-bottom:8px">PDF do Resumo pronto!</div>'+
+    '<div style="font-size:13px;color:#555;margin-bottom:20px">Clique no botão abaixo para abrir.<br>No navegador, use Ctrl+P para salvar como PDF.</div>'+
+    '<a href="'+url+'" target="_blank" rel="noopener" download="'+nomeArq+'" '+
+      'style="display:inline-block;padding:12px 28px;background:#2C6AA3;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;margin-bottom:12px">'+
+      String.fromCodePoint(0x1F517)+' Abrir / Baixar PDF</a><br>'+
+    '<button id="_pdf-fechar-btn" style="padding:8px 20px;background:#f3f4f6;border:none;border-radius:8px;cursor:pointer;margin-top:8px">Fechar</button>'+
+  '</div>';
+  document.body.appendChild(linkModal);
+  document.getElementById('_pdf-fechar-btn').onclick = function(){ linkModal.remove(); URL.revokeObjectURL(url); };
+  document.querySelectorAll('div[style*="fixed"][style*="9999"]').forEach(function(m){ if(m!==linkModal) m.remove(); });
+  toast(''+String.fromCodePoint(0x1F4C4)+' PDF pronto!','success');
 }
 
 function switchDiaTab(tabEl, showId, hideId) {
@@ -3256,17 +3290,18 @@ function getDatasBloqueadasGuia(guiaId) {
 }
 
 function verificarDisponibilidadeGuia(guiaNome, data) {
-  // Retorna {ok: bool, motivo: string}
+  if(!guiaNome || !data) return {ok:true, motivo:''};
+  // Verificar bloqueio via USUARIOS_SISTEMA
   var guiaUser = USUARIOS_SISTEMA.find(function(u){ return u.nome===guiaNome; });
   if(guiaUser) {
     var bloqueadas = getDatasBloqueadasGuia(guiaUser.id);
     if(bloqueadas.includes(data)) return {ok:false, motivo:'Guia '+guiaNome+' bloqueou esta data'};
-    // Contar guiamentos já atribuídos
-    var guiamentosNaData = (DB.grupos||[]).filter(function(gr){
-      return gr.guia===guiaNome && (gr.parques||[]).some(function(p){ return p.data===data; });
-    }).length;
-    if(guiamentosNaData >= 2) return {ok:false, motivo:'Guia '+guiaNome+' já tem 2 guiamentos nesta data (limite máximo)'};
   }
+  // Sempre contar guiamentos (independente de USUARIOS_SISTEMA)
+  var guiamentosNaData = (DB.grupos||[]).filter(function(gr){
+    return gr.guia===guiaNome && (gr.parques||[]).some(function(p){ return p.data===data; });
+  }).length;
+  if(guiamentosNaData >= 2) return {ok:false, motivo:'Guia '+guiaNome+' já tem 2 guiamentos em '+data+' (limite máximo)'};
   return {ok:true, motivo:''};
 }
 
@@ -3383,7 +3418,10 @@ function openRoteiroModal(id=null, grupoPreId=null) {
   const mrAtv = g('mr-atividades'); if(mrAtv) mrAtv.value = mr?.atividades||'';
   const mrPers = g('mr-pers'); if(mrPers) mrPers.value = mr?.personagens||'';
   const mrNotas = g('mr-notas'); if(mrNotas) mrNotas.value = mr?.notas||'';
-  const mrOrdem = g('mr-ordem-atracoes'); if(mrOrdem) mrOrdem.value = mr?.ordemAtracoes||'';
+  var mrOrdem = g('mr-ordem-atracoes');
+  if(mrOrdem) mrOrdem.value = mr ? (Array.isArray(mr.ordemAtracoes)?JSON.stringify(mr.ordemAtracoes):(mr.ordemAtracoes||'[]')) : '[]';
+  if(mr?.parque) roteiroPopulateAtracoesSel(mr.parque);
+  renderOrdemAtracoes(mrOrdem ? (JSON.parse(mrOrdem.value||'[]')) : []);
   if(g('mr-usar-multi-ll')) g('mr-usar-multi-ll').checked = mr?.usarMultiLL||false;
   if(g('mr-usar-single-ll')) g('mr-usar-single-ll').checked = mr?.usarSingleLL||false;
   if(g('mr-usar-express')) g('mr-usar-express').checked = mr?.usarExpress||false;
@@ -3394,6 +3432,41 @@ function openRoteiroModal(id=null, grupoPreId=null) {
   } catch(err) { console.error('openRoteiroModal error:', err); toast('Erro ao abrir roteiro: '+err.message,'warn'); }
 }
 
+
+function roteiroAddOrdemAtracoes(){
+  var sel=g('mr-atracoes-sel'); var val=sel?sel.value:'';
+  if(!val) return;
+  var items=getOrdemAtracoesAtual();
+  if(items.includes(val)){toast('Já está na lista','warn');return;}
+  items.push(val); renderOrdemAtracoes(items); if(sel) sel.value='';
+}
+function getOrdemAtracoesAtual(){
+  var h=g('mr-ordem-atracoes'); if(!h) return [];
+  try{ return JSON.parse(h.value||'[]'); }catch(e){ return []; }
+}
+function renderOrdemAtracoes(items){
+  var lista=g('mr-ordem-lista'); if(!lista) return;
+  var h=g('mr-ordem-atracoes'); if(h) h.value=JSON.stringify(items);
+  if(!items.length){lista.innerHTML='<div style="color:#999;font-size:12px;text-align:center;padding:8px">Adicione atrações acima</div>';return;}
+  lista.innerHTML=items.map(function(nome,i){
+    return '<div style="display:flex;align-items:center;gap:6px;padding:5px;background:#fff;border:1px solid #eee;border-radius:6px;margin-bottom:3px">'+
+      '<span style="font-size:11px;font-weight:700;color:#2C6AA3;min-width:18px">'+(i+1)+'.</span>'+
+      '<span style="flex:1;font-size:12px">'+esc(nome)+'</span>'+
+      '<button onclick="roteiroMoverOrdem('+i+',-1)" style="padding:0 3px;background:none;border:none;cursor:pointer;opacity:0.6" '+(i===0?'disabled':'')+'>▲</button>'+
+      '<button onclick="roteiroMoverOrdem('+i+',1)" style="padding:0 3px;background:none;border:none;cursor:pointer;opacity:0.6" '+(i===items.length-1?'disabled':'')+'>▼</button>'+
+      '<button onclick="roteiroRemoverOrdem('+i+')" style="padding:0 3px;background:none;border:none;cursor:pointer;color:#dc3545">✕</button></div>';
+  }).join('');
+}
+function roteiroMoverOrdem(idx,dir){var items=getOrdemAtracoesAtual();var n=idx+dir;if(n<0||n>=items.length)return;var t=items[idx];items[idx]=items[n];items[n]=t;renderOrdemAtracoes(items);}
+function roteiroRemoverOrdem(idx){var items=getOrdemAtracoesAtual();items.splice(idx,1);renderOrdemAtracoes(items);}
+function roteiroPopulateAtracoesSel(pk){
+  var sel=g('mr-atracoes-sel'); if(!sel) return;
+  var atrs=ATRACOES[pk]||[];
+  var opts='<option value="">— Selecione —</option>'+atrs.map(function(a){return '<option value="'+esc(a.n)+'">'+esc(a.n)+'</option>';}).join('');
+  if(RESTAURANTES[pk]){var rs=[...(RESTAURANTES[pk].ts||[]),...(RESTAURANTES[pk].qs||[])];if(rs.length)opts+='<optgroup label="🍽️ Restaurantes">'+rs.map(function(r){return '<option value="'+esc(r.n)+'">'+esc(r.n)+'</option>';}).join('')+'</optgroup>';}
+  var sh=SHOWS[pk]||[];if(sh.length)opts+='<optgroup label="🎭 Shows">'+sh.map(function(s){return '<option value="'+esc(s.n)+'">'+esc(s.n)+'</option>';}).join('')+'</optgroup>';
+  sel.innerHTML=opts;
+}
 function roteiroAtualizarLL() {
   const pk = g('mr-parque').value;
   const isDisney = ['MK','EPCOT','HS','AK','BB','TL'].includes(pk);
@@ -3402,6 +3475,7 @@ function roteiroAtualizarLL() {
   const expCtrl  = g('mr-express-controls');
   if (llCtrl)  llCtrl.style.display  = isDisney ? 'block' : 'none';
   if (expCtrl) expCtrl.style.display = isUniv   ? 'block' : 'none';
+  roteiroPopulateAtracoesSel(pk);
   // Mostrar/ocultar seções LL com base nos toggles
   var usarMulti  = g('mr-usar-multi-ll')?.checked;
   var usarSingle = g('mr-usar-single-ll')?.checked;
@@ -3525,7 +3599,7 @@ async function saveRoteiro() {
     atividades:   g('mr-atividades')?.value.trim()||'',
     personagens:  g('mr-pers')?.value.trim()||'',
     notas:        g('mr-notas')?.value.trim()||'',
-    ordemAtracoes: g('mr-ordem-atracoes')?.value.trim()||'',
+    ordemAtracoes: (function(){ var h=g('mr-ordem-atracoes'); try{return h?JSON.parse(h.value||'[]'):[]}catch(e){return [];} })(),
     usarMultiLL:  g('mr-usar-multi-ll')?.checked||false,
     usarSingleLL: g('mr-usar-single-ll')?.checked||false,
     usarExpress:  g('mr-usar-express')?.checked||false,
@@ -3690,10 +3764,11 @@ function renderGuias() {
   const sfilt  = g('guia-status-filter')?.value||'';
   const pg     = DB.perfis_guias || {};
 
+  var guiaIds = new Set();
   var guias = USUARIOS_SISTEMA.filter(function(u) {
     var ps = Array.isArray(u.perfis) ? u.perfis : [u.perfil||''];
     return ps.includes('guia') || ps.includes('adm');
-  }).map(function(u) { return Object.assign({}, u, pg[u.id]||{}); });
+  }).map(function(u) { guiaIds.add(u.id); return Object.assign({}, u, pg[u.id]||{}); });
 
   // GUIA: só vê o próprio perfil
   if (!isAdmUser(U)) {
