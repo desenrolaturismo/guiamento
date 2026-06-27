@@ -2297,20 +2297,48 @@ window.onload = () => {
 let _loginBusy = false;
 
 async function loadUsuariosSistema() {
-  try {
-    if (_fbDb) {
-      const t = new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),4000));
-      const snap = await Promise.race([_fbDb.ref('desenrola_v3/usuarios').once('value'), t]);
+  // Tentativa 1: ler de desenrola_v3/usuarios (formato u_1, u_2 do syncUsuarioFirebase)
+  if (_fbDb) {
+    try {
+      const t1 = new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),5000));
+      const snap = await Promise.race([_fbDb.ref('desenrola_v3/usuarios').once('value'), t1]);
       if (snap && snap.exists()) {
         const raw = snap.val();
-        USUARIOS_SISTEMA = (Array.isArray(raw)?raw:Object.values(raw)).filter(Boolean).map(function(u){
-          if(!Array.isArray(u.perfis)) u.perfis = u.perfil?[u.perfil]:['guia'];
-          return u;
-        });
-        return;
+        const lista = (Array.isArray(raw)?raw:Object.values(raw)).filter(Boolean);
+        if (lista.length > 0) {
+          USUARIOS_SISTEMA = lista.map(function(u){
+            if(!Array.isArray(u.perfis)) u.perfis = u.perfil?[u.perfil]:['guia'];
+            return u;
+          });
+          console.log('[Login] Usuários carregados do Firebase:', USUARIOS_SISTEMA.length);
+          return;
+        }
       }
-    }
-  } catch(e) { console.warn('loadUsuariosSistema fallback:',e.message); }
+    } catch(e) { console.warn('loadUsuariosSistema path1 error:', e.message); }
+
+    // Tentativa 2: ler da raiz desenrola_v3 (formato antigo — usuarios como array)
+    try {
+      const t2 = new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),5000));
+      const snap2 = await Promise.race([_fbDb.ref('desenrola_v3').once('value'), t2]);
+      if (snap2 && snap2.exists()) {
+        const rootData = snap2.val();
+        if (rootData && rootData.usuarios) {
+          const rawU = rootData.usuarios;
+          const lista2 = (Array.isArray(rawU)?rawU:Object.values(rawU)).filter(Boolean);
+          if (lista2.length > 0) {
+            USUARIOS_SISTEMA = lista2.map(function(u){
+              if(!Array.isArray(u.perfis)) u.perfis = u.perfil?[u.perfil]:['guia'];
+              return u;
+            });
+            console.log('[Login] Usuários carregados da raiz Firebase:', USUARIOS_SISTEMA.length);
+            return;
+          }
+        }
+      }
+    } catch(e2) { console.warn('loadUsuariosSistema path2 error:', e2.message); }
+  }
+
+  console.warn('[Login] Firebase indisponível — sem usuários para autenticar');
   USUARIOS_SISTEMA = USUARIOS_FALLBACK.slice();
 }
 
