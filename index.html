@@ -2757,7 +2757,7 @@ function renderDiaCard(ll, grupoId, data, idx, total) {
       <div class="dia-card-info">
         <div class="dia-card-name">${esc(ll.atracao||ll.nome||'—')}</div>
         <div class="dia-card-meta">${typeTag()} ${ll.obs?`<span class="tm fs11">· ${esc(ll.obs.slice(0,40))}</span>`:''}</div>
-      ${(ll.tempoFila||ll.tempoReal)?`<div class="fs10" style="color:#6366f1;margin-top:2px">${ll.tempoFila?'⏱️ Fila: '+ll.tempoFila+'min':''} ${ll.tempoReal?'· ⏳ Real: '+ll.tempoReal+'min':''} ${(ll.tempoFila&&ll.tempoReal&&ll.tempoFila>ll.tempoReal)?'<span style="color:#16a34a;font-weight:700">⚡ -'+(ll.tempoFila-ll.tempoReal)+'min</span>':''}</div>`:''}`
+      ${(ll.tempoFila||ll.tempoReal)?`<div class="fs10" style="color:#6366f1;margin-top:2px">${ll.tempoFila?'⏱️ Fila: '+ll.tempoFila+'min':''} ${ll.tempoReal?'· ⏳ Real: '+ll.tempoReal+'min':''} ${(ll.tempoFila&&ll.tempoReal&&ll.tempoFila>ll.tempoReal)?'<span style="color:#16a34a;font-weight:700">⚡ -'+(ll.tempoFila-ll.tempoReal)+'min</span>':''}</div>`:''}
       </div>
       <div class="dia-card-status">${stBadge()}</div>
       <div class="dia-card-actions">
@@ -2911,79 +2911,65 @@ function exportarResumoDia() {
   const pk = (grupo?.parques||[]).find(p=>p.data===data)?.parque || '';
   const pkNome = pk ? (PARQUES[pk]?.nome||pk) : 'Parque';
   const fmtDate = function(s){ try{ var d=new Date(s+'T12:00:00'); return d.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'}); }catch(e){ return s; } };
-  
+
   var atracoes = log.filter(x=>!['restaurante','show','atividade'].includes(x.tipo));
   var restaurantes = log.filter(x=>x.tipo==='restaurante');
   var shows = log.filter(x=>['show','atividade'].includes(x.tipo));
-  
+
   var tempoEconomizadoTotal = atracoes.reduce(function(acc,a){
     if(a.tempoFila && a.tempoReal && a.tempoFila > a.tempoReal) return acc+(a.tempoFila-a.tempoReal);
     return acc;
   },0);
-  
-  // ── Texto WhatsApp ──────────────────────────────────────────────
-  var txt = '📊 *RESUMO DO DIA D — ' + (grupo?.nome||'Grupo') + '*
-';
-  txt += '📅 ' + fmtDate(data).charAt(0).toUpperCase() + fmtDate(data).slice(1);
-  txt += ' | ' + (PARQUES[pk]?.emoji||'🏰') + ' ' + pkNome + '
 
-';
-  
+  // ── Texto WhatsApp ──────────────────────────────────────────────
+  var txt = '\uD83D\uDCCA *RESUMO DO DIA D \u2014 ' + (grupo?.nome||'Grupo') + '*\n';
+  txt += '\uD83D\uDCC5 ' + fmtDate(data).charAt(0).toUpperCase() + fmtDate(data).slice(1);
+  txt += ' | ' + (PARQUES[pk]?.emoji||'\uD83C\uDFF0') + ' ' + pkNome + '\n\n';
+
   if (atracoes.length) {
-    txt += '🎢 *ATRAÇÕES:*
-';
+    txt += '\uD83C\uDFA2 *ATR\u00C7\u00D5ES:*\n';
     atracoes.forEach(function(a, i) {
-      var tipoTag = {'multi-pass':'[Multi LL]','single-pass':'[Single LL]','express':'[Express]⚡','virtual-queue':'[VQ]','normal':''}[a.tipo]||'';
-      txt += (i+1)+'. ' + (a.atracao||a.nome||'—') + ' ' + tipoTag;
+      var tipoTag = {'multi-pass':'[Multi LL]','single-pass':'[Single LL]','express':'[Express]\u26A1','virtual-queue':'[VQ]','normal':''}[a.tipo]||'';
+      txt += (i+1)+'. ' + (a.atracao||a.nome||'\u2014') + ' ' + tipoTag;
       if (a.tempoFila) txt += ' | Fila: '+a.tempoFila+'min';
       if (a.tempoReal) txt += ' | Real: '+a.tempoReal+'min';
       if (a.tempoFila && a.tempoReal && a.tempoFila > a.tempoReal)
-        txt += ' ⚡ *Economizou '+(a.tempoFila-a.tempoReal)+'min*';
-      txt += '
-';
+        txt += ' \u26A1 *Economizou '+(a.tempoFila-a.tempoReal)+'min*';
+      txt += '\n';
     });
-    txt += '
-';
+    txt += '\n';
   }
   if (restaurantes.length) {
-    txt += '🍽️ *RESTAURANTES:*
-';
-    restaurantes.forEach(function(r){ txt += '• '+(r.atracao||r.nome||'—')+(r.hora?' ('+r.hora+')':'')+'
-'; });
-    txt += '
-';
+    txt += '\uD83C\uDF7D\uFE0F *RESTAURANTES:*\n';
+    restaurantes.forEach(function(r){ txt += '\u2022 '+(r.atracao||r.nome||'\u2014')+(r.hora?' ('+r.hora+')':'')+'\n'; });
+    txt += '\n';
   }
   if (shows.length) {
-    txt += '🎭 *SHOWS & ATIVIDADES:*
-';
-    shows.forEach(function(s){ txt += '• '+(s.atracao||s.nome||'—')+(s.hora?' ('+s.hora+')':'')+'
-'; });
-    txt += '
-';
+    txt += '\uD83C\uDFAD *SHOWS & ATIVIDADES:*\n';
+    shows.forEach(function(s){ txt += '\u2022 '+(s.atracao||s.nome||'\u2014')+(s.hora?' ('+s.hora+')':'')+'\n'; });
+    txt += '\n';
   }
   if (tempoEconomizadoTotal > 0)
-    txt += '⏱️ *Total economizado: '+tempoEconomizadoTotal+' minutos!* 🎉
-';
-  txt += '
-_Resumo gerado pelo Sistema de Guiamento Virtual Desenrola Turismo_';
-  
+    txt += '\u23F1\uFE0F *Total economizado: '+tempoEconomizadoTotal+' minutos!* \uD83C\uDF89\n';
+  txt += '\n_Resumo gerado pelo Sistema de Guiamento Virtual Desenrola Turismo_';
+
   // ── Modal de escolha ────────────────────────────────────────────
   var modal = document.createElement('div');
   modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
   modal.innerHTML = '<div style="background:#fff;border-radius:16px;padding:24px;max-width:480px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.2)">' +
-    '<div style="font-size:16px;font-weight:800;color:#1a1a2e;margin-bottom:16px">📊 Exportar Resumo do Dia D</div>' +
-    '<textarea id="_resumo-txt" style="width:100%;height:180px;font-size:12px;font-family:monospace;border:1px solid #ddd;border-radius:8px;padding:10px;resize:vertical;box-sizing:border-box">' + txt.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*/g,'*') + '</textarea>' +
+    '<div style="font-size:16px;font-weight:800;color:#1a1a2e;margin-bottom:16px">\uD83D\uDCCA Exportar Resumo do Dia D</div>' +
+    '<textarea id="_resumo-txt" style="width:100%;height:180px;font-size:12px;font-family:monospace;border:1px solid #ddd;border-radius:8px;padding:10px;resize:vertical;box-sizing:border-box"></textarea>' +
     '<div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">' +
-      '<button onclick="navigator.clipboard&&navigator.clipboard.writeText(document.getElementById('_resumo-txt').value).then(function(){alert('Copiado para a área de transferência!')}).catch(function(){document.getElementById('_resumo-txt').select();document.execCommand('copy');alert('Copiado!')})" style="flex:1;padding:10px;background:#25D366;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700">📋 Copiar para WhatsApp</button>' +
-      '<button onclick="exportarResumoDiaPDF(''+grupoId+'',''+data+'')" style="flex:1;padding:10px;background:#2C6AA3;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700">📄 Gerar PDF</button>' +
-      '<button onclick="this.closest('div[style*=fixed]').remove()" style="padding:10px 16px;background:#f3f4f6;border:none;border-radius:8px;cursor:pointer">✕</button>' +
+      '<button onclick="navigator.clipboard&&navigator.clipboard.writeText(document.getElementById(\'_resumo-txt\').value).then(function(){alert(\'Copiado!\')}).catch(function(){document.getElementById(\'_resumo-txt\').select();document.execCommand(\'copy\');alert(\'Copiado!\')})" style="flex:1;padding:10px;background:#25D366;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700">\uD83D\uDCCB Copiar para WhatsApp</button>' +
+      '<button onclick="exportarResumoDiaPDF(\''+grupoId+'\',\''+data+'\')" style="flex:1;padding:10px;background:#2C6AA3;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700">\uD83D\uDCC4 Gerar PDF</button>' +
+      '<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="padding:10px 16px;background:#f3f4f6;border:none;border-radius:8px;cursor:pointer">\u2715</button>' +
     '</div>' +
   '</div>';
   document.body.appendChild(modal);
-  // Corrigir texto do textarea (remover escaping html)
   var ta = document.getElementById('_resumo-txt');
   if(ta) ta.value = txt;
 }
+
 
 function exportarResumoDiaPDF(grupoId, data) {
   const grupo = (DB.grupos||[]).find(x=>x.id===grupoId);
@@ -3012,7 +2998,7 @@ function exportarResumoDiaPDF(grupoId, data) {
     var descStr = atrRef?.desc||'';
     return '<tr style="border-bottom:1px solid #f0f4f8">' +
       '<td style="padding:12px 8px;vertical-align:top;width:38px;text-align:center;font-weight:800;color:#2C6AA3">'+(i+1)+'</td>' +
-      (fotoUrl?'<td style="padding:8px;vertical-align:top;width:60px"><img src="'+esc(fotoUrl)+'" style="width:56px;height:40px;object-fit:cover;border-radius:6px" onerror="this.style.display='none'"></td>':'<td style="padding:8px;width:60px"></td>')+
+      (fotoUrl?'<td style="padding:8px;vertical-align:top;width:60px"><img src="'+esc(fotoUrl)+'" style="width:56px;height:40px;object-fit:cover;border-radius:6px" style="width:56px;height:40px;object-fit:cover;border-radius:6px"></td>':'<td style="padding:8px;width:60px"></td>')+
       '<td style="padding:12px 8px;vertical-align:top">' +
         '<div style="font-weight:700;color:#1a1a2e;font-size:10pt">'+(a.hora?'<span style="color:#6366f1;font-size:9pt">'+a.hora+' · </span>':'')+esc(a.atracao||a.nome||'—')+'</div>' +
         (descStr?'<div style="font-size:8pt;color:#666;margin-top:3px">'+esc(descStr.slice(0,120))+(descStr.length>120?'…':'')+'</div>':'')+
@@ -3196,11 +3182,17 @@ function renderBloqueioLista() {
   if(!datas.length){ lista.innerHTML='<div style="color:#888;font-size:12px;text-align:center;padding:12px">Nenhuma data bloqueada</div>'; return; }
   lista.innerHTML = '<div style="font-size:11px;font-weight:700;color:#666;margin-bottom:8px">Datas bloqueadas:</div>' +
     datas.sort(function(a,b){ return a.data<b.data?-1:1; }).map(function(d){
+      var btnId = 'btn-desbloquear-'+d.data;
       return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#fff3cd;border-radius:6px;margin-bottom:4px;font-size:12px">' +
         '<span>🔒 '+fmtDateLong(new Date(d.data+'T12:00:00'))+(d.motivo?' — '+d.motivo:'')+'</span>' +
-        '<button onclick="desbloquearData(''+d.data+'')" style="background:none;border:none;color:#dc3545;cursor:pointer;font-size:14px">✕</button>' +
+        '<button id="'+btnId+'" data-dt="'+d.data+'" style="background:none;border:none;color:#dc3545;cursor:pointer;font-size:14px">✕</button>' +
       '</div>';
     }).join('');
+  // Adicionar listeners (evita aspas simples inline)
+  datas.forEach(function(d){
+    var btn = document.getElementById('btn-desbloquear-'+d.data);
+    if(btn) btn.onclick = function(){ desbloquearData(this.getAttribute('data-dt')); };
+  });
 }
 
 async function bloquearData() {
