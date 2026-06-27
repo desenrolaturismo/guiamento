@@ -406,6 +406,7 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
       <div id="dia-actions-bar" class="hid" style="background:#f8f9fc;border-bottom:1px solid var(--bdr);padding:8px 28px;display:flex;gap:8px;align-items:center">
         <span class="fs12 fw7" id="dia-grupo-label" style="margin-right:8px"></span>
         <button class="btn btn-sec btn-sm" onclick="openLLModalFromBar()">🎢 Registrar Atração</button>
+          <button class="btn btn-sec btn-sm" onclick="exportarResumoDia()" style="color:var(--acc2)">📊 Exportar Resumo</button>
         <button class="btn btn-sec btn-sm" onclick="openRestDia()">🍽️ Restaurante</button>
         <button class="btn btn-sec btn-sm" onclick="openShowDia()">🎭 Show / Desfile</button>
         <input type="hidden" id="dia-active-gid">
@@ -519,6 +520,7 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
           <strong id="cal-title" style="font-size:15px"></strong>
           <button class="btn btn-sec btn-sm" onclick="calNav(1)">Próximo ›</button>
           <button class="btn btn-acc btn-sm" onclick="calGoToday()">Hoje</button>
+          <button class="btn btn-sm" onclick="abrirModalBloquearData()" style="background:#fff3cd;border:1px solid #ffc107;color:#856404;font-size:11px">🔒 Bloquear Data</button>
         </div>
       </div>
       <div class="pb">
@@ -696,6 +698,9 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
       <div class="section-sep">📱 My Disney Experience (MDE)</div>
       <div class="fr">
         <div class="fg"><label class="fl">E-mail do MDE</label><input class="fc" id="mg-mde" placeholder="login@email.com" type="email"></div>
+        <div class="fg"><label class="fl">Segredo / Senha do MDE <span style="font-size:10px;color:#888">(acesso ao perfil Disney)</span></label><input class="fc" id="mg-mde-segredo" placeholder="Senha ou PIN de acesso" type="text"></div>
+      </div>
+      <div class="fr">
         <div class="fg"><label class="fl">Hóspede Disney?</label>
           <select class="fc" id="mg-hosp">
             <option value="0">Não — LL disponível D-3</option>
@@ -738,7 +743,7 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
       <div class="fr">
         <div class="fg"><label class="fl">Grupo *</label><select class="fc" id="mr-grupo"><option value="">Selecione...</option></select></div>
         <div class="fg"><label class="fl">Parque *</label>
-          <select class="fc" id="mr-parque" onchange="renderAtrOptions()">
+          <select class="fc" id="mr-parque" onchange="renderAtrOptions();roteiroAtualizarLL()">
             <option value="">Selecione o parque...</option>
             <optgroup label="— Disney World —">
             <option value="MK">🏰 Magic Kingdom</option>
@@ -766,6 +771,27 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
         <div class="fg"><label class="fl">Horário de Chegada</label><input class="fc" type="time" id="mr-hora" value="08:00"></div>
       </div>
 
+      <!-- Controles de sistema LL -->
+      <div id="mr-ll-controls" style="display:none;background:#f0f7ff;border:1px solid #bfdbfe;border-radius:10px;padding:12px 16px;margin-bottom:10px">
+        <div style="font-weight:700;font-size:12px;margin-bottom:10px;color:#1d4ed8">⚙️ Sistema de Lightning Lane</div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+            <input type="checkbox" id="mr-usar-multi-ll" onchange="roteiroAtualizarLL()" style="width:16px;height:16px">
+            <span>Usar LL Multi Pass</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+            <input type="checkbox" id="mr-usar-single-ll" onchange="roteiroAtualizarLL()" style="width:16px;height:16px">
+            <span>Usar LL Single Pass</span>
+          </label>
+        </div>
+      </div>
+      <div id="mr-express-controls" style="display:none;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;padding:12px 16px;margin-bottom:10px">
+        <div style="font-weight:700;font-size:12px;margin-bottom:10px;color:#4c1d95">⚙️ Express Pass</div>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="mr-usar-express" onchange="roteiroAtualizarLL()" style="width:16px;height:16px">
+          <span>Utilizar Express Pass</span>
+        </label>
+      </div>
       <div class="section-sep">💳 LL Single Pass (compra individual separada)</div>
       <div class="fg"><div id="mr-atr-single" style="flex-wrap:wrap;display:flex;padding:10px;background:#fffbf0;border-radius:9px;min-height:44px;border:1px solid #fcd34d"></div></div>
 
@@ -801,6 +827,11 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
           <select class="fc" id="mr-status"><option value="rascunho">Rascunho</option><option value="confirmado">Confirmado</option><option value="executado">Executado</option></select>
         </div>
       </div>
+      <div class="section-sep">📋 Ordem das Atrações</div>
+      <div class="fg">
+        <label class="fl">Ordem planejada <span style="font-size:10px;color:#888">(1 atração por linha, na ordem de visita)</span></label>
+        <textarea class="fc" id="mr-ordem-atracoes" placeholder="1. Seven Dwarfs Mine Train&#10;2. Space Mountain&#10;3. Tron Lightcycle / Run..." style="min-height:90px;font-size:12px"></textarea>
+      </div>
       <div class="fg"><label class="fl">Estratégia / Notas Gerais</label><textarea class="fc" id="mr-notas" placeholder="Ordem das atrações, dicas, observações importantes..." style="min-height:80px"></textarea></div>
 
       <!-- VQ info box -->
@@ -827,6 +858,7 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
             <option value="multi-pass">LL Multi Pass</option>
             <option value="single-pass">LL Single Pass</option>
             <option value="virtual-queue">Virtual Queue</option>
+            <option value="express">Express Pass ⚡</option>
             <option value="normal">Fila Normal</option>
           </select>
         </div>
@@ -842,6 +874,10 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
             <option value="esgotado">Esgotado 😞</option>
           </select>
         </div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label class="fl">⏱️ Fila Anunciada (min) <span style="font-size:9px;color:#888">o que o app/placa disse</span></label><input class="fc" type="number" id="ll-tempo-fila" placeholder="ex: 60" min="0"></div>
+        <div class="fg"><label class="fl">⏳ Tempo Real (min) <span style="font-size:9px;color:#888">quanto realmente esperou</span></label><input class="fc" type="number" id="ll-tempo-real" placeholder="ex: 8" min="0"></div>
       </div>
       <div class="fg"><label class="fl">Obs</label><input class="fc" id="ll-obs" placeholder="Observação opcional"></div>
     </div>
@@ -977,6 +1013,10 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
           <option value="assistido">🎭 Assistido</option>
           <option value="perdido">❌ Perdido</option>
         </select>
+      </div>
+      <div class="fr">
+        <div class="fg"><label class="fl">⏱️ Fila Anunciada (min)</label><input class="fc" type="number" id="ec-tempo-fila" min="0" placeholder="ex: 60"></div>
+        <div class="fg"><label class="fl">⏳ Tempo Real (min)</label><input class="fc" type="number" id="ec-tempo-real" min="0" placeholder="ex: 8"></div>
       </div>
       <div class="fg"><label class="fl">Observação</label><input class="fc" id="ec-obs" placeholder="Observação opcional"></div>
     </div>
@@ -2717,6 +2757,7 @@ function renderDiaCard(ll, grupoId, data, idx, total) {
       <div class="dia-card-info">
         <div class="dia-card-name">${esc(ll.atracao||ll.nome||'—')}</div>
         <div class="dia-card-meta">${typeTag()} ${ll.obs?`<span class="tm fs11">· ${esc(ll.obs.slice(0,40))}</span>`:''}</div>
+      ${(ll.tempoFila||ll.tempoReal)?`<div class="fs10" style="color:#6366f1;margin-top:2px">${ll.tempoFila?'⏱️ Fila: '+ll.tempoFila+'min':''} ${ll.tempoReal?'· ⏳ Real: '+ll.tempoReal+'min':''} ${(ll.tempoFila&&ll.tempoReal&&ll.tempoFila>ll.tempoReal)?'<span style="color:#16a34a;font-weight:700">⚡ -'+(ll.tempoFila-ll.tempoReal)+'min</span>':''}</div>`:''}`
       </div>
       <div class="dia-card-status">${stBadge()}</div>
       <div class="dia-card-actions">
@@ -2759,6 +2800,8 @@ function openEditCard(grupoId, data, idx) {
   g('ec-nome').value   = ll.atracao||ll.nome||'';
   g('ec-status').value = ll.status||'agendado';
   g('ec-obs').value    = ll.obs||'';
+  if(g('ec-tempo-fila')) g('ec-tempo-fila').value = ll.tempoFila||'';
+  if(g('ec-tempo-real')) g('ec-tempo-real').value = ll.tempoReal||'';
   openModal('mo-edit-card');
 }
 
@@ -2776,6 +2819,8 @@ async function saveEditCard() {
   ll.nome    = ll.atracao;
   ll.status  = g('ec-status').value;
   ll.obs     = g('ec-obs').value.trim();
+  ll.tempoFila = parseInt(g('ec-tempo-fila')?.value)||null;
+  ll.tempoReal = parseInt(g('ec-tempo-real')?.value)||null;
   closeModal('mo-edit-card');
   await saveData();
   toast('Registro atualizado ✅');
@@ -2853,6 +2898,156 @@ async function saveShowDia() {
   renderDia();
 }
 
+
+function exportarResumoDia() {
+  const grupoId = g('dia-active-gid')?.value;
+  const data = g('dia-active-data')?.value || g('dia-date')?.value || fmtISO(new Date());
+  if (!grupoId) { toast('Selecione um grupo primeiro','warn'); return; }
+  const grupo = (DB.grupos||[]).find(x=>x.id===grupoId);
+  const gui = (DB.guiamentos||[]).find(x=>x.grupoId===grupoId&&x.data===data);
+  const log = gui?.logLL || [];
+  if (!log.length) { toast('Nenhum registro no dia selecionado','warn'); return; }
+
+  const pk = (grupo?.parques||[]).find(p=>p.data===data)?.parque || '';
+  const pkNome = pk ? (PARQUES[pk]?.nome||pk) : 'Parque';
+  const fmtDate = function(s){ try{ var d=new Date(s+'T12:00:00'); return d.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'}); }catch(e){ return s; } };
+  
+  var atracoes = log.filter(x=>!['restaurante','show','atividade'].includes(x.tipo));
+  var restaurantes = log.filter(x=>x.tipo==='restaurante');
+  var shows = log.filter(x=>['show','atividade'].includes(x.tipo));
+  
+  var tempoEconomizadoTotal = atracoes.reduce(function(acc,a){
+    if(a.tempoFila && a.tempoReal && a.tempoFila > a.tempoReal) return acc+(a.tempoFila-a.tempoReal);
+    return acc;
+  },0);
+  
+  // ── Texto WhatsApp ──────────────────────────────────────────────
+  var txt = '📊 *RESUMO DO DIA D — ' + (grupo?.nome||'Grupo') + '*
+';
+  txt += '📅 ' + fmtDate(data).charAt(0).toUpperCase() + fmtDate(data).slice(1);
+  txt += ' | ' + (PARQUES[pk]?.emoji||'🏰') + ' ' + pkNome + '
+
+';
+  
+  if (atracoes.length) {
+    txt += '🎢 *ATRAÇÕES:*
+';
+    atracoes.forEach(function(a, i) {
+      var tipoTag = {'multi-pass':'[Multi LL]','single-pass':'[Single LL]','express':'[Express]⚡','virtual-queue':'[VQ]','normal':''}[a.tipo]||'';
+      txt += (i+1)+'. ' + (a.atracao||a.nome||'—') + ' ' + tipoTag;
+      if (a.tempoFila) txt += ' | Fila: '+a.tempoFila+'min';
+      if (a.tempoReal) txt += ' | Real: '+a.tempoReal+'min';
+      if (a.tempoFila && a.tempoReal && a.tempoFila > a.tempoReal)
+        txt += ' ⚡ *Economizou '+(a.tempoFila-a.tempoReal)+'min*';
+      txt += '
+';
+    });
+    txt += '
+';
+  }
+  if (restaurantes.length) {
+    txt += '🍽️ *RESTAURANTES:*
+';
+    restaurantes.forEach(function(r){ txt += '• '+(r.atracao||r.nome||'—')+(r.hora?' ('+r.hora+')':'')+'
+'; });
+    txt += '
+';
+  }
+  if (shows.length) {
+    txt += '🎭 *SHOWS & ATIVIDADES:*
+';
+    shows.forEach(function(s){ txt += '• '+(s.atracao||s.nome||'—')+(s.hora?' ('+s.hora+')':'')+'
+'; });
+    txt += '
+';
+  }
+  if (tempoEconomizadoTotal > 0)
+    txt += '⏱️ *Total economizado: '+tempoEconomizadoTotal+' minutos!* 🎉
+';
+  txt += '
+_Resumo gerado pelo Sistema de Guiamento Virtual Desenrola Turismo_';
+  
+  // ── Modal de escolha ────────────────────────────────────────────
+  var modal = document.createElement('div');
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  modal.innerHTML = '<div style="background:#fff;border-radius:16px;padding:24px;max-width:480px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.2)">' +
+    '<div style="font-size:16px;font-weight:800;color:#1a1a2e;margin-bottom:16px">📊 Exportar Resumo do Dia D</div>' +
+    '<textarea id="_resumo-txt" style="width:100%;height:180px;font-size:12px;font-family:monospace;border:1px solid #ddd;border-radius:8px;padding:10px;resize:vertical;box-sizing:border-box">' + txt.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*/g,'*') + '</textarea>' +
+    '<div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">' +
+      '<button onclick="navigator.clipboard&&navigator.clipboard.writeText(document.getElementById('_resumo-txt').value).then(function(){alert('Copiado para a área de transferência!')}).catch(function(){document.getElementById('_resumo-txt').select();document.execCommand('copy');alert('Copiado!')})" style="flex:1;padding:10px;background:#25D366;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700">📋 Copiar para WhatsApp</button>' +
+      '<button onclick="exportarResumoDiaPDF(''+grupoId+'',''+data+'')" style="flex:1;padding:10px;background:#2C6AA3;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700">📄 Gerar PDF</button>' +
+      '<button onclick="this.closest('div[style*=fixed]').remove()" style="padding:10px 16px;background:#f3f4f6;border:none;border-radius:8px;cursor:pointer">✕</button>' +
+    '</div>' +
+  '</div>';
+  document.body.appendChild(modal);
+  // Corrigir texto do textarea (remover escaping html)
+  var ta = document.getElementById('_resumo-txt');
+  if(ta) ta.value = txt;
+}
+
+function exportarResumoDiaPDF(grupoId, data) {
+  const grupo = (DB.grupos||[]).find(x=>x.id===grupoId);
+  const gui = (DB.guiamentos||[]).find(x=>x.grupoId===grupoId&&x.data===data);
+  const log = gui?.logLL || [];
+  const pk = (grupo?.parques||[]).find(p=>p.data===data)?.parque || '';
+  const pkNome = pk ? (PARQUES[pk]?.nome||pk) : 'Parque';
+  const fmtDate = function(s){ try{ var d=new Date(s+'T12:00:00'); return d.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'}); }catch(e){ return s; } };
+  
+  var atracoes = log.filter(x=>!['restaurante','show','atividade'].includes(x.tipo));
+  var restaurantes = log.filter(x=>x.tipo==='restaurante');
+  var shows = log.filter(x=>['show','atividade'].includes(x.tipo));
+  var tempoTotal = atracoes.reduce(function(acc,a){ return (a.tempoFila&&a.tempoReal&&a.tempoFila>a.tempoReal)?acc+(a.tempoFila-a.tempoReal):acc; },0);
+  
+  var atrsHTML = atracoes.map(function(a,i) {
+    var fotoUrl = getFoto(a.atracao||a.nome||'', pk)||'';
+    var tipoTag = {'multi-pass':'<span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:10px;font-size:8pt">Multi LL</span>',
+                   'single-pass':'<span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:10px;font-size:8pt">Single LL</span>',
+                   'express':'<span style="background:#ede9fe;color:#4c1d95;padding:2px 7px;border-radius:10px;font-size:8pt">⚡ Express</span>',
+                   'normal':'<span style="background:#f3f4f6;color:#374151;padding:2px 7px;border-radius:10px;font-size:8pt">Fila Normal</span>'}[a.tipo]||'';
+    var econ = (a.tempoFila&&a.tempoReal&&a.tempoFila>a.tempoReal)?(a.tempoFila-a.tempoReal):0;
+    var desc = a.atracao ? (ATRACOES_DESC&&ATRACOES_DESC[a.atracao] ? ATRACOES_DESC[a.atracao] : '') : '';
+    // Procurar desc nas constantes de atrações
+    var atrRef = null;
+    Object.values(ATRACOES||{}).forEach(function(arr){ (arr||[]).forEach(function(at){ if(at.n===(a.atracao||a.nome)) atrRef=at; }); });
+    var descStr = atrRef?.desc||'';
+    return '<tr style="border-bottom:1px solid #f0f4f8">' +
+      '<td style="padding:12px 8px;vertical-align:top;width:38px;text-align:center;font-weight:800;color:#2C6AA3">'+(i+1)+'</td>' +
+      (fotoUrl?'<td style="padding:8px;vertical-align:top;width:60px"><img src="'+esc(fotoUrl)+'" style="width:56px;height:40px;object-fit:cover;border-radius:6px" onerror="this.style.display='none'"></td>':'<td style="padding:8px;width:60px"></td>')+
+      '<td style="padding:12px 8px;vertical-align:top">' +
+        '<div style="font-weight:700;color:#1a1a2e;font-size:10pt">'+(a.hora?'<span style="color:#6366f1;font-size:9pt">'+a.hora+' · </span>':'')+esc(a.atracao||a.nome||'—')+'</div>' +
+        (descStr?'<div style="font-size:8pt;color:#666;margin-top:3px">'+esc(descStr.slice(0,120))+(descStr.length>120?'…':'')+'</div>':'')+
+        '<div style="margin-top:4px">'+tipoTag+'</div>' +
+      '</td>' +
+      '<td style="padding:12px 8px;text-align:center;vertical-align:top;font-size:9pt;color:#4b5563">'+(a.tempoFila?a.tempoFila+' min':'—')+'</td>' +
+      '<td style="padding:12px 8px;text-align:center;vertical-align:top;font-size:9pt;color:#4b5563">'+(a.tempoReal?a.tempoReal+' min':'—')+'</td>' +
+      '<td style="padding:12px 8px;text-align:center;vertical-align:top;font-weight:700;color:'+(econ>0?'#16a34a':'#9ca3af')+'">'+(econ>0?'⚡ '+econ+' min':'—')+'</td>' +
+    '</tr>';
+  }).join('');
+
+  var html = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Resumo Dia D</title>'+
+  '<style>@page{margin:18mm 14mm}body{font-family:Arial,sans-serif;font-size:10pt;color:#1a1a2e;max-width:900px;margin:0 auto;padding:16px}.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #2C6AA3}.logo{font-size:18pt;font-weight:900;color:#2C6AA3}.logo-sub{font-size:8pt;color:#888}table{width:100%;border-collapse:collapse}th{background:#2C6AA3;color:#fff;padding:9px 8px;text-align:left;font-size:9pt}.section{font-size:11pt;font-weight:800;color:#2C6AA3;margin:18px 0 10px;padding-bottom:6px;border-bottom:2px solid #e0e7ff}.summary-box{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 16px;margin:16px 0;text-align:center}.summary-num{font-size:20pt;font-weight:900;color:#16a34a}.summary-lbl{font-size:9pt;color:#374151}@media print{button{display:none}}</style></head><body>'+
+  '<div class="header">'+
+    '<div><div class="logo">✦ Desenrola Turismo</div><div class="logo-sub">Sistema de Guiamento Virtual</div></div>'+
+    '<div style="text-align:right"><div style="font-weight:700;font-size:11pt">'+(grupo?.nome||'—')+'</div><div class="logo-sub">'+(PARQUES[pk]?.emoji||'🏰')+' '+pkNome+' · '+fmtDate(data)+'</div></div>'+
+  '</div>'+
+  (atracoes.length?'<div class="section">🎢 ATRAÇÕES ('+atracoes.length+')</div>'+
+    '<table><thead><tr><th style="width:38px">#</th><th style="width:60px">Foto</th><th>Atração</th><th style="text-align:center;width:80px">⏱️ Fila Anun.</th><th style="text-align:center;width:80px">⏳ Tempo Real</th><th style="text-align:center;width:90px">⚡ Economizado</th></tr></thead><tbody>'+atrsHTML+'</tbody></table>':'')+
+  (tempoTotal>0?'<div class="summary-box"><div class="summary-num">⚡ '+tempoTotal+' min</div><div class="summary-lbl">Total economizado com LL / Express Pass</div></div>':'')+
+  (restaurantes.length?'<div class="section">🍽️ RESTAURANTES</div><ul>'+restaurantes.map(function(r){ return '<li style="padding:4px 0">'+(r.hora?'<strong>'+r.hora+'</strong> · ':'')+esc(r.atracao||r.nome||'—')+(r.obs?' — <em>'+esc(r.obs)+'</em>':'')+'</li>'; }).join('')+'</ul>':'')+
+  (shows.length?'<div class="section">🎭 SHOWS & ATIVIDADES</div><ul>'+shows.map(function(s){ return '<li style="padding:4px 0">'+(s.hora?'<strong>'+s.hora+'</strong> · ':'')+esc(s.atracao||s.nome||'—')+(s.obs?' — <em>'+esc(s.obs)+'</em>':'')+'</li>'; }).join('')+'</ul>':'')+
+  '<div style="margin-top:24px;text-align:center"><button onclick="window.print()" style="padding:10px 24px;background:#2C6AA3;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:10pt">🖨️ Imprimir / Salvar como PDF</button></div>'+
+  '</body></html>';
+
+  var blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'Resumo_DiaD_'+(grupo?.nome||'grupo').replace(/\s+/g,'_')+'_'+data+'.html';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+  toast('📄 PDF do resumo gerado!','success');
+  // fechar modal se aberto
+  document.querySelectorAll('div[style*="fixed"][style*="9999"]').forEach(function(m){ m.remove(); });
+}
 
 function switchDiaTab(tabEl, showId, hideId) {
   tabEl.parentElement.querySelectorAll('.tab').forEach(t => t.classList.remove('act'));
@@ -2947,6 +3142,7 @@ function openGrupoModal(id=null) {
   g('mg-perfil').value= mg?.perfil||'familia';
   g('mg-rest').value  = mg?.restricoes||'';
   g('mg-mde').value   = mg?.loginMDE||'';
+  if(g('mg-mde-segredo')) g('mg-mde-segredo').value = mg?.segredoMDE||'';
   g('mg-hosp').value  = mg?.hospedeiro?'1':'0';
   g('mg-pag').value   = mg?.statusPagamento||'pendente';
   g('mg-obs').value   = mg?.notas||'';
@@ -2984,16 +3180,96 @@ function renderParkRows() {
 
 function removeParkRow(i) { parkRows.splice(i,1); renderParkRows(); }
 
+
+function abrirModalBloquearData() {
+  if(!U) return;
+  g('bd-data').value = fmtISO(new Date());
+  g('bd-motivo').value = '';
+  renderBloqueioLista();
+  openModal('mo-bloquear-data');
+}
+
+function renderBloqueioLista() {
+  const lista = g('bd-lista'); if(!lista) return;
+  var pg = (DB.perfis_guias||{})[U.id]||{};
+  var datas = pg.datasBloqueadas||[];
+  if(!datas.length){ lista.innerHTML='<div style="color:#888;font-size:12px;text-align:center;padding:12px">Nenhuma data bloqueada</div>'; return; }
+  lista.innerHTML = '<div style="font-size:11px;font-weight:700;color:#666;margin-bottom:8px">Datas bloqueadas:</div>' +
+    datas.sort(function(a,b){ return a.data<b.data?-1:1; }).map(function(d){
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#fff3cd;border-radius:6px;margin-bottom:4px;font-size:12px">' +
+        '<span>🔒 '+fmtDateLong(new Date(d.data+'T12:00:00'))+(d.motivo?' — '+d.motivo:'')+'</span>' +
+        '<button onclick="desbloquearData(''+d.data+'')" style="background:none;border:none;color:#dc3545;cursor:pointer;font-size:14px">✕</button>' +
+      '</div>';
+    }).join('');
+}
+
+async function bloquearData() {
+  var data = g('bd-data').value;
+  var motivo = g('bd-motivo').value.trim();
+  if(!data){ toast('Selecione uma data','warn'); return; }
+  if(!DB.perfis_guias) DB.perfis_guias = {};
+  if(!DB.perfis_guias[U.id]) DB.perfis_guias[U.id] = {};
+  var pg = DB.perfis_guias[U.id];
+  if(!pg.datasBloqueadas) pg.datasBloqueadas = [];
+  if(pg.datasBloqueadas.some(function(d){ return d.data===data; })){ toast('Data já está bloqueada','warn'); return; }
+  pg.datasBloqueadas.push({data:data, motivo:motivo, bloqueadoEm:Date.now()});
+  await saveData();
+  renderBloqueioLista();
+  renderAgenda();
+  toast('Data '+new Date(data+'T12:00:00').toLocaleDateString('pt-BR')+' bloqueada 🔒');
+  g('bd-data').value = '';
+  g('bd-motivo').value = '';
+}
+
+async function desbloquearData(data) {
+  if(!DB.perfis_guias||!DB.perfis_guias[U.id]) return;
+  DB.perfis_guias[U.id].datasBloqueadas = (DB.perfis_guias[U.id].datasBloqueadas||[]).filter(function(d){ return d.data!==data; });
+  await saveData();
+  renderBloqueioLista();
+  renderAgenda();
+  toast('Data desbloqueada ✅');
+}
+
+function getDatasBloqueadasGuia(guiaId) {
+  var pg = (DB.perfis_guias||{})[guiaId]||{};
+  return (pg.datasBloqueadas||[]).map(function(d){ return d.data; });
+}
+
+function verificarDisponibilidadeGuia(guiaNome, data) {
+  // Retorna {ok: bool, motivo: string}
+  var guiaUser = USUARIOS_SISTEMA.find(function(u){ return u.nome===guiaNome; });
+  if(guiaUser) {
+    var bloqueadas = getDatasBloqueadasGuia(guiaUser.id);
+    if(bloqueadas.includes(data)) return {ok:false, motivo:'Guia '+guiaNome+' bloqueou esta data'};
+    // Contar guiamentos já atribuídos
+    var guiamentosNaData = (DB.grupos||[]).filter(function(gr){
+      return gr.guia===guiaNome && (gr.parques||[]).some(function(p){ return p.data===data; });
+    }).length;
+    if(guiamentosNaData >= 2) return {ok:false, motivo:'Guia '+guiaNome+' já tem 2 guiamentos nesta data (limite máximo)'};
+  }
+  return {ok:true, motivo:''};
+}
+
 async function saveGrupo() {
   const nome = g('mg-nome').value.trim();
   if (!nome) { toast('Informe o nome do grupo','warn'); return; }
+  // Verificar disponibilidade do guia antes de salvar (hard limit)
+  const guiaSelecionado = g('mg-guia').value;
+  const parquesDatas = parkRows.filter(p=>p.parque&&p.data);
+  for(var pd of parquesDatas) {
+    var disp = verificarDisponibilidadeGuia(guiaSelecionado, pd.data);
+    if(!disp.ok && !(editId.grupo)) { // só bloqueia para novos grupos
+      toast('❌ ' + disp.motivo, 'error');
+      return;
+    }
+  }
   const grupoData = {
     id: editId.grupo || 'g_' + Date.now(),
     nome, responsavel:g('mg-resp').value.trim(), whatsapp:g('mg-wa').value.trim(),
     guia:g('mg-guia').value, numAdultos:+g('mg-adt').value||0, numCriancas:+g('mg-cri').value||0,
     idadesCriancas:g('mg-ids').value.split(',').map(x=>x.trim()).filter(Boolean),
     perfil:g('mg-perfil').value, restricoes:g('mg-rest').value.trim(),
-    loginMDE:g('mg-mde').value.trim(), hospedeiro:g('mg-hosp').value==='1',
+    loginMDE:g('mg-mde').value.trim(), segredoMDE:g('mg-mde-segredo').value.trim(), hospedeiro:g('mg-hosp').value==='1',
     parques:parkRows.filter(p=>p.parque&&p.data),
     statusPagamento:g('mg-pag').value, notas:g('mg-obs').value.trim(),
     status:g('mg-status').value,
@@ -3087,11 +3363,37 @@ function openRoteiroModal(id=null, grupoPreId=null) {
   const mrAtv = g('mr-atividades'); if(mrAtv) mrAtv.value = mr?.atividades||'';
   const mrPers = g('mr-pers'); if(mrPers) mrPers.value = mr?.personagens||'';
   const mrNotas = g('mr-notas'); if(mrNotas) mrNotas.value = mr?.notas||'';
+  const mrOrdem = g('mr-ordem-atracoes'); if(mrOrdem) mrOrdem.value = mr?.ordemAtracoes||'';
+  if(g('mr-usar-multi-ll')) g('mr-usar-multi-ll').checked = mr?.usarMultiLL||false;
+  if(g('mr-usar-single-ll')) g('mr-usar-single-ll').checked = mr?.usarSingleLL||false;
+  if(g('mr-usar-express')) g('mr-usar-express').checked = mr?.usarExpress||false;
   const mrStatus = g('mr-status'); if(mrStatus) mrStatus.value = mr?.status||'rascunho';
   renderAtrOptions(mr);
   fillRoteiroDataLists(mr?.parque||'');
   openModal('mo-roteiro');
   } catch(err) { console.error('openRoteiroModal error:', err); toast('Erro ao abrir roteiro: '+err.message,'warn'); }
+}
+
+function roteiroAtualizarLL() {
+  const pk = g('mr-parque').value;
+  const isDisney = ['MK','EPCOT','HS','AK','BB','TL'].includes(pk);
+  const isUniv   = ['USO','IOA','EU'].includes(pk);
+  const llCtrl   = g('mr-ll-controls');
+  const expCtrl  = g('mr-express-controls');
+  if (llCtrl)  llCtrl.style.display  = isDisney ? 'block' : 'none';
+  if (expCtrl) expCtrl.style.display = isUniv   ? 'block' : 'none';
+  // Mostrar/ocultar seções LL com base nos toggles
+  var usarMulti  = g('mr-usar-multi-ll')?.checked;
+  var usarSingle = g('mr-usar-single-ll')?.checked;
+  var usarExp    = g('mr-usar-express')?.checked;
+  var sepMultiT1 = document.querySelector('.section-sep[data-ll="multi-t1"]');
+  var sepMultiT2 = document.querySelector('.section-sep[data-ll="multi-t2"]');
+  var sepSingle  = document.querySelector('.section-sep[data-ll="single"]');
+  var sepExpress = document.querySelector('.section-sep[data-ll="express"]');
+  if (sepSingle) sepSingle.parentElement.style.display = (isDisney&&usarSingle)?'block':'none';
+  if (sepMultiT1) sepMultiT1.parentElement.style.display = (isDisney&&usarMulti)?'block':'none';
+  if (sepMultiT2) sepMultiT2.parentElement.style.display = (isDisney&&usarMulti)?'block':'none';
+  if (sepExpress) sepExpress.parentElement.style.display = (isUniv&&usarExp)?'block':'none';
 }
 
 function renderAtrOptions(mr=null) {
@@ -3203,6 +3505,10 @@ async function saveRoteiro() {
     atividades:   g('mr-atividades')?.value.trim()||'',
     personagens:  g('mr-pers')?.value.trim()||'',
     notas:        g('mr-notas')?.value.trim()||'',
+    ordemAtracoes: g('mr-ordem-atracoes')?.value.trim()||'',
+    usarMultiLL:  g('mr-usar-multi-ll')?.checked||false,
+    usarSingleLL: g('mr-usar-single-ll')?.checked||false,
+    usarExpress:  g('mr-usar-express')?.checked||false,
     status:       g('mr-status').value,
     createdAt:    editId.roteiro ? ((DB.roteiros||[]).find(r=>r.id===editId.roteiro)?.createdAt||fmtISO(new Date())) : fmtISO(new Date())
   };
@@ -3242,7 +3548,9 @@ async function saveLLEntry() {
     gui = { id:'gui_'+Date.now(), grupoId, data, logLL:[], notas:'' };
     DB.guiamentos = [...(DB.guiamentos||[]), gui];
   }
-  gui.logLL = [...(gui.logLL||[]), { hora:g('ll-hora').value, atracao:atr, tipo:g('ll-tipo').value, janela:g('ll-janela').value, status:g('ll-status').value, obs:g('ll-obs').value.trim() }];
+    var tempoFila = parseInt(g('ll-tempo-fila')?.value)||0;
+  var tempoReal = parseInt(g('ll-tempo-real')?.value)||0;
+  gui.logLL = [...(gui.logLL||[]), { hora:g('ll-hora').value, atracao:atr, tipo:g('ll-tipo').value, janela:g('ll-janela').value, status:g('ll-status').value, obs:g('ll-obs').value.trim(), tempoFila:tempoFila||null, tempoReal:tempoReal||null }];
   closeModal('mo-ll');
   await saveData();
   toast('LL registrada ✅');
@@ -3500,10 +3808,12 @@ function renderAgenda() {
     const evs = evMap[d.date]||[];
     const isToday = d.date===today;
     const pk = PARQUES[evs[0]?.parque]||{};
+    const minhaBloqueada = U ? getDatasBloqueadasGuia(U.id).includes(d.date) : false;
     return `<div class="cal-d ${!d.curr?'om':''} ${isToday?'tod':''}" onclick="showCalDetail('${d.date}')"
-      style="${evs.length?`border-left:3px solid ${evs[0].cor}`:''};${isToday?'border-color:var(--acc)':''}"
+      style="${evs.length?`border-left:3px solid ${evs[0].cor}`:''};${isToday?'border-color:var(--acc)':''};${minhaBloqueada?'background:#fff3cd;opacity:0.85':''}"
     >
       <div class="cal-n" style="${evs.length?`color:${evs[0].cor};font-weight:800`:''}">${+d.date.slice(8)}</div>
+      ${minhaBloqueada?'<div style="font-size:9px;color:#856404;font-weight:700">🔒 Bloqueado</div>':''}
       ${evs.slice(0,3).map(e=>`
         <div class="cal-pill" style="background:${e.cor}" title="${esc(e.nome)} · ${e.parque}">
           <span class="cal-pill-dot"></span>
@@ -5613,6 +5923,23 @@ function fillGuiaSelects() {
       <div class="mt" style="color:#c2410c">🎨 Atividade Especial</div>
       <button class="mcl" onclick="closeModal('mo-enc-atividade')">×</button>
     </div>
+
+<!-- ═══ MODAL: BLOQUEAR DATA ══════════════════════════════════════════════ -->
+<div class="mo hid" id="mo-bloquear-data">
+  <div class="mc2" style="max-width:400px">
+    <div class="mh"><div class="mt">🔒 Bloquear / Desbloquear Data</div><button class="mcl" onclick="closeModal('mo-bloquear-data')">×</button></div>
+    <div class="mb">
+      <p style="font-size:12px;color:#666;margin-bottom:14px">Bloqueie datas em que não poderá fazer guiamentos. Somente você pode gerenciar suas datas bloqueadas.</p>
+      <div class="fg"><label class="fl">Data a bloquear *</label><input class="fc" type="date" id="bd-data"></div>
+      <div class="fg"><label class="fl">Motivo (opcional)</label><input class="fc" id="bd-motivo" placeholder="Férias, compromisso pessoal..."></div>
+      <div id="bd-lista" style="margin-top:14px;max-height:200px;overflow-y:auto"></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-sec" onclick="closeModal('mo-bloquear-data')">Fechar</button>
+      <button class="btn btn-danger" onclick="bloquearData()">🔒 Bloquear</button>
+    </div>
+  </div>
+</div>
     <div class="mb">
       <input type="hidden" class="enc-edit-id" id="enc-atv-id">
       <div class="fr">
