@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Anton&display=swap" rel="stylesheet">
-<title>Desenrola · Guiamento Virtual</title>
+<title>Desenrola · Guiamento Virtual v2.7</title>
 <style>
 :root{--bg:#081525;--sb:#0d1f3d;--acc:#2C6AA3;--acc2:#79ACD9;--card:#ffffff;--page:#f0f2f8;--txt:#1a1d2e;--mut:#6b7280;--bdr:#e5e7eb;--red:#ef4444;--yel:#f59e0b;--grn:#A4B56E;--blu:#3b82f6;--sw:230px;--hh:56px}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -313,6 +313,7 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
       <div class="lf"><label>Senha</label><input id="f-pw" type="password" placeholder="••••••••" autocomplete="current-password"></div>
       <button class="lb" type="button" onclick="doLogin(event)">Entrar no Sistema</button>
       <div class="lerr" id="lerr"></div>
+      <button id="btn-retry-login" style="display:none;margin-top:6px;width:100%;padding:8px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;cursor:pointer;font-size:12px;color:#0369a1" onclick="reloadUsuariosSistema()">🔄 Recarregar usuários</button>
     </form>
   </div>
 </div>
@@ -1178,6 +1179,7 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
 <!-- ═══ FIREBASE ══════════════════════════════════════════════════════════ -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
 
 <!-- ═══ MODAL: BLOQUEAR DATA ══════════════════════════════════════════════ -->
@@ -2227,8 +2229,8 @@ async function _moverParaDLQ(key, item, erros) {
       await _fbDb.ref('desenrola_guiamento_v1/pending_dlq/'+key).set(
         Object.assign({}, item, {
           _erros:    erros,
-          _movidoEm: Date.now(),
-          _token:    'DTurismo2026!Secure#v3'
+          _movidoEm: Date.now()
+          // C-01 SEC: _token removido — auth via Firebase Anonymous Auth
         })
       );
     }
@@ -2279,8 +2281,8 @@ async function processarPending(key, item) {
     if(_fbDb) _fbDb.ref('desenrola_v3/integrations/guiamento_pending/'+key).update({
       processado: true,
       processadoEm: Date.now(),
-      nomeGrupo: res.nome,
-      _token: 'DTurismo2026!Secure#v3'
+      nomeGrupo: res.nome
+      // C-01 SEC: _token removido — auth via Firebase Anonymous Auth
     });
     toast('Grupo integrado: ' + res.nome + ' ✅');
   } else {
@@ -2347,9 +2349,16 @@ window.desenrolaGuia = {
 };
 
 window.onload = () => {
-  try { _fbApp = firebase.initializeApp(FB_CFG); _fbDb = firebase.database(_fbApp); } catch(e){}
+  try {
+    _fbApp = firebase.initializeApp(FB_CFG);
+    _fbDb  = firebase.database(_fbApp);
+    // C-01 SEC: Autenticação anônima — substitui _token hardcoded nas Firebase Rules
+    // Firebase Rules recomendadas: { ".read":"auth!=null", ".write":"auth!=null" }
+    firebase.auth(_fbApp).signInAnonymously()
+      .then(function(){ console.log('[Guiamento] Firebase Auth: sessão anônima ativa'); })
+      .catch(function(e){ console.warn('[Guiamento] Firebase Auth error:', e.message); });
+  } catch(e){}
   const dEl = document.getElementById('dash-date'); if(dEl) dEl.textContent = fmtDateLong(new Date());
-  // Enter key no campo de senha também faz login
   const pw = document.getElementById('f-pw');
   if(pw) pw.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(e); });
   initIntegracao();
@@ -2451,23 +2460,62 @@ function _sha256Pure(msgBytes) {
   return H.map(function(v){ return ('00000000'+((v>>>0).toString(16))).slice(-8); }).join('');
 }
 
-// sha256 pública: tenta crypto.subtle, fallback para puro JS
-async function sha256(str) {
-  // Converter string para bytes UTF-8 (suporta todos os caracteres)
+// M-01 SEC: sha256 com salt opcional — formato idêntico ao DesenrolaSistema v3.2
+// sha256(senha, login) → SHA256(login.toLowerCase() + ':DT26:' + senha)
+// sha256(senha, '')   → SHA256(senha)   ← formato legado, usado em migração
+async function sha256(str, login) {
+  var salted = login ? (login.toLowerCase() + ':DT26:' + str) : str;
   var bytes;
-  try { bytes = Array.from(new TextEncoder().encode(str)); } catch(e) {
-    // Fallback UTF-8 manual
-    bytes = unescape(encodeURIComponent(str)).split('').map(function(c){ return c.charCodeAt(0); });
+  try { bytes = Array.from(new TextEncoder().encode(salted)); } catch(e) {
+    bytes = unescape(encodeURIComponent(salted)).split('').map(function(c){ return c.charCodeAt(0); });
   }
-  // Tentar crypto.subtle (mais rápido)
   try {
     if (crypto && crypto.subtle) {
       const buf = await crypto.subtle.digest('SHA-256', new Uint8Array(bytes));
       return Array.from(new Uint8Array(buf)).map(function(x){ return x.toString(16).padStart(2,'0'); }).join('');
     }
   } catch(e) {}
-  // Fallback puro JS — sempre funciona
   return _sha256Pure(bytes);
+}
+
+
+async function reloadUsuariosSistema() {
+  var btn = document.getElementById('btn-retry-login');
+  if(btn){ btn.textContent = '⏳ Carregando...'; btn.disabled=true; }
+  await loadUsuariosSistema();
+  if(btn){ btn.textContent = '🔄 Recarregar usuários e tentar novamente'; btn.disabled=false; }
+  if(USUARIOS_SISTEMA.length > 0) {
+    g('lerr').textContent = '✅ '+USUARIOS_SISTEMA.length+' usuários carregados! Faça o login.';
+    if(btn) btn.style.display='none';
+  } else {
+    g('lerr').textContent = '⚠️ Ainda sem usuários. Certifique-se de que o Sistema Desenrola foi aberto e o login foi feito lá.';
+  }
+}
+// M-03 SEC: Anti-força-bruta — lockout após 5 tentativas por 15 minutos
+const _GUI_LOCK_PREFIX = 'dg_lk_';
+const _GUI_LOCK_MAX    = 5;
+const _GUI_LOCK_MS     = 15 * 60 * 1000;
+function _guiCheckLockout(login){
+  try{
+    const raw = localStorage.getItem(_GUI_LOCK_PREFIX + login);
+    if(!raw) return null;
+    const d = JSON.parse(raw);
+    if(d.n < _GUI_LOCK_MAX) return null;
+    const elapsed = Date.now() - d.t;
+    if(elapsed >= _GUI_LOCK_MS){ localStorage.removeItem(_GUI_LOCK_PREFIX + login); return null; }
+    return 'Muitas tentativas. Aguarde ' + Math.ceil((_GUI_LOCK_MS - elapsed)/60000) + ' min.';
+  } catch(e){ return null; }
+}
+function _guiRecordFail(login){
+  try{
+    const k = _GUI_LOCK_PREFIX + login;
+    const d = JSON.parse(localStorage.getItem(k)||'{"n":0,"t":0}');
+    d.n = (d.n||0) + 1; d.t = Date.now();
+    localStorage.setItem(k, JSON.stringify(d));
+  } catch(e){}
+}
+function _guiClearAttempts(login){
+  try{ localStorage.removeItem(_GUI_LOCK_PREFIX + login); } catch(e){}
 }
 
 async function doLogin(e) {
@@ -2477,30 +2525,51 @@ async function doLogin(e) {
   g('lerr').textContent = '';
   try {
     const loginInput = (g('f-usr').value||'').trim();
-    const senhaInput = g('f-pw').value||''; // não trim — senhas podem ter espaços
+    const senhaInput = g('f-pw').value||'';
     if(!loginInput||!senhaInput){ g('lerr').textContent='Preencha login e senha.'; return; }
+
+    // M-03 SEC: verificar lockout antes de qualquer operação
+    const lockMsg = _guiCheckLockout(loginInput);
+    if(lockMsg){ g('lerr').textContent=lockMsg; return; }
+
     showLoading(true);
     await loadUsuariosSistema();
-    const senhaHash = await sha256(senhaInput);
-    var found = null;
-    var loginLow = loginInput.toLowerCase();
-    for(var i=0;i<USUARIOS_SISTEMA.length;i++){
-      var u=USUARIOS_SISTEMA[i];
-      if((u.login||'').trim().toLowerCase()!==loginLow) continue;
-      if(u.senha===senhaHash){ found=u; break; } // G-06: removida comparação plaintext
-    }
     showLoading(false);
+
+    if(USUARIOS_SISTEMA.length === 0){
+      g('lerr').textContent='⚠️ Guiamento sem usuários. Abra o Sistema Desenrola e faça login lá primeiro.';
+      var retryBtn = document.getElementById('btn-retry-login');
+      if(retryBtn) retryBtn.style.display='block';
+      return;
+    }
+
+    // M-01 SEC: verificação com salt — compatível com DesenrolaSistema v3.2
+    // Tenta hash com salt primeiro (formato novo), depois sem salt (legado — migração automática)
+    const loginLow = loginInput.toLowerCase();
+    const hashSaltado   = await sha256(senhaInput, loginInput); // formato novo: salt=login
+    const hashSemSalt   = await sha256(senhaInput, '');          // formato legado: sem salt
+
+    var found      = null;
+    var migrouHash = false;
+    for(var i = 0; i < USUARIOS_SISTEMA.length; i++){
+      var u = USUARIOS_SISTEMA[i];
+      if((u.login||'').trim().toLowerCase() !== loginLow) continue;
+      if(u.senha === hashSaltado){ found = u; break; }          // formato novo ✅
+      if(u.senha === hashSemSalt){ found = u; migrouHash = true; break; } // legado — migrar
+      if(u.senha && u.senha.length !== 64 && senhaInput === u.senha){ found = u; migrouHash = true; break; } // plaintext legado
+    }
+
     if(!found){
-      // Distinguir Firebase offline (lista vazia) de credenciais erradas
-      if(USUARIOS_SISTEMA.length === 0) {
-        g('lerr').textContent='Sistema offline. Verifique a conexão e tente novamente.';
-      } else {
-        g('lerr').textContent='Usuario ou senha invalidos.';
-      }
+      _guiRecordFail(loginInput);
+      g('lerr').textContent='Usuario ou senha invalidos.';
+      var retryBtn2 = document.getElementById('btn-retry-login');
+      if(retryBtn2) retryBtn2.style.display='none';
       return;
     }
     if(found.status === 'inativo'){ g('lerr').textContent='Conta inativa. Contate o administrador.'; _loginBusy=false; return; }
     if(!podeAcessarGuiamento(found)){ g('lerr').textContent='Seu perfil nao tem acesso ao Sistema de Guiamento.'; return; }
+
+    _guiClearAttempts(loginInput);
     U = Object.assign({},found);
     if(!Array.isArray(U.perfis)) U.perfis = U.perfil?[U.perfil]:['guia'];
     g('lerr').textContent='';
@@ -2508,14 +2577,34 @@ async function doLogin(e) {
     await loadData();
     showLoading(false);
     _loginEntrar();
+
+    // M-01 SEC: não pode reescrever o hash do usuário daqui (sem acesso de escrita ao cadastro)
+    // A migração do hash ocorre no DesenrolaSistema quando o usuário faz login lá
+    if(migrouHash) console.log('[Guiamento] Hash legado detectado para', loginInput, '— migração ocorre no Sistema principal');
   } catch(err) {
-    console.error('Erro login:',err);
+    console.error('Erro login:', err);
     g('lerr').textContent='Firebase indisponível. Verifique a conexão e tente novamente.';
     showLoading(false);
   } finally { _loginBusy=false; }
 }
 
+// M-04 SEC: Session timeout — auto-logout após 8h de inatividade
+let _guiLastActivityTs = Date.now();
+const _GUI_SESSION_MS  = 8 * 60 * 60 * 1000;
+function _guiResetActivity(){ _guiLastActivityTs = Date.now(); }
+['click','keydown','mousemove','touchstart'].forEach(function(ev){
+  document.addEventListener(ev, _guiResetActivity, {passive:true, capture:false});
+});
+setInterval(function(){
+  if(!U) return;
+  if(Date.now() - _guiLastActivityTs > _GUI_SESSION_MS){
+    toast('⏰ Sessão encerrada por inatividade (8h). Faça login novamente.','warn');
+    setTimeout(function(){ if(typeof doLogout==='function') doLogout(); }, 2000);
+  }
+}, 60 * 1000);
+
 function _loginEntrar() {
+  _guiResetActivity(); // M-04: resetar timer ao fazer login
   g('login-screen').classList.add('hid');
   g('app').classList.remove('hid');
   var av=g('sb-av'); if(av) av.textContent=(U.nome||'?').charAt(0).toUpperCase();
@@ -2602,8 +2691,8 @@ async function saveData() {
   setSyncStatus('sy');
   try {
     if (_fbDb) {
-      // _token necessário pelas Firebase Rules (não armazenado no DB local)
-      await _fbDb.ref(FB_PATH).set(Object.assign({_token:'DTurismo2026!Secure#v3'}, DB));
+      // C-01 SEC: _token removido — autenticação via signInAnonymously
+      await _fbDb.ref(FB_PATH).set(DB); // C-01 SEC: _token removido — auth via signInAnonymously
       setSyncStatus('ok');
     }
   } catch(e) { setSyncStatus('er'); toast('Firebase indisponivel — salvo localmente','warn'); }
@@ -2703,11 +2792,26 @@ function renderDashboard() {
   const nextDays = Array.from({length:7},(_,i)=>{ const d=new Date(today);d.setDate(today.getDate()+i+1);return fmtISO(d); });
   const upcoming = grupos.filter(g2 => g2.status !== 'cancelado' && (g2.parques||[]).some(pd => nextDays.includes(pd.data))).slice(0,6);
 
+  // MELHORIA — countdown para próximo guiamento (Rezdy / Tourplan pattern)
+  const allFutureDates = grupos.filter(g2=>g2.status!=='cancelado').flatMap(g2=>(g2.parques||[]).map(p=>p.data)).filter(d=>d>todayStr).sort();
+  const proximaData = allFutureDates[0]||null;
+  const diasAteProximo = proximaData ? Math.ceil((new Date(proximaData+'T00:00:00')-today)/86400000) : null;
+  const countdownHtml = diasAteProximo===null ? '—'
+    : diasAteProximo===0 ? '<span style="color:var(--acc);font-weight:800">Hoje!</span>'
+    : diasAteProximo===1 ? '<span style="color:var(--yel);font-weight:800">Amanhã</span>'
+    : `<span style="font-weight:800">${diasAteProximo}d</span>`;
+
+  // MELHORIA — grupos sem roteiro (alerta operacional)
+  const semRoteiro = ativos.filter(g2=>!(DB.roteiros||[]).some(r=>r.grupoId===g2.id)).length;
+
+  // MELHORIA — NPS label categórico
+  const npsLabel = nps>=9?'Excelente 🏆':nps>=7?'Bom 👍':nps>=5?'Regular ⚠️':nps>0?'Crítico 🔴':'';
+
   g('dash-stats').innerHTML = `
-    <div class="sc"><div class="si">👨‍👩‍👧</div><div class="sl">Grupos Ativos</div><div class="sv">${ativos.length}</div><div class="ss">em preparação + ativos</div></div>
+    <div class="sc"><div class="si">👨‍👩‍👧</div><div class="sl">Grupos Ativos</div><div class="sv">${ativos.length}</div><div class="ss">em preparação + ativos${semRoteiro>0?` · <span style="color:var(--red);font-weight:700">${semRoteiro} sem roteiro</span>`:''}</div></div>
     <div class="sc"><div class="si">☀️</div><div class="sl">Guiamentos Hoje</div><div class="sv" style="color:${hoje.length?'var(--acc)':'inherit'}">${hoje.length}</div><div class="ss">${hoje.length?hoje.map(g2=>g2.nome).join(', '):'Dia livre'}</div></div>
-    <div class="sc"><div class="si">⭐</div><div class="sl">NPS Médio</div><div class="sv" style="color:${nps>=8?'#10b981':nps>=6?'#f59e0b':'#ef4444'}">${nps||'—'}</div><div class="ss">${avs.length} avaliações</div></div>
-    <div class="sc"><div class="si">🔔</div><div class="sl">Alertas Pendentes</div><div class="sv" style="color:${alerts.length?'var(--red)':'var(--grn)'}">${alerts.length||'0'}</div><div class="ss">${alerts.length?'ações necessárias':'tudo em dia ✅'}</div></div>
+    <div class="sc"><div class="si">⭐</div><div class="sl">NPS Médio</div><div class="sv" style="color:${nps>=8?'#10b981':nps>=6?'#f59e0b':'#ef4444'}">${nps||'—'}</div><div class="ss">${npsLabel}${avs.length?' · '+avs.length+' avals.':''}</div></div>
+    <div class="sc"><div class="si">📅</div><div class="sl">Próximo Guiamento</div><div class="sv">${countdownHtml}</div><div class="ss">${proximaData?fmtDate(proximaData):'Nenhum agendado'}</div></div>
   `;
   g('dash-alert-count').textContent = alerts.length ? `${alerts.length} alerta${alerts.length>1?'s':''}` : '';
   g('dash-alerts').innerHTML = alerts.length
@@ -2737,7 +2841,6 @@ function renderDashboard() {
     [statusCount.preparacao, statusCount.ativo, statusCount.concluido, statusCount.cancelado],
     ['#f59e0b','#3b82f6','#10b981','#ef4444']);
 }
-
 // ══════════════════════════════════════════════════════════════════════════
 // PAINEL DO DIA — Cards reordenáveis
 // ══════════════════════════════════════════════════════════════════════════
