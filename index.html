@@ -792,6 +792,43 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
           <span>Utilizar Express Pass</span>
         </label>
       </div>
+      <!-- SHOWS e ATIVIDADES -->
+      <div class="section-sep">🎭 Shows & Espetáculos no Roteiro</div>
+      <div class="fg">
+        <div style="display:flex;gap:8px;margin-bottom:6px">
+          <select class="fc" id="mr-shows-sel" style="flex:1"><option value="">— Selecione um show —</option></select>
+          <button type="button" class="btn btn-sec btn-sm" onclick="roteiroAddItem('shows')">+ Add</button>
+        </div>
+        <div id="mr-shows-lista" style="border:1px solid #ddd;border-radius:8px;min-height:36px;padding:4px;background:#fafafa">
+          <div style="color:#999;font-size:11px;text-align:center;padding:6px">Nenhum show adicionado</div>
+        </div>
+        <input type="hidden" id="mr-shows">
+      </div>
+
+      <div class="section-sep">🎡 Atividades no Roteiro</div>
+      <div class="fg">
+        <div style="display:flex;gap:8px;margin-bottom:6px">
+          <select class="fc" id="mr-atv-sel" style="flex:1"><option value="">— Selecione uma atividade —</option></select>
+          <button type="button" class="btn btn-sec btn-sm" onclick="roteiroAddItem('atv')">+ Add</button>
+        </div>
+        <div id="mr-atv-lista" style="border:1px solid #ddd;border-radius:8px;min-height:36px;padding:4px;background:#fafafa">
+          <div style="color:#999;font-size:11px;text-align:center;padding:6px">Nenhuma atividade adicionada</div>
+        </div>
+        <input type="hidden" id="mr-atv">
+      </div>
+
+      <div class="section-sep">🍽️ Restaurantes no Roteiro</div>
+      <div class="fg">
+        <div style="display:flex;gap:8px;margin-bottom:6px">
+          <input type="text" class="fc" id="mr-rest-input" placeholder="Nome do restaurante..." style="flex:1" list="rest-list">
+          <button type="button" class="btn btn-sec btn-sm" onclick="roteiroAddItem('rest')">+ Add</button>
+        </div>
+        <div id="mr-rest-lista" style="border:1px solid #ddd;border-radius:8px;min-height:36px;padding:4px;background:#fafafa">
+          <div style="color:#999;font-size:11px;text-align:center;padding:6px">Nenhum restaurante adicionado</div>
+        </div>
+        <input type="hidden" id="mr-rest">
+      </div>
+
       <div class="section-sep">💳 LL Single Pass (compra individual separada)</div>
       <div class="fg"><div id="mr-atr-single" style="flex-wrap:wrap;display:flex;padding:10px;background:#fffbf0;border-radius:9px;min-height:44px;border:1px solid #fcd34d"></div></div>
 
@@ -1148,8 +1185,11 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
   <div class="mc2" style="max-width:400px">
     <div class="mh"><div class="mt">🔒 Bloquear / Desbloquear Data</div><button class="mcl" onclick="closeModal('mo-bloquear-data')">×</button></div>
     <div class="mb">
-      <p style="font-size:12px;color:#666;margin-bottom:14px">Bloqueie datas em que não poderá fazer guiamentos. Somente você pode gerenciar suas datas bloqueadas.</p>
-      <div class="fg"><label class="fl">Data a bloquear *</label><input class="fc" type="date" id="bd-data"></div>
+      <p style="font-size:12px;color:#666;margin-bottom:14px">Bloqueie um período em que não poderá fazer guiamentos. Somente você pode gerenciar seus períodos bloqueados.</p>
+      <div class="fr">
+        <div class="fg"><label class="fl">Data de Início *</label><input class="fc" type="date" id="bd-data-ini"></div>
+        <div class="fg"><label class="fl">Data de Fim *</label><input class="fc" type="date" id="bd-data-fim"></div>
+      </div>
       <div class="fg"><label class="fl">Motivo (opcional)</label><input class="fc" id="bd-motivo" placeholder="Férias, compromisso pessoal..."></div>
       <div id="bd-lista" style="margin-top:14px;max-height:200px;overflow-y:auto"></div>
     </div>
@@ -3077,9 +3117,9 @@ function exportarResumoDiaPDF(grupoId, data) {
   '<div style="margin-top:24px;text-align:center"><button onclick="window.print()" style="padding:10px 24px;background:#2C6AA3;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:10pt">🖨️ Imprimir / Salvar como PDF</button></div>'+
   '</body></html>';
 
-  var blob = new Blob([html], {type:'text/html;charset=utf-8'});
-  var url = URL.createObjectURL(blob);
+  // Usar data URL em vez de Blob URL (mais confiável em Wix iframe)
   var nomeArq = 'Resumo_DiaD_'+(grupo?.nome||'grupo').replace(/[^a-zA-Z0-9]/g,'_')+'_'+data+'.html';
+  var url = 'data:text/html;charset=utf-8,' + encodeURIComponent(html);
   var linkModal = document.createElement('div');
   linkModal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px';
   linkModal.innerHTML='<div style="background:#fff;border-radius:16px;padding:28px;max-width:440px;width:100%;text-align:center">'+
@@ -3092,7 +3132,7 @@ function exportarResumoDiaPDF(grupoId, data) {
     '<button id="_pdf-fechar-btn" style="padding:8px 20px;background:#f3f4f6;border:none;border-radius:8px;cursor:pointer;margin-top:8px">Fechar</button>'+
   '</div>';
   document.body.appendChild(linkModal);
-  document.getElementById('_pdf-fechar-btn').onclick = function(){ linkModal.remove(); URL.revokeObjectURL(url); };
+  document.getElementById('_pdf-fechar-btn').onclick = function(){ linkModal.remove(); };
   document.querySelectorAll('div[style*="fixed"][style*="9999"]').forEach(function(m){ if(m!==linkModal) m.remove(); });
   toast(''+String.fromCodePoint(0x1F4C4)+' PDF pronto!','success');
 }
@@ -3231,7 +3271,9 @@ function removeParkRow(i) { parkRows.splice(i,1); renderParkRows(); }
 
 function abrirModalBloquearData() {
   if(!U) return;
-  g('bd-data').value = fmtISO(new Date());
+  var hoje = fmtISO(new Date());
+  if(g('bd-data-ini')) g('bd-data-ini').value = hoje;
+  if(g('bd-data-fim')) g('bd-data-fim').value = hoje;
   g('bd-motivo').value = '';
   renderBloqueioLista();
   openModal('mo-bloquear-data');
@@ -3243,41 +3285,54 @@ function renderBloqueioLista() {
   var datas = pg.datasBloqueadas||[];
   if(!datas.length){ lista.innerHTML='<div style="color:#888;font-size:12px;text-align:center;padding:12px">Nenhuma data bloqueada</div>'; return; }
   lista.innerHTML = '<div style="font-size:11px;font-weight:700;color:#666;margin-bottom:8px">Datas bloqueadas:</div>' +
-    datas.sort(function(a,b){ return a.data<b.data?-1:1; }).map(function(d){
-      var btnId = 'btn-desbloquear-'+d.data;
+    datas.sort(function(a,b){ return (a.ini||a.data)<(b.ini||b.data)?-1:1; }).map(function(d,di){
+      var dateKey = (d.ini||d.data); // suporte ao formato antigo (campo 'data') e novo ('ini'/'fim')
+      var btnId = 'btn-desbloquear-'+di;
+      var label = (d.ini && d.fim && d.ini!==d.fim)
+        ? '🔒 '+fmtDateLong(new Date(d.ini+'T12:00:00'))+' → '+fmtDateLong(new Date(d.fim+'T12:00:00'))
+        : '🔒 '+fmtDateLong(new Date((d.ini||d.data)+'T12:00:00'));
       return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#fff3cd;border-radius:6px;margin-bottom:4px;font-size:12px">' +
-        '<span>🔒 '+fmtDateLong(new Date(d.data+'T12:00:00'))+(d.motivo?' — '+d.motivo:'')+'</span>' +
-        '<button id="'+btnId+'" data-dt="'+d.data+'" style="background:none;border:none;color:#dc3545;cursor:pointer;font-size:14px">✕</button>' +
+        '<span>'+label+(d.motivo?' — '+d.motivo:'')+'</span>' +
+        '<button id="'+btnId+'" data-di="'+di+'" style="background:none;border:none;color:#dc3545;cursor:pointer;font-size:14px">✕</button>' +
       '</div>';
     }).join('');
   // Adicionar listeners (evita aspas simples inline)
   datas.forEach(function(d){
     var btn = document.getElementById('btn-desbloquear-'+d.data);
-    if(btn) btn.onclick = function(){ desbloquearData(this.getAttribute('data-dt')); };
+    if(btn) btn.onclick = function(){ desbloquearData(parseInt(this.getAttribute('data-di'))); };
   });
 }
 
 async function bloquearData() {
-  var data = g('bd-data').value;
+  var ini = g('bd-data-ini')?.value;
+  var fim = g('bd-data-fim')?.value;
   var motivo = g('bd-motivo').value.trim();
-  if(!data){ toast('Selecione uma data','warn'); return; }
+  if(!ini){ toast('Selecione a data de início','warn'); return; }
+  if(!fim){ fim = ini; }
+  if(ini > fim){ toast('Data de início não pode ser posterior à data de fim','warn'); return; }
   if(!DB.perfis_guias) DB.perfis_guias = {};
   if(!DB.perfis_guias[U.id]) DB.perfis_guias[U.id] = {};
   var pg = DB.perfis_guias[U.id];
   if(!pg.datasBloqueadas) pg.datasBloqueadas = [];
-  if(pg.datasBloqueadas.some(function(d){ return d.data===data; })){ toast('Data já está bloqueada','warn'); return; }
-  pg.datasBloqueadas.push({data:data, motivo:motivo, bloqueadoEm:Date.now()});
+  // Verificar sobreposição com períodos existentes
+  var overlap = pg.datasBloqueadas.some(function(b){ return b.ini<=fim && b.fim>=ini; });
+  if(overlap){ toast('Período se sobrepõe a um bloqueio existente','warn'); return; }
+  pg.datasBloqueadas.push({ini:ini, fim:fim, motivo:motivo, bloqueadoEm:Date.now()});
   await saveData();
   renderBloqueioLista();
   renderAgenda();
-  toast('Data '+new Date(data+'T12:00:00').toLocaleDateString('pt-BR')+' bloqueada 🔒');
-  g('bd-data').value = '';
+  var label = ini===fim ? new Date(ini+'T12:00:00').toLocaleDateString('pt-BR') : new Date(ini+'T12:00:00').toLocaleDateString('pt-BR')+' a '+new Date(fim+'T12:00:00').toLocaleDateString('pt-BR');
+  toast('Período '+label+' bloqueado 🔒');
+  if(g('bd-data-ini')) g('bd-data-ini').value = '';
+  if(g('bd-data-fim')) g('bd-data-fim').value = '';
   g('bd-motivo').value = '';
 }
 
-async function desbloquearData(data) {
+async function desbloquearData(idx) {
   if(!DB.perfis_guias||!DB.perfis_guias[U.id]) return;
-  DB.perfis_guias[U.id].datasBloqueadas = (DB.perfis_guias[U.id].datasBloqueadas||[]).filter(function(d){ return d.data!==data; });
+  var arr = DB.perfis_guias[U.id].datasBloqueadas||[];
+  arr.splice(idx, 1);
+  DB.perfis_guias[U.id].datasBloqueadas = arr;
   await saveData();
   renderBloqueioLista();
   renderAgenda();
@@ -3286,7 +3341,21 @@ async function desbloquearData(data) {
 
 function getDatasBloqueadasGuia(guiaId) {
   var pg = (DB.perfis_guias||{})[guiaId]||{};
-  return (pg.datasBloqueadas||[]).map(function(d){ return d.data; });
+  var result = [];
+  (pg.datasBloqueadas||[]).forEach(function(b) {
+    if(b.ini && b.fim) {
+      // Expandir período em datas individuais
+      var cur = new Date(b.ini+'T12:00:00');
+      var end = new Date(b.fim+'T12:00:00');
+      while(cur <= end) {
+        result.push(cur.toISOString().split('T')[0]);
+        cur.setDate(cur.getDate()+1);
+      }
+    } else if(b.data) {
+      result.push(b.data); // formato antigo
+    }
+  });
+  return result;
 }
 
 function verificarDisponibilidadeGuia(guiaNome, data) {
@@ -3426,6 +3495,12 @@ function openRoteiroModal(id=null, grupoPreId=null) {
   if(g('mr-usar-single-ll')) g('mr-usar-single-ll').checked = mr?.usarSingleLL||false;
   if(g('mr-usar-express')) g('mr-usar-express').checked = mr?.usarExpress||false;
   const mrStatus = g('mr-status'); if(mrStatus) mrStatus.value = mr?.status||'rascunho';
+  // Carregar listas de shows, atividades e restaurantes
+  setTimeout(function(){
+    setRoteiroList('shows', mr?.shows||[]);
+    setRoteiroList('atv', mr?.atividades||[]);
+    setRoteiroList('rest', mr?.restaurantes||[]);
+  }, 50);
   renderAtrOptions(mr);
   fillRoteiroDataLists(mr?.parque||'');
   openModal('mo-roteiro');
@@ -3459,7 +3534,65 @@ function renderOrdemAtracoes(items){
 }
 function roteiroMoverOrdem(idx,dir){var items=getOrdemAtracoesAtual();var n=idx+dir;if(n<0||n>=items.length)return;var t=items[idx];items[idx]=items[n];items[n]=t;renderOrdemAtracoes(items);}
 function roteiroRemoverOrdem(idx){var items=getOrdemAtracoesAtual();items.splice(idx,1);renderOrdemAtracoes(items);}
+
+function roteiroAddItem(tipo) {
+  var sel = tipo==='rest' ? null : g('mr-'+tipo+'-sel');
+  var inp = tipo==='rest' ? g('mr-rest-input') : null;
+  var val = sel ? sel.value : (inp ? inp.value.trim() : '');
+  if(!val) { toast('Selecione ou digite um item','warn'); return; }
+  var items = getRoteiroList(tipo);
+  if(items.includes(val)) { toast('Item já na lista','warn'); return; }
+  items.push(val);
+  setRoteiroList(tipo, items);
+  if(sel) sel.value=''; if(inp) inp.value='';
+}
+
+function getRoteiroList(tipo) {
+  var h = g('mr-'+tipo);
+  if(!h) return [];
+  try { return JSON.parse(h.value||'[]'); } catch(e){ return []; }
+}
+
+function setRoteiroList(tipo, items) {
+  var h = g('mr-'+tipo);
+  if(h) h.value = JSON.stringify(items);
+  var lista = g('mr-'+tipo+'-lista');
+  if(!lista) return;
+  if(!items.length) {
+    var labels = {shows:'show',atv:'atividade',rest:'restaurante'};
+    lista.innerHTML='<div style="color:#999;font-size:11px;text-align:center;padding:6px">Nenhum '+labels[tipo]+' adicionado</div>';
+    return;
+  }
+  lista.innerHTML = items.map(function(nome,i){
+    return '<div style="display:flex;align-items:center;gap:4px;padding:4px;background:#fff;border:1px solid #eee;border-radius:5px;margin-bottom:3px">'+
+      '<span style="flex:1;font-size:12px">'+esc(nome)+'</span>'+
+      '<button data-tipo="'+tipo+'" data-idx="'+i+'" onclick="roteiroRemoverItem(this.dataset.tipo,parseInt(this.dataset.idx))" style="padding:0 4px;background:none;border:none;cursor:pointer;color:#dc3545">✕</button></div>';
+  }).join('');
+}
+
+function roteiroRemoverItem(tipo, idx) {
+  var items = getRoteiroList(tipo);
+  items.splice(idx, 1);
+  setRoteiroList(tipo, items);
+}
+
+function roteiroPopulateShowsAtv(pk) {
+  var showSel = g('mr-shows-sel');
+  var atvSel  = g('mr-atv-sel');
+  if(showSel) {
+    var shows = SHOWS[pk]||[];
+    showSel.innerHTML = '<option value="">— Selecione um show —</option>' +
+      shows.map(function(s){ return '<option value="'+esc(s.n)+'">'+esc(s.n)+'</option>'; }).join('');
+  }
+  if(atvSel) {
+    var atvs = ATIVIDADES[pk]||[];
+    atvSel.innerHTML = '<option value="">— Selecione uma atividade —</option>' +
+      atvs.map(function(a){ return '<option value="'+esc(a.n)+'">'+esc(a.n)+'</option>'; }).join('');
+  }
+}
+
 function roteiroPopulateAtracoesSel(pk){
+  roteiroPopulateShowsAtv(pk);
   var sel=g('mr-atracoes-sel'); if(!sel) return;
   var atrs=ATRACOES[pk]||[];
   var opts='<option value="">— Selecione —</option>'+atrs.map(function(a){return '<option value="'+esc(a.n)+'">'+esc(a.n)+'</option>';}).join('');
@@ -3603,6 +3736,9 @@ async function saveRoteiro() {
     usarMultiLL:  g('mr-usar-multi-ll')?.checked||false,
     usarSingleLL: g('mr-usar-single-ll')?.checked||false,
     usarExpress:  g('mr-usar-express')?.checked||false,
+    shows:        getRoteiroList('shows'),
+    atividades:   getRoteiroList('atv'),
+    restaurantes: getRoteiroList('rest'),
     status:       g('mr-status').value,
     createdAt:    editId.roteiro ? ((DB.roteiros||[]).find(r=>r.id===editId.roteiro)?.createdAt||fmtISO(new Date())) : fmtISO(new Date())
   };
@@ -3763,6 +3899,24 @@ function renderGuias() {
   const search = (g('guia-search')?.value||'').toLowerCase();
   const sfilt  = g('guia-status-filter')?.value||'';
   const pg     = DB.perfis_guias || {};
+  // Para ADMs: buscar usuários frescos do Firebase (garante que todos apareçam)
+  if(isAdmUser(U) && _fbDb) {
+    _fbDb.ref('desenrola_v3/usuarios').once('value').then(function(snap) {
+      if(snap && snap.exists()) {
+        var raw = snap.val();
+        var freshUsers = (Array.isArray(raw)?raw:Object.values(raw)).filter(Boolean).map(function(u){
+          if(!Array.isArray(u.perfis)) u.perfis = u.perfil?[u.perfil]:['guia'];
+          return u;
+        });
+        if(freshUsers.length > USUARIOS_SISTEMA.length) USUARIOS_SISTEMA = freshUsers;
+      }
+      _renderGuiasCore(body, pg, search, sfilt);
+    }).catch(function(){ _renderGuiasCore(body, pg, search, sfilt); });
+    return;
+  }
+  _renderGuiasCore(body, pg, search, sfilt);
+}
+function _renderGuiasCore(body, pg, search, sfilt) {
 
   var guiaIds = new Set();
   var guias = USUARIOS_SISTEMA.filter(function(u) {
@@ -6024,8 +6178,11 @@ function fillGuiaSelects() {
   <div class="mc2" style="max-width:400px">
     <div class="mh"><div class="mt">🔒 Bloquear / Desbloquear Data</div><button class="mcl" onclick="closeModal('mo-bloquear-data')">×</button></div>
     <div class="mb">
-      <p style="font-size:12px;color:#666;margin-bottom:14px">Bloqueie datas em que não poderá fazer guiamentos. Somente você pode gerenciar suas datas bloqueadas.</p>
-      <div class="fg"><label class="fl">Data a bloquear *</label><input class="fc" type="date" id="bd-data"></div>
+      <p style="font-size:12px;color:#666;margin-bottom:14px">Bloqueie um período em que não poderá fazer guiamentos. Somente você pode gerenciar seus períodos bloqueados.</p>
+      <div class="fr">
+        <div class="fg"><label class="fl">Data de Início *</label><input class="fc" type="date" id="bd-data-ini"></div>
+        <div class="fg"><label class="fl">Data de Fim *</label><input class="fc" type="date" id="bd-data-fim"></div>
+      </div>
       <div class="fg"><label class="fl">Motivo (opcional)</label><input class="fc" id="bd-motivo" placeholder="Férias, compromisso pessoal..."></div>
       <div id="bd-lista" style="margin-top:14px;max-height:200px;overflow-y:auto"></div>
     </div>
