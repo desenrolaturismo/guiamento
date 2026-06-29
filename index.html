@@ -327,7 +327,7 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
       </div>
       <button class="lb" type="button" tabindex="3" onclick="doLogin(event)">Entrar no Sistema</button>
       <div class="lerr" id="lerr"></div>
-      <button id="btn-retry-login" style="display:none;margin-top:6px;width:100%;padding:8px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;cursor:pointer;font-size:12px;color:#0369a1" onclick="reloadUsuariosSistema()">🔄 Recarregar usuários</button>
+      <button id="btn-retry-login" style="display:none;margin-top:8px;width:100%;padding:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;cursor:pointer;font-size:12px;color:#1d4ed8;font-weight:600" onclick="this.textContent='🔄 Carregando...';this.disabled=true;loadUsuariosSistema().then(()=>{fillGuiaSelects();this.style.display='none';this.disabled=false;g('lerr').textContent='';if(USUARIOS_SISTEMA.length>0){doLogin(null);}else{g('lerr').textContent='Ainda sem usuários. Verifique o Firebase Console.';this.style.display='block';this.textContent='🔄 Tentar novamente';}}).catch(e=>{g('lerr').textContent='Erro: '+e.message;this.style.display='block';this.textContent='🔄 Tentar novamente';this.disabled=false;})">🔄 Tentar novamente</button>
     </div>
   </div>
 </div>
@@ -1311,8 +1311,10 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
 // CONSTANTS
 // ══════════════════════════════════════════════════════════════════════════
 const FB_CFG = {
-  apiKey: "AIzaSyBz0IMWH-nwm8ZgaduLC2UMRhrlKwFYGeE",
-  databaseURL: "https://desenrola-sistema-a7a56-default-rtdb.firebaseio.com"
+  apiKey:      "AIzaSyBz0IMWH-nwm8ZgaduLC2UMRhrlKwFYGeE",
+  authDomain:  "desenrola-sistema-a7a56.firebaseapp.com",
+  databaseURL: "https://desenrola-sistema-a7a56-default-rtdb.firebaseio.com",
+  projectId:   "desenrola-sistema-a7a56"
 };
 const FB_PATH = 'desenrola_guiamento_v1';
 const LS_KEY  = 'dtr_guiamento_v1';
@@ -2575,33 +2577,18 @@ function renderTemporadaG(){
 window.onload = () => {
   try {
     _fbApp = firebase.initializeApp(FB_CFG);
-    _fbDb  = firebase.database(_fbApp);
-    // C-01 SEC + FIX LOGIN: Auth anônima ANTES de carregar usuários (elimina race condition)
-    var lb = document.getElementById('lb'); if(lb) lb.disabled = true;
-    firebase.auth(_fbApp).signInAnonymously()
-      .then(function(){
-        console.log('[Guiamento] Firebase Auth: sessão anônima ativa');
-        return loadUsuariosSistema();
-      })
-      .then(function(){
-        fillGuiaSelects();
-        var lb2 = document.getElementById('lb'); if(lb2) lb2.disabled = false;
-        console.log('[Guiamento] Usuários pré-carregados:', USUARIOS_SISTEMA.length);
-      })
-      .catch(function(e){
-        console.warn('[Guiamento] Auth/load error:', e.message);
-        // Fallback: tenta sem auth
-        loadUsuariosSistema().then(function(){
-          fillGuiaSelects();
-          var lb3 = document.getElementById('lb'); if(lb3) lb3.disabled = false;
-        });
-      });
+    _fbDb  = firebase.database();        // usa app padrão — igual ao Sistema
+    // Auth anônima em background (fire-and-forget) — login NÃO depende do resultado
+    firebase.auth().signInAnonymously()
+      .then(function(){ console.log('[Guiamento] Auth anônima ativa'); })
+      .catch(function(e){ console.warn('[Guiamento] Auth anônima ignorada:', e.message); });
+    // Pré-carregar usuários em background (não bloqueia o login)
+    loadUsuariosSistema()
+      .then(function(){ fillGuiaSelects(); console.log('[Guiamento] Usuários pré-carregados:', USUARIOS_SISTEMA.length); })
+      .catch(function(e){ console.warn('[Guiamento] Pré-carga de usuários falhou:', e.message); });
   } catch(e){
-    console.warn('[Guiamento] Firebase init error:', e);
-    loadUsuariosSistema().then(function(){
-      fillGuiaSelects();
-      var lb4 = document.getElementById('lb'); if(lb4) lb4.disabled = false;
-    });
+    console.warn('[Guiamento] Firebase init error:', e.message||e);
+    // Mesmo sem Firebase, permite tentar login (loadUsuariosSistema interno)
   }
   const dEl = document.getElementById('dash-date'); if(dEl) dEl.textContent = fmtDateLong(new Date());
   const pw = document.getElementById('f-pw');
@@ -2620,37 +2607,51 @@ window.onload = () => {
 let _loginBusy = false;
 
 async function loadUsuariosSistema() {
-  // Tentativa 1: ler de desenrola_v3/usuarios (formato u_1, u_2 do syncUsuarioFirebase)
+  // Aguarda Auth anônima estar pronta (até 3s) para garantir token válido nas rules
+  if (_fbDb && firebase.auth && firebase.auth().currentUser === null) {
+    await new Promise(function(res){ setTimeout(res, 800); }); // pequena espera pela auth
+  }
+
   if (_fbDb) {
+    // Path 1: desenrola_v3/usuarios (formato u_1, u_2 — padrão atual)
     try {
-      const t1 = new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),5000));
+      const t1 = new Promise(function(_,rej){ setTimeout(function(){ rej(new Error('timeout')); }, 6000); });
       const snap = await Promise.race([_fbDb.ref('desenrola_v3/usuarios').once('value'), t1]);
       if (snap && snap.exists()) {
         const raw = snap.val();
-        const lista = (Array.isArray(raw)?raw:Object.values(raw)).filter(Boolean);
+        const lista = (Array.isArray(raw) ? raw : Object.values(raw)).filter(Boolean);
         if (lista.length > 0) {
           USUARIOS_SISTEMA = lista.map(function(u){
-            if(!Array.isArray(u.perfis)) u.perfis = u.perfil?[u.perfil]:['guia'];
+            if (!Array.isArray(u.perfis)) u.perfis = u.perfil ? [u.perfil] : ['guia'];
             return u;
           });
-          console.log('[Login] Usuários carregados do Firebase:', USUARIOS_SISTEMA.length);
+          console.log('[Login] Usuários carregados do Firebase:', USUARIOS_SISTEMA.length, 'usuários');
           return;
         }
+        console.warn('[Login] Path usuarios existe mas está vazio');
+      } else {
+        console.warn('[Login] Path desenrola_v3/usuarios não encontrado no Firebase');
       }
-    } catch(e) { console.warn('loadUsuariosSistema path1 error:', e.message); }
+    } catch(e1) {
+      console.warn('[Login] Erro ao ler usuarios (path1):', e1.message);
+      // Se erro é PERMISSION_DENIED, a Auth anônima pode não estar habilitada no Console
+      if (e1.message && e1.message.includes('PERMISSION_DENIED')) {
+        console.error('[Login] SOLUÇÃO: Habilite "Anonymous" em Firebase Console → Authentication → Sign-in method');
+      }
+    }
 
-    // Tentativa 2: ler da raiz desenrola_v3 (formato antigo — usuarios como array)
+    // Path 2: raiz desenrola_v3 (formato legado)
     try {
-      const t2 = new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),5000));
+      const t2 = new Promise(function(_,rej){ setTimeout(function(){ rej(new Error('timeout')); }, 6000); });
       const snap2 = await Promise.race([_fbDb.ref('desenrola_v3').once('value'), t2]);
       if (snap2 && snap2.exists()) {
-        const rootData = snap2.val();
-        if (rootData && rootData.usuarios) {
+        const rootData = snap2.val() || {};
+        if (rootData.usuarios) {
           const rawU = rootData.usuarios;
-          const lista2 = (Array.isArray(rawU)?rawU:Object.values(rawU)).filter(Boolean);
+          const lista2 = (Array.isArray(rawU) ? rawU : Object.values(rawU)).filter(Boolean);
           if (lista2.length > 0) {
             USUARIOS_SISTEMA = lista2.map(function(u){
-              if(!Array.isArray(u.perfis)) u.perfis = u.perfil?[u.perfil]:['guia'];
+              if (!Array.isArray(u.perfis)) u.perfis = u.perfil ? [u.perfil] : ['guia'];
               return u;
             });
             console.log('[Login] Usuários carregados da raiz Firebase:', USUARIOS_SISTEMA.length);
@@ -2658,10 +2659,10 @@ async function loadUsuariosSistema() {
           }
         }
       }
-    } catch(e2) { console.warn('loadUsuariosSistema path2 error:', e2.message); }
+    } catch(e2) { console.warn('[Login] Erro ao ler raiz (path2):', e2.message); }
   }
 
-  console.warn('[Login] Firebase indisponível — sem usuários para autenticar');
+  console.warn('[Login] Firebase sem usuários — USUARIOS_SISTEMA vazio');
   USUARIOS_SISTEMA = USUARIOS_FALLBACK.slice();
 }
 
@@ -2786,7 +2787,13 @@ async function doLogin(e) {
     showLoading(false);
 
     if(USUARIOS_SISTEMA.length === 0){
-      g('lerr').textContent='⚠️ Guiamento sem usuários. Abra o Sistema Desenrola e faça login lá primeiro.';
+      const fbOk = !!_fbDb;
+      const authOk = firebase.auth && firebase.auth().currentUser !== null;
+      g('lerr').innerHTML = fbOk
+        ? (authOk
+          ? '⚠️ Nenhum usuário cadastrado no Firebase. Faça login no DesenrolaSistema primeiro.'
+          : '⚠️ Firebase conectado mas sem autenticação. <b>Habilite "Anonymous" em Firebase Console → Authentication → Sign-in method</b> e recarregue.')
+        : '⚠️ Sem conexão com Firebase. Verifique internet e recarregue a página.';
       var retryBtn = document.getElementById('btn-retry-login');
       if(retryBtn) retryBtn.style.display='block';
       return;
