@@ -2562,16 +2562,10 @@ function _renderEncKBCard(item, showEditDelete) {
       ${desc ? `<p style="font-size:11px;color:#475569;line-height:1.5;margin:0;flex:1">${esc(desc.slice(0,160))}</p>` : ''}
       ${dica ? `<div style="font-size:10px;color:#64748b;display:flex;gap:4px"><span>💡</span><span>${esc(dica.slice(0,120))}</span></div>` : ''}
 
-      <div style="display:flex;gap:5px;margin-top:4px;align-items:center">
-        ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener" style="flex:1;font-size:10px;color:#2563eb;text-decoration:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:4px 8px;text-align:center">🔗 Site</a>` : ''}
-        ${showEditDelete !== false
-          ? `<button style="font-size:10px;padding:4px 8px;background:#fdf4ff;border:1px solid #e9d5ff;color:#7e22ce;border-radius:6px;cursor:pointer;${url?'':'flex:1;'}" onclick="${editOnclick}">✏️ ${isKB?'Personalizar':'Editar'}</button>`
-          : ''
-        }
-        ${isCustom && showEditDelete !== false
-          ? `<button style="font-size:10px;padding:4px 8px;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:6px;cursor:pointer" onclick="${delOnclick}">🗑️</button>`
-          : ''
-        }
+      <div style="display:flex;gap:5px;margin-top:6px;align-items:center;flex-wrap:wrap">
+        ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener" style="font-size:11px;color:#2563eb;text-decoration:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:5px 10px">🔗 Site</a>` : ''}
+        ${showEditDelete !== false ? `<button style="font-size:11px;padding:5px 10px;background:#fdf4ff;border:1px solid #e9d5ff;color:#7e22ce;border-radius:6px;cursor:pointer;font-weight:600" onclick="${editOnclick}" title="${isKB?'Adicionar nota personalizada':'Editar informações'}">✏️ Editar</button>` : ''}
+        ${isCustom && showEditDelete !== false ? `<button style="font-size:11px;padding:5px 10px;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:6px;cursor:pointer;font-weight:600" onclick="${delOnclick}" title="Excluir item">🗑 Excluir</button>` : ''}
       </div>
     </div>
   </div>`;
@@ -2609,6 +2603,384 @@ function _renderCustomCard(item) {
 const KB_LOJAS_G     = [{"id":"kb_ollivanders_wand_shop_hogsmeade","slug":"ollivanders-wand-shop-hogsmeade","n":"Ollivanders — Loja de Varinhas","parque":"Islands of Adventure","area":"Islands of Adventure — Hogsmeade","dest":"","tipo":"Themed Shop","descricao":"A varinha TE ESCOLHE! Show teatral de 10 min onde Ollivander escolhe uma criança da plateia. Experiência mais memorável do Harry Potter para muitas famílias. GRÁTIS incluído no ingresso.","dica":"Crianças que ficam na frente têm mais chance de serem escolhidas.","dicas":["Crianças que ficam na frente têm mais chance de serem escolhidas.","Show acontece a cada 10-15 min — fila anda rápido.","A varinha literalmente faz efeitos quando 'escolhe' a criança — magia tecnológica."],"tags":["shop","harry-potter","ollivanders","theatrical-show","wand-choosing"],"url":"https://www.universalorlando.com/web/en/us/theme-parks/islands-of-adventure/the-wizarding-world-of-harry-potter/ollivanders","status":"Active","secao":"loja","_source":"kb"},{"id":"kb_world_of_disney_springs","slug":"world-of-disney-springs","n":"World of Disney","parque":"Disney Springs","area":"Disney Springs — Marketplace","dest":"","tipo":"Gift Shop","descricao":"A MAIOR loja Disney do mundo! 50.000 sq ft. Tudo de Disney. Sem ingresso necessário em Disney Springs. A referência máxima de merchandise Disney.","dica":"A maior loja Disney do mundo — 50.000 pés quadrados.","dicas":["A maior loja Disney do mundo — 50.000 pés quadrados.","Organizada por seção temática após reforma 2020.","Sem ingresso para Disney Springs — só precisa ir até lá."],"tags":["shop","largest-disney-store","world-of-disney","disney-springs","no-ticket"],"url":"https://disneyworld.disney.go.com/shops/disney-springs/world-of-disney/","status":"Active","secao":"loja","_source":"kb"},{"id":"kb_mousegear_epcot","slug":"mousegear-epcot","n":"MouseGear","parque":"EPCOT","area":"EPCOT — World Celebration","dest":"","tipo":"Gift Shop","descricao":"A maior loja do EPCOT! Merchandise exclusivo de Figment, Spaceship Earth e World Showcase. Pins dos festivais. Indoor AC.","dica":"Merchandise EXCLUSIVO do EPCOT — Figment items não encontrados em outros parques.","dicas":["Merchandise EXCLUSIVO do EPCOT — Figment items não encontrados em outros parques.","Maior seleção de pins exclusivos dos festivais do EPCOT.","Indoor com AC — boa pausa."],"tags":["shop","epcot","figment","spaceship-earth","exclusive-merchandise"],"url":"https://disneyworld.disney.go.com/shops/epcot/mousegear/","status":"Active","secao":"loja","_source":"kb"},{"id":"kb_the_emporium_mk","slug":"the-emporium-mk","n":"The Emporium","parque":"Magic Kingdom","area":"Magic Kingdom — Main Street, U.S.A.","dest":"","tipo":"Gift Shop","descricao":"A maior loja do Magic Kingdom! Tudo em merchandise Disney. Maior seleção de pins. Aberta até depois do fechamento.","dica":"Aberta até 30-60 min após o fechamento oficial do parque.","dicas":["Aberta até 30-60 min após o fechamento oficial do parque.","A maior seleção de pins de todo o MK — bom para colecionadores.","Loja de janelas históricas com displays temáticos — parte da experiência da Main Street."],"tags":["shop","main-street","largest","pins","merchandise"],"url":"https://disneyworld.disney.go.com/shops/magic-kingdom/emporium/","status":"Active","secao":"loja","_source":"kb"}];
 const KB_SERVICOS_G  = [{"id":"kb_disneyland_app_lightning_lane","slug":"disneyland-app-lightning-lane","n":"App do Disneyland & Guia Lightning Lane","parque":"Disneyland Resort","area":"","dest":"California","tipo":"Planning Guide","descricao":"App OBRIGATÓRIO! Tempos de espera em tempo real, LLMP USD 25-35, LLSP para top atrações. Instalar e vincular ingressos antes da viagem.","dica":"LLSP de Indiana Jones e Radiator Springs Racers às 7h — comprar primeiro.","dicas":["LLSP de Indiana Jones e Radiator Springs Racers às 7h — comprar primeiro.","LLMP: USD 25-35 para múltiplas atrações — decide no dia conforme as filas.","App Disneyland separado do app de WDW (My Disney Experience) — instalar os dois se visitar os dois resorts."],"tags":["planning-guide","app","lightning-lane","LLMP","LLSP"],"url":"https://disneyland.disney.go.com/plan/my-disneyland/","status":"Active","secao":"servico","_source":"kb"},{"id":"kb_disneyland_monorail_dl","slug":"disneyland-monorail-dl","n":"Monorail do Disneyland","parque":"Disneyland Resort","area":"","dest":"California","tipo":"Transportation","descricao":"O monorail ORIGINAL de 1959 — primeiro do ocidente! Conecta o parque ao Downtown Disney. Incluído no ingresso do parque.","dica":"Original de 1959 — o mais antigo monorail em operação no ocidente.","dicas":["Original de 1959 — o mais antigo monorail em operação no ocidente.","Pode entrar pelo Downtown Disney sem ingresso do parque para o passeio de volta.","Vista aérea de ambos os parques pelo caminho."],"tags":["transportation","monorail","original-1959","free-with-admission","historic"],"url":"https://disneyland.disney.go.com/attractions/disneyland/disneyland-monorail/","status":"Active","secao":"servico","_source":"kb"},{"id":"kb_disney_monorail","slug":"disney-monorail","n":"Monorail do Walt Disney World","parque":"Walt Disney World","area":"","dest":"Orlando","tipo":"Transportation","descricao":"Sistema de monorails gratuito! Conecta Magic Kingdom aos três hotéis Resort Monorail. O Contemporary tem o monorail passando DENTRO do lobby.","dica":"Sentar na frente do monorail com o maquinista para criança — pedir na parada.","dicas":["Sentar na frente do monorail com o maquinista para criança — pedir na parada.","Contemporary: monorail passa pelo lobby de 15 andares — único no mundo.","Evitar monorail na hora de saída do MK — esperas longas."],"tags":["transportation","monorail","free","magic-kingdom","epcot"],"url":"https://disneyworld.disney.go.com/guest-services/monorail/","status":"Active","secao":"servico","_source":"kb"},{"id":"kb_disney_skyliner","slug":"disney-skyliner","n":"Disney Skyliner","parque":"Walt Disney World","area":"","dest":"Orlando","tipo":"Transportation","descricao":"Bondinhos aéreos GRÁTIS do WDW! Conecta EPCOT, Hollywood Studios e 4 hotéis. Vistas aéreas dos parques. Inaugurado em 2019.","dica":"Bondinhos fecham com raios ou ventos fortes — planejar alternativas em dias com tempestade.","dicas":["Bondinhos fecham com raios ou ventos fortes — planejar alternativas em dias com tempestade.","Não operam na madrugada — verificar horários no app.","Vistas do EPCOT, Castelo da Cinderela e Hollywood Studios de cima — aproveitar."],"tags":["transportation","skyliner","gondola","free","epcot"],"url":"https://disneyworld.disney.go.com/guest-services/skyliner/","status":"Active","secao":"servico","_source":"kb"},{"id":"kb_early_theme_park_entry","slug":"early-theme-park-entry","n":"Early Theme Park Entry","parque":"Walt Disney World","area":"","dest":"Orlando","tipo":"Benefit","descricao":"30 minutos antes de TODOS os outros! Exclusivo hóspedes hotéis Disney. Use para: TRON, Seven Dwarfs, Guardians VQ, Slinky Dog, Rise of the Resistance.","dica":"O mais valioso benefício de se hospedar num hotel Disney.","dicas":["O mais valioso benefício de se hospedar num hotel Disney.","Magic Kingdom: entrar 30 min antes e ir direto para TRON ou Seven Dwarfs.","EPCOT: entrar e pegar VQ às 7h de dentro do parque para Guardians."],"tags":["benefit","hotel-perk","30-minutes-early","essential","strategy"],"url":"https://disneyworld.disney.go.com/plan/early-theme-park-entry/","status":"Active","secao":"servico","_source":"kb"},{"id":"kb_lightning_lane_wdw_guide","slug":"lightning-lane-wdw-guide","n":"Lightning Lane — Guia Completo","parque":"Walt Disney World","area":"","dest":"Orlando","tipo":"Planning Guide","descricao":"O sistema pago de skip-the-line do WDW! LLMP USD 15 (múltiplas atrações) + LLSP individual para as top 5. Estratégia obrigatória em alta temporada.","dica":"","dicas":[],"tags":["planning-guide","lightning-lane","paid-skip-line","essential-strategy","LLMP"],"url":"https://disneyworld.disney.go.com/genie/","status":"Active","secao":"servico","_source":"kb"},{"id":"kb_mears_connect_airport_transfer","slug":"mears-connect-airport-transfer","n":"Mears Connect — Transfer Aeroporto","parque":"Walt Disney World","area":"","dest":"Orlando","tipo":"Transportation","descricao":"Transfer oficial MCO ↔ WDW! USD 16/pessoa (compartilhado) ou USD 250 (exclusivo). Substituto do Magical Express desde 2022.","dica":"IMPORTANTE: O Magical Express foi encerrado em janeiro 2022 — Mears Connect é o substituto.","dicas":["IMPORTANTE: O Magical Express foi encerrado em janeiro 2022 — Mears Connect é o substituto.","Standard: compartilhado com outras famílias — pode ter paradas em outros hotéis.","Express: veículo exclusivo direto — mais caro mas sem paradas."],"tags":["transportation","airport-transfer","MCO","replacement-magical-express","paid"],"url":"https://mearsconnect.com/","status":"Active","secao":"servico","_source":"kb"},{"id":"kb_my_disney_experience_app","slug":"my-disney-experience-app","n":"My Disney Experience","parque":"Walt Disney World","area":"","dest":"Orlando","tipo":"Digital Service","descricao":"O app OBRIGATÓRIO do WDW! Tempos de espera, Lightning Lane, Mobile Order, reservas. Instalar ANTES da viagem e vincular os ingressos.","dica":"Instalar o app e criar conta ANTES da viagem — vincular ingressos no app.","dicas":["Instalar o app e criar conta ANTES da viagem — vincular ingressos no app.","Lightning Lane purchase abre às 7h para hóspedes de hotéis Disney e às 7h para todos no dia do parque.","Virtual Queue para Guardians of the Galaxy: disponível às 7h e às 13h — tentar os dois."],"tags":["digital-service","app","mandatory","lightning-lane","mobile-order"],"url":"https://disneyworld.disney.go.com/plan/my-disney-experience/","status":"Active","secao":"servico","_source":"kb"}];
 const KB_ATIVIDADES_G = [{"id":"kb_avengers_campus_character_meets","slug":"avengers-campus-character-meets","n":"Avengers Campus — Encontros com Personagens","parque":"Disney California Adventure","dest":"California","tipo":"Character Meet","descricao":"Spider-Man LANÇA TEIAS REAIS do teto! Thor, Doutor Estranho e mais em patrulhas pelo campus. Os melhores encontros Marvel de qualquer parque Disney.","dica":"Spider-Man no WEB lab LANÇA TEIAS reais — programado em horários, verificar no app.","url":"https://disneyland.disney.go.com/destinations/disney-california-adventure/avengers-campus/","secao":"atividade","_source":"kb"},{"id":"kb_mickey_meet_toontown_dl","slug":"mickey-meet-toontown-dl","n":"Casa do Mickey — Encontro com Mickey","parque":"Disneyland","dest":"California","tipo":"Character Meet","descricao":"Foto individual com Mickey na CASA DELE! Toontown reformado 2023 é espetacular. Lightning Lane disponível.","dica":"Toontown reformado em 2023 — área toda nova e muito mais interativa.","url":"https://disneyland.disney.go.com/attractions/disneyland/mickeys-house/","secao":"atividade","_source":"kb"},{"id":"kb_adventurers_outpost_mickey_minnie_ak","slug":"adventurers-outpost-mickey-minnie-ak","n":"Adventurers Outpost — Mickey e Minnie no Animal Kingdom","parque":"Animal Kingdom","dest":"Orlando","tipo":"Character Meet","descricao":"O único lugar onde Mickey E Minnie aparecem JUNTOS em safari! A única meet & greet do AK para esses dois. LLMP disponível.","dica":"ÚNICO lugar onde Mickey e Minnie são fotografados juntos na mesma foto.","url":"https://disneyworld.disney.go.com/attractions/animal-kingdom/adventurers-outpost/","secao":"atividade","_source":"kb"},{"id":"kb_meet_anna_elsa_epcot_royal_sommerhus","slug":"meet-anna-elsa-epcot-royal-sommerhus","n":"Encontro com Anna e Elsa — Royal Sommerhus","parque":"EPCOT","dest":"Orlando","tipo":"Character Meet","descricao":"Encontre Anna e Elsa no chalé norueguês do EPCOT! As princesas mais procuradas da Disney. LLMP praticamente obrigatório — fila sempre longa.","dica":"LLMP praticamente obrigatório — fila standby de Anna e Elsa é a maior de qualquer meet & greet WDW.","url":"https://disneyworld.disney.go.com/attractions/epcot/meet-anna-and-elsa-at-royal-sommerhus/","secao":"atividade","_source":"kb"},{"id":"kb_meet_tiana_princess_and_the_frog","slug":"meet-tiana-princess-and-the-frog","n":"Encontro com Tiana no EPCOT","parque":"EPCOT","dest":"","tipo":"Character Meet","descricao":"Princesa Tiana no EPCOT! A mais recente meet & greet principal após Tiana's Bayou Adventure. LLMP disponível.","dica":"Procura crescente com a abertura de Tiana's Bayou Adventure.","url":"https://disneyworld.disney.go.com/characters/epcot/tiana/","secao":"atividade","_source":"kb"},{"id":"kb_star_wars_galaxy_edge_character_experiences","slug":"star-wars-galaxy-edge-character-experiences","n":"Experiências com Personagens de Star Wars — Galaxy's Edge","parque":"Hollywood Studios","dest":"Orlando","tipo":"Character Meet","descricao":"Stormtroopers patrulhando, Kylo Ren confrontando, Chewbacca vagando! Personagens 'reais' de Batuu sem fila formal. Verificar schedule no app.","dica":"NÃO há fila formal — os personagens aparecem e interagem como se fossem residentes de Batuu.","url":"https://disneyworld.disney.go.com/destinations/hollywood-studios/star-wars-galaxys-edge/","secao":"atividade","_source":"kb"},{"id":"kb_gaston_meet_greet_beauty_beast","slug":"gaston-meet-greet-beauty-beast","n":"Encontro com Gastão em Fantasyland","parque":"Magic Kingdom","dest":"","tipo":"Character Meet","descricao":"O meet & greet MAIS ENGRAÇADO da Disney! Gastão é arrogante, se acha lindo e te insulta em personagem. Irresistível. Perto de Gaston's Tavern em Fantasyland.","dica":"Gastão FINGE ser superior a todos — entrar no jogo torna a experiência hilária.","url":"https://disneyworld.disney.go.com/characters/magic-kingdom/gaston/","secao":"atividade","_source":"kb"},{"id":"kb_meet_princesses_fairytale_hall","slug":"meet-princesses-fairytale-hall","n":"Princess Fairytale Hall","parque":"Magic Kingdom","dest":"","tipo":"Character Meet","descricao":"Encontro oficial com princesas Disney! Cinderela e Rapunzel fixas. Duas filas, duas princesas cada. Sala privativa com foto. LLMP disponível.","dica":"Duas filas separadas — cada uma tem 2 princesas.","url":"https://disneyworld.disney.go.com/attractions/magic-kingdom/princess-fairytale-hall/","secao":"atividade","_source":"kb"},{"id":"kb_princess_fairytale_hall","slug":"princess-fairytale-hall","n":"Princess Fairytale Hall","parque":"Magic Kingdom","dest":"Orlando","tipo":"Character Meet Greet","descricao":"Encontro oficial com princesas Disney! Duas salas, fotos incluídas. LLMP recomendado para evitar fila longa.","dica":"Verificar no app quais princesas disponíveis no dia.","url":"https://disneyworld.disney.go.com/attractions/magic-kingdom/princess-fairytale-hall/","secao":"atividade","_source":"kb"},{"id":"kb_town_square_theater_mickey_minnie","slug":"town-square-theater-mickey-minnie","n":"Town Square Theater — Mickey e Amigos","parque":"Magic Kingdom","dest":"Orlando","tipo":"Character Meet","descricao":"Foto individual com Mickey e Minnie! Teatro temático da Main Street. LLMP disponível. A única foto privada com Mickey no MK.","dica":"LLMP disponível — evitar a fila longa nos dias cheios.","url":"https://disneyworld.disney.go.com/attractions/magic-kingdom/town-square-theater/","secao":"atividade","_source":"kb"}];
+
+
+// ══════════════════════════════════════════════════════════════
+// FICHA INDIVIDUAL DE PASSAGEIRO — Melhoria #3
+// ══════════════════════════════════════════════════════════════
+const ALT_REQUIREMENTS = {"zootopia-hot-pursuit-sdl":{"h":97,"n":"Zootopia: Hot Pursuit","pk":""},"soaring-over-horizon-sdl":{"h":102,"n":"Soaring Over the Horizon","pk":""},"tron-lightcycle-power-run-sdl":{"h":132,"n":"TRON Lightcycle Power Run (Shanghai","pk":""},"harry-potter-forbidden-journey-usj":{"h":122,"n":"Harry Potter and the Forbidden Jour","pk":""},"mario-kart-koopas-challenge-usj":{"h":102,"n":"Mario Kart: Koopa's Challenge","pk":""},"attack-on-titan-xr-ride-usj":{"h":107,"n":"Attack on Titan XR Ride","pk":""},"iron-gwazi":{"h":132,"n":"Iron Gwazi","pk":""},"cheetah-hunt-busch":{"h":122,"n":"Cheetah Hunt","pk":""},"ice-breaker-seaworld":{"h":122,"n":"Ice Breaker","pk":""},"journey-to-atlantis-seaworld":{"h":107,"n":"Journey to Atlantis","pk":""},"mako-seaworld":{"h":137,"n":"Mako","pk":""},"manta-seaworld":{"h":137,"n":"Manta","pk":""},"kraken-seaworld":{"h":137,"n":"Kraken Unleashed","pk":""},"the-incredible-hulk-coaster":{"h":137,"n":"The Incredible Hulk Coaster","pk":"IoA"},"flight-of-the-hippogriff":{"h":99,"n":"Flight of the Hippogriff","pk":"IoA"},"jurassic-world-river-adventure":{"h":107,"n":"Jurassic World River Adventure","pk":"IoA"},"harry-potter-and-the-forbidden-journey":{"h":122,"n":"Harry Potter and the Forbidden Jour","pk":"IoA"},"skull-island-reign-of-kong":{"h":107,"n":"Skull Island: Reign of Kong","pk":"IoA"},"jurassic-world-velocicoaster":{"h":137,"n":"Jurassic World VelociCoaster","pk":"IoA"},"doctor-dooms-fearfall":{"h":122,"n":"Doctor Doom's Fearfall","pk":"IoA"},"hagrids-magical-creatures-motorbike-adventure":{"h":122,"n":"Hagrid's Magical Creatures Motorbik","pk":"IoA"},"the-simpsons-ride":{"h":102,"n":"The Simpsons Ride","pk":"USF"},"harry-potter-escape-from-gringotts":{"h":102,"n":"Harry Potter and the Escape from Gr","pk":"USF"},"men-in-black-alien-attack":{"h":107,"n":"Men in Black Alien Attack","pk":"USF"},"hollywood-rip-ride-rockit":{"h":122,"n":"Hollywood Rip Ride Rockit","pk":"USF"},"fast-furious-supercharged":{"h":102,"n":"Fast & Furious: Supercharged","pk":"USF"},"transformers-the-ride-3d":{"h":102,"n":"Transformers: The Ride-3D","pk":"USF"},"revenge-of-the-mummy":{"h":107,"n":"Revenge of the Mummy","pk":"USF"},"harry-potter-battle-at-the-ministry":{"h":107,"n":"Harry Potter and the Battle at the ","pk":"EU"},"mario-kart-bowsers-challenge":{"h":107,"n":"Mario Kart: Bowser's Challenge","pk":"EU"},"donkey-kong-mine-cart-carnage":{"h":107,"n":"Donkey Kong Mine Cart Carnage","pk":"EU"},"hiccups-wing-gliders":{"h":107,"n":"Hiccup's Wing Gliders","pk":"EU"},"monsters-lair":{"h":107,"n":"Monsters Lair","pk":"EU"},"journey-to-center-of-earth":{"h":117,"n":"Journey to the Center of the Earth","pk":""},"indiana-jones-crystal-skull-tds":{"h":117,"n":"Indiana Jones: Temple of the Crysta","pk":""},"tower-of-terror-tds":{"h":102,"n":"Tower of Terror (Tokyo DisneySea)","pk":""},"grizzly-mountain-runaway-mine-cars-hk":{"h":107,"n":"Grizzly Mountain Runaway Mine Cars","pk":""},"indiana-jones-et-le-temple-du-peril":{"h":140,"n":"Indiana Jones et le Temple du Péril","pk":""},"hyperspace-mountain-dlp":{"h":132,"n":"Hyperspace Mountain","pk":""},"big-thunder-mountain-dlp":{"h":102,"n":"Big Thunder Mountain","pk":""},"the-twilight-zone-tower-of-terror-dlp":{"h":102,"n":"The Twilight Zone Tower of Terror","pk":""},"millennium-falcon-smugglers-run":{"h":97,"n":"Millennium Falcon: Smugglers Run","pk":"HS"},"star-tours-the-adventures-continue":{"h":102,"n":"Star Tours — The Adventures Continu","pk":"HS"},"rock-n-roller-coaster-starring-aerosmith":{"h":122,"n":"Rock 'n' Roller Coaster Starring Th","pk":"HS"},"star-wars-rise-of-the-resistance":{"h":102,"n":"Star Wars: Rise of the Resistance","pk":"HS"},"slinky-dog-dash":{"h":97,"n":"Slinky Dog Dash","pk":"HS"},"the-twilight-zone-tower-of-terror":{"h":102,"n":"The Twilight Zone Tower of Terror","pk":"HS"},"expedition-everest":{"h":112,"n":"Expedition Everest — Legend of the ","pk":"AK"},"kali-river-rapids":{"h":97,"n":"Kali River Rapids","pk":"AK"},"avatar-flight-of-passage":{"h":112,"n":"Avatar Flight of Passage","pk":"AK"},"tianas-bayou-adventure":{"h":97,"n":"Tiana's Bayou Adventure","pk":"MK"},"seven-dwarfs-mine-train":{"h":97,"n":"Seven Dwarfs Mine Train","pk":"MK"},"space-mountain":{"h":112,"n":"Space Mountain","pk":"MK"},"tron-lightcycle-run":{"h":112,"n":"TRON Lightcycle / Run","pk":"MK"},"the-barnstormer":{"h":89,"n":"The Barnstormer","pk":"MK"},"big-thunder-mountain-railroad":{"h":102,"n":"Big Thunder Mountain Railroad","pk":"MK"},"barnstormer":{"h":89,"n":"The Barnstormer","pk":"MK"},"tomorrowland-speedway":{"h":132,"n":"Tomorrowland Speedway","pk":"MK"},"guardians-of-the-galaxy-cosmic-rewind":{"h":107,"n":"Guardians of the Galaxy: Cosmic Rew","pk":"EPCOT"},"mission-space":{"h":112,"n":"Mission: SPACE","pk":"EPCOT"},"soarin-around-the-world":{"h":102,"n":"Soarin' Around the World","pk":"EPCOT"},"test-track":{"h":102,"n":"Test Track","pk":"EPCOT"},"guardians-of-the-galaxy-mission-breakout":{"h":102,"n":"Guardians of the Galaxy — Mission: ","pk":""},"radiator-springs-racers":{"h":102,"n":"Radiator Springs Racers","pk":""},"soarin-around-the-world-dca":{"h":102,"n":"Soarin' Around the World","pk":""},"incredicoaster":{"h":120,"n":"Incredicoaster","pk":""},"grizzly-river-run":{"h":107,"n":"Grizzly River Run","pk":""},"star-wars-rise-at-dl":{"h":102,"n":"Star Wars: Rise of the Resistance","pk":""},"space-mountain-dl":{"h":107,"n":"Space Mountain","pk":""},"big-thunder-mountain-railroad-dl":{"h":107,"n":"Big Thunder Mountain Railroad","pk":""},"matterhorn-bobsleds":{"h":107,"n":"Matterhorn Bobsleds","pk":""},"star-wars-rise-of-the-resistance-dl":{"h":102,"n":"Star Wars: Rise of the Resistance","pk":""},"millennium-falcon-smugglers-run-dl":{"h":107,"n":"Millennium Falcon: Smugglers Run","pk":""},"indiana-jones-adventure":{"h":137,"n":"Indiana Jones Adventure","pk":""}};
+
+function renderFichasPassageiros() {
+  const grupoId = DB.grupos && DB.grupos[0] ? DB.grupos[0].id : null;
+  const grupo = (DB.grupos||[]).find(g => g.id === (DB.grupoAtual || grupoId));
+  const passageiros = grupo ? (grupo.passageiros || []) : (DB.passageiros || []);
+  const el = document.getElementById('pg-fichas'); if (!el) return;
+
+  const parque = (document.getElementById('ficha-parque-sel')||{}).value || '';
+
+  // Filtrar atrações relevantes para o parque selecionado
+  const altReqs = Object.entries(ALT_REQUIREMENTS)
+    .filter(([s,v]) => !parque || v.pk === parque)
+    .sort((a,b) => a[1].h - b[1].h);
+
+  if (!passageiros.length) {
+    el.innerHTML = `<div class="card" style="text-align:center;padding:40px">
+      <div style="font-size:48px;margin-bottom:12px">👤</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:8px">Nenhum passageiro cadastrado</div>
+      <p style="color:var(--mut);margin-bottom:16px">Adicione os passageiros do grupo para verificação de altura e fichas individuais</p>
+      <button class="btn btn-acc" onclick="openAddPassageiro()">+ Adicionar Passageiro</button>
+    </div>`;
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="card mb16">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div>
+          <div class="fw7" style="font-size:14px">${passageiros.length} passageiro${passageiros.length!==1?'s':''} cadastrado${passageiros.length!==1?'s':''}</div>
+          <div style="font-size:11px;color:var(--mut)">Verificação automática de altura por atração</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select id="ficha-parque-sel" class="fi" onchange="renderFichasPassageiros()" style="font-size:11px">
+            <option value="">Todos os parques</option>
+            <option value="MK">🏰 Magic Kingdom</option>
+            <option value="HS">🎬 Hollywood Studios</option>
+            <option value="AK">🦁 Animal Kingdom</option>
+            <option value="IoA">🦕 Islands of Adventure</option>
+            <option value="USF">🎬 Universal Studios Florida</option>
+            <option value="EU">🌌 Epic Universe</option>
+          </select>
+          <button class="btn btn-acc btn-sm" onclick="openAddPassageiro()">+ Adicionar</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">
+      ${passageiros.map((p,i) => {
+        const alt = parseInt(p.altura)||0;
+        const ok  = altReqs.filter(([s,v]) => alt >= v.h);
+        const nok = altReqs.filter(([s,v]) => alt > 0 && alt < v.h);
+        const pct = altReqs.length ? Math.round(ok.length/altReqs.length*100) : 100;
+        const badge = alt === 0 ? '' : pct===100 ? '✅ Sem restrições' : pct>70 ? '🟡 Poucas restrições' : '🔴 Várias restrições';
+        return `<div class="card" style="border:2px solid ${alt===0?'#e2e8f0':pct===100?'#bbf7d0':pct>70?'#fde68a':'#fca5a5'}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+            <div>
+              <div style="font-size:14px;font-weight:700">${esc(p.nome||'Passageiro '+(i+1))}</div>
+              ${p.tipo_ingresso?`<div style="font-size:11px;color:var(--mut)">🎟️ ${esc(p.tipo_ingresso)}</div>`:''}
+            </div>
+            <div style="display:flex;gap:4px">
+              <button class="btn btn-sm" style="font-size:10px;background:#fdf4ff;border-color:#e9d5ff;color:#7e22ce" onclick="editarPassageiro(${i})">✏️ Editar</button>
+              <button class="btn btn-sm" style="font-size:10px;background:#fef2f2;border-color:#fca5a5;color:#b91c1c" onclick="excluirPassageiro(${i})">🗑</button>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+            ${p.altura?`<div style="background:#f8fafc;border-radius:8px;padding:8px;text-align:center">
+              <div style="font-size:20px;font-weight:800;color:var(--pr)">${p.altura}cm</div>
+              <div style="font-size:10px;color:var(--mut)">Altura</div>
+            </div>`:''}
+            ${p.idade?`<div style="background:#f8fafc;border-radius:8px;padding:8px;text-align:center">
+              <div style="font-size:20px;font-weight:800;color:#7c3aed">${p.idade}</div>
+              <div style="font-size:10px;color:var(--mut)">Anos</div>
+            </div>`:''}
+          </div>
+
+          ${p.alergias?`<div style="background:#fef3c7;border-radius:6px;padding:6px 8px;font-size:11px;margin-bottom:8px">⚠️ <strong>Alergia:</strong> ${esc(p.alergias)}</div>`:''}
+          ${p.obs?`<div style="background:#f1f5f9;border-radius:6px;padding:6px 8px;font-size:11px;margin-bottom:8px">📝 ${esc(p.obs)}</div>`:''}
+
+          ${alt > 0 && altReqs.length > 0 ? `
+          <div style="border-top:1px solid #f1f5f9;padding-top:8px">
+            <div style="font-size:11px;font-weight:600;margin-bottom:6px">${badge} — ${ok.length}/${altReqs.length} atrações</div>
+            ${nok.length>0?`<div style="font-size:10px;color:#b91c1c;margin-bottom:4px">❌ Não pode entrar:</div>
+            <div style="display:flex;flex-wrap:wrap;gap:3px">${nok.slice(0,6).map(([s,v])=>`<span style="background:#fef2f2;border-radius:4px;padding:1px 6px;font-size:9px;color:#b91c1c" title="${v.h}cm mín">${esc(v.n.slice(0,20))}</span>`).join('')}${nok.length>6?`<span style="font-size:9px;color:var(--mut)">+${nok.length-6}</span>`:''}</div>`:''}
+          </div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function openAddPassageiro(editIdx) {
+  const pass = editIdx !== undefined ? (DB.passageiros||[])[editIdx] : null;
+  const existing = document.getElementById('_modal-passageiro');
+  if (existing) existing.remove();
+  const m = document.createElement('div');
+  m.id = '_modal-passageiro';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto';
+  m.innerHTML = `<div style="background:var(--wh);border-radius:16px;padding:24px;width:min(500px,100%);display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h3 style="font-size:15px;font-weight:700">${pass?'✏️ Editar Passageiro':'👤 Novo Passageiro'}</h3>
+      <button onclick="this.closest('#_modal-passageiro').remove()" style="background:none;border:none;font-size:20px;cursor:pointer">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div><label style="font-size:11px;font-weight:600;color:var(--mut)">Nome Completo *</label>
+        <input id="_pass-nome" class="fc" style="margin-top:4px" value="${esc(pass?.nome||'')}" placeholder="Nome do passageiro"/></div>
+      <div><label style="font-size:11px;font-weight:600;color:var(--mut)">Tipo de Ingresso</label>
+        <select id="_pass-tipo" class="fc" style="margin-top:4px">
+          <option value="">Selecionar...</option>
+          <option ${pass?.tipo_ingresso==='Adulto'?'selected':''}>Adulto</option>
+          <option ${pass?.tipo_ingresso==='Criança (3-9)'?'selected':''}>Criança (3-9)</option>
+          <option ${pass?.tipo_ingresso==='Criança menor de 3'?'selected':''}>Criança menor de 3</option>
+          <option ${pass?.tipo_ingresso==='Idoso'?'selected':''}>Idoso</option>
+          <option ${pass?.tipo_ingresso==='PCD'?'selected':''}>PCD</option>
+        </select></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div><label style="font-size:11px;font-weight:600;color:var(--mut)">📏 Altura (cm)</label>
+        <input id="_pass-altura" class="fc" type="number" style="margin-top:4px" value="${pass?.altura||''}" placeholder="Ex: 142" min="50" max="220"/></div>
+      <div><label style="font-size:11px;font-weight:600;color:var(--mut)">🎂 Idade (anos)</label>
+        <input id="_pass-idade" class="fc" type="number" style="margin-top:4px" value="${pass?.idade||''}" placeholder="Ex: 8" min="0" max="120"/></div>
+    </div>
+    <div><label style="font-size:11px;font-weight:600;color:var(--mut)">⚠️ Alergias / Restrições Alimentares</label>
+      <input id="_pass-alergias" class="fc" style="margin-top:4px" value="${esc(pass?.alergias||'')}" placeholder="Ex: amendoim, glúten, lactose..."/></div>
+    <div><label style="font-size:11px;font-weight:600;color:var(--mut)">📝 Observações</label>
+      <textarea id="_pass-obs" class="fc" rows="2" style="margin-top:4px;resize:none" placeholder="Necessidades especiais, preferências, fobia de altura...">${esc(pass?.obs||'')}</textarea></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:4px">
+      <button class="btn btn-sec" onclick="this.closest('#_modal-passageiro').remove()">Cancelar</button>
+      <button class="btn btn-acc" onclick="salvarPassageiro(${editIdx})">💾 Salvar</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+  setTimeout(()=>document.getElementById('_pass-nome')?.focus(),100);
+}
+
+function editarPassageiro(idx) { openAddPassageiro(idx); }
+
+function salvarPassageiro(editIdx) {
+  const nome = document.getElementById('_pass-nome')?.value?.trim();
+  if (!nome) { toast('Informe o nome','warn'); return; }
+  const p = {
+    nome,
+    tipo_ingresso: document.getElementById('_pass-tipo')?.value||'',
+    altura: parseInt(document.getElementById('_pass-altura')?.value)||0,
+    idade:  parseInt(document.getElementById('_pass-idade')?.value)||0,
+    alergias: document.getElementById('_pass-alergias')?.value?.trim()||'',
+    obs:   document.getElementById('_pass-obs')?.value?.trim()||'',
+  };
+  if (!DB.passageiros) DB.passageiros = [];
+  if (editIdx !== undefined) DB.passageiros[editIdx] = p;
+  else DB.passageiros.push(p);
+  saveData().then(()=>{
+    document.getElementById('_modal-passageiro')?.remove();
+    renderFichasPassageiros();
+    toast(`✅ ${editIdx!==undefined?'Atualizado':'Passageiro adicionado'}!`);
+  });
+}
+
+function excluirPassageiro(idx) {
+  if (!confirm('Excluir este passageiro?')) return;
+  DB.passageiros.splice(idx,1);
+  saveData().then(()=>{ renderFichasPassageiros(); toast('Passageiro removido'); });
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// NPS PROFISSIONAL MULTIDIMENSIONAL — Melhoria #4
+// 7 dimensões: Conhecimento, Atendimento, Pontualidade, Filas,
+//              Comunicação, Organização, Experiência Geral
+// ══════════════════════════════════════════════════════════════
+const NPS_DIMS = [
+  {id:'conhecimento',  label:'🎓 Conhecimento',   desc:'Domínio sobre parques, atrações e informações'},
+  {id:'atendimento',   label:'😊 Atendimento',    desc:'Simpatia, atenção e cuidado com o grupo'},
+  {id:'pontualidade',  label:'⏰ Pontualidade',   desc:'Cumprimento dos horários e cronograma'},
+  {id:'filas',         label:'⚡ Gestão de Filas', desc:'Estratégia com Lightning Lane e tempo de espera'},
+  {id:'comunicacao',   label:'🗣️ Comunicação',    desc:'Clareza nas explicações e atualizações ao grupo'},
+  {id:'organizacao',   label:'📋 Organização',    desc:'Planejamento, roteiro e gestão do grupo'},
+  {id:'experiencia',   label:'⭐ Experiência Geral',desc:'Avaliação geral da experiência'},
+];
+
+function renderNPSProfissional() {
+  const el = document.getElementById('pg-nps'); if (!el) return;
+  const avals = DB.npsAvaliacoes || [];
+  const guiaFiltro = (document.getElementById('nps-guia-sel')||{}).value || '';
+  const filtered = guiaFiltro ? avals.filter(a=>a.guia===guiaFiltro) : avals;
+
+  // Calcular médias por dimensão
+  const medias = {};
+  NPS_DIMS.forEach(d => {
+    const scores = filtered.filter(a=>a[d.id]>0).map(a=>a[d.id]);
+    medias[d.id] = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+  });
+  const avgGeral = Object.values(medias).filter(v=>v>0).reduce((a,b)=>a+b,0) / (Object.values(medias).filter(v=>v>0).length || 1);
+
+  // Calcular NPS real (promotores - detratores) com base em "experiencia"
+  const nps_scores = filtered.filter(a=>a.experiencia>0).map(a=>a.experiencia);
+  const promotores  = nps_scores.filter(s=>s>=9).length;
+  const detratores  = nps_scores.filter(s=>s<=6).length;
+  const npsReal     = nps_scores.length ? Math.round((promotores-detratores)/nps_scores.length*100) : 0;
+  const npsColor    = npsReal>=50?'#16a34a':npsReal>=0?'#d97706':'#dc2626';
+
+  el.innerHTML = `
+    <!-- Header e filtros -->
+    <div class="card mb16">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div>
+          <div class="fw7" style="font-size:15px">⭐ NPS Profissional</div>
+          <div style="font-size:11px;color:var(--mut)">${filtered.length} avaliação${filtered.length!==1?'ões':''}</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="nps-guia-sel" class="fi" onchange="renderNPSProfissional()" style="font-size:11px">
+            <option value="">Todos os guias</option>
+            ${USUARIOS_SISTEMA.filter(u=>(u.perfis||[]).includes('guia')).map(u=>`<option value="${esc(u.login)}">${esc(u.nome||u.login)}</option>`).join('')}
+          </select>
+          <button class="btn btn-acc btn-sm" onclick="openNPSForm()">+ Nova Avaliação</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- NPS Score + Médias -->
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:14px;margin-bottom:16px">
+      <!-- NPS Score -->
+      <div class="card" style="text-align:center;min-width:150px;border:2px solid ${npsColor}">
+        <div style="font-size:11px;font-weight:600;color:var(--mut);margin-bottom:4px">NPS SCORE</div>
+        <div style="font-size:52px;font-weight:900;color:${npsColor};line-height:1">${npsReal}</div>
+        <div style="font-size:10px;color:var(--mut);margin-top:4px">${npsReal>=50?'🟢 Excelente':npsReal>=0?'🟡 Bom':'🔴 Crítico'}</div>
+        <div style="border-top:1px solid #f1f5f9;margin-top:8px;padding-top:8px;font-size:10px;color:var(--mut)">
+          ${promotores} promotores · ${detratores} detratores
+        </div>
+      </div>
+      <!-- Médias por dimensão -->
+      <div class="card">
+        <div class="fw7 mb12" style="font-size:13px">Média por Dimensão</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${NPS_DIMS.map(d => {
+            const m = medias[d.id];
+            const pct = m > 0 ? (m/10)*100 : 0;
+            const cor = m>=8?'#16a34a':m>=6?'#d97706':m>0?'#dc2626':'#e2e8f0';
+            return `<div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span style="font-size:11px">${d.label}</span>
+                <span style="font-size:11px;font-weight:700;color:${cor}">${m>0?m.toFixed(1):'—'}</span>
+              </div>
+              <div style="background:#f1f5f9;border-radius:4px;height:6px;overflow:hidden">
+                <div style="background:${cor};height:100%;width:${pct}%;transition:width .6s;border-radius:4px"></div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de avaliações -->
+    ${filtered.length === 0 ? `<div class="card" style="text-align:center;padding:40px;color:var(--mut)">
+      <div style="font-size:36px;margin-bottom:8px">📊</div>
+      <div>Nenhuma avaliação ainda. Clique em "+ Nova Avaliação" para começar.</div>
+    </div>` :
+    `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">
+      ${filtered.map((a,i) => {
+        const totalScore = NPS_DIMS.filter(d=>a[d.id]>0).reduce((s,d)=>s+a[d.id],0);
+        const totalDims  = NPS_DIMS.filter(d=>a[d.id]>0).length;
+        const avg = totalDims ? (totalScore/totalDims).toFixed(1) : '—';
+        const cor = parseFloat(avg)>=8?'#16a34a':parseFloat(avg)>=6?'#d97706':'#dc2626';
+        return `<div class="card" style="border-left:4px solid ${cor}">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+            <div>
+              <div style="font-weight:700;font-size:13px">${esc(a.clienteNome||'Grupo '+i)}</div>
+              <div style="font-size:10px;color:var(--mut)">${a.guia?esc(a.guia)+' · ':''} ${a.data?new Date(a.data).toLocaleDateString('pt-BR'):''}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:24px;font-weight:900;color:${cor}">${avg}</div>
+              <button style="font-size:9px;background:none;border:none;color:var(--mut);cursor:pointer" onclick="excluirNPS(${i})">🗑 excluir</button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+            ${NPS_DIMS.map(d=>a[d.id]>0?`<div style="font-size:10px;display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid #f8fafc">
+              <span style="color:var(--mut)">${d.label.split(' ').slice(1).join(' ')}</span>
+              <span style="font-weight:600;color:${a[d.id]>=8?'#16a34a':a[d.id]>=6?'#d97706':'#dc2626'}">${a[d.id]}</span>
+            </div>`:'').join('')}
+          </div>
+          ${a.comentario?`<div style="margin-top:6px;font-size:11px;color:var(--mut);font-style:italic">"${esc(a.comentario.slice(0,120))}"</div>`:''}
+        </div>`;
+      }).join('')}
+    </div>`}
+  `;
+}
+
+function openNPSForm() {
+  const existing = document.getElementById('_modal-nps');
+  if (existing) existing.remove();
+  const m = document.createElement('div');
+  m.id = '_modal-nps';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto';
+  m.innerHTML = `<div style="background:var(--wh);border-radius:16px;padding:24px;width:min(560px,100%);max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h3 style="font-size:15px;font-weight:700">⭐ Nova Avaliação NPS</h3>
+      <button onclick="this.closest('#_modal-nps').remove()" style="background:none;border:none;font-size:20px;cursor:pointer">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div><label style="font-size:11px;font-weight:600">Cliente / Grupo</label>
+        <input id="_nps-cliente" class="fc" style="margin-top:4px" placeholder="Nome do cliente ou grupo"/></div>
+      <div><label style="font-size:11px;font-weight:600">Guia responsável</label>
+        <select id="_nps-guia" class="fc" style="margin-top:4px">
+          <option value="">Selecionar...</option>
+          ${USUARIOS_SISTEMA.filter(u=>(u.perfis||[]).includes('guia')).map(u=>`<option value="${esc(u.login)}">${esc(u.nome||u.login)}</option>`).join('')}
+        </select></div>
+    </div>
+    <div><label style="font-size:11px;font-weight:600;color:var(--mut)">📅 Data do guiamento</label>
+      <input id="_nps-data" type="date" class="fc" style="margin-top:4px" value="${new Date().toISOString().slice(0,10)}"/></div>
+
+    <div style="border-top:1px solid #f1f5f9;padding-top:12px">
+      <div class="fw7 mb10" style="font-size:13px">Avaliações por Dimensão (1–10)</div>
+      ${NPS_DIMS.map(d=>`
+        <div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div>
+              <span style="font-size:12px;font-weight:600">${d.label}</span>
+              <div style="font-size:10px;color:var(--mut)">${d.desc}</div>
+            </div>
+            <span id="_nps-val-${d.id}" style="font-size:16px;font-weight:700;min-width:24px;text-align:right">—</span>
+          </div>
+          <div style="display:flex;gap:4px">
+            ${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button
+              data-dim="${d.id}" data-val="${n}"
+              onclick="(function(btn){
+                document.querySelectorAll('[data-dim=${d.id}]').forEach(b=>{b.style.background='#f1f5f9';b.style.color='#475569';});
+                btn.style.background='${n>=8?'#16a34a':n>=6?'#d97706':'#dc2626'}';btn.style.color='#fff';
+                document.getElementById('_nps-val-${d.id}').textContent='${n}';
+              })(this)"
+              style="flex:1;border:none;border-radius:4px;padding:6px 2px;font-size:11px;font-weight:600;cursor:pointer;background:#f1f5f9;color:#475569">${n}</button>`).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div><label style="font-size:11px;font-weight:600">💬 Comentário livre</label>
+      <textarea id="_nps-comentario" class="fc" rows="3" style="margin-top:4px;resize:none" placeholder="O que mais gostou? O que poderia melhorar?"></textarea></div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-sec" onclick="this.closest('#_modal-nps').remove()">Cancelar</button>
+      <button class="btn btn-acc" onclick="salvarNPS()">💾 Salvar Avaliação</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+}
+
+function salvarNPS() {
+  const cliente = document.getElementById('_nps-cliente')?.value?.trim();
+  if (!cliente) { toast('Informe o cliente','warn'); return; }
+  const avaliacao = {
+    clienteNome: cliente,
+    guia: document.getElementById('_nps-guia')?.value||'',
+    data: document.getElementById('_nps-data')?.value||new Date().toISOString().slice(0,10),
+    comentario: document.getElementById('_nps-comentario')?.value?.trim()||'',
+  };
+  NPS_DIMS.forEach(d => {
+    const sel = document.querySelector(`[data-dim="${d.id}"][style*="background:rgb"]`);
+    avaliacao[d.id] = sel ? parseInt(sel.dataset.val)||0 : 0;
+  });
+  if (!DB.npsAvaliacoes) DB.npsAvaliacoes = [];
+  DB.npsAvaliacoes.push(avaliacao);
+  saveData().then(()=>{
+    document.getElementById('_modal-nps')?.remove();
+    renderNPSProfissional();
+    toast('✅ Avaliação salva!');
+  });
+}
+
+function excluirNPS(idx) {
+  if (!confirm('Excluir esta avaliação?')) return;
+  (DB.npsAvaliacoes||[]).splice(idx,1);
+  saveData().then(()=>{ renderNPSProfissional(); toast('Avaliação removida'); });
+}
 
 function renderTemporadaG(){
   const grid = document.getElementById('temporada-g-grid'); if(!grid) return;
@@ -3013,6 +3385,35 @@ async function loadData() {
 
 function loadLocal() { try { return JSON.parse(localStorage.getItem(LS_KEY)); } catch { return null; } }
 function saveLocal()  { try { localStorage.setItem(LS_KEY, JSON.stringify(DB)); } catch {} }
+
+// ══════════════════════════════════════════════════════════════
+// BACKUP AUTOMÁTICO — Guiamento Virtual
+// ══════════════════════════════════════════════════════════════
+async function exportarBackupGuiamento() {
+  const ts = new Date().toISOString().slice(0,19).replace(/[T:]/g,'-');
+  const payload = {
+    versao: 'DesenrolaGuiamento-v2.12',
+    exportadoEm: new Date().toISOString(),
+    dados: {}
+  };
+  payload.dados.local = JSON.parse(localStorage.getItem('desenrola_gui_db')||JSON.stringify(DB));
+  if (_fbDb) {
+    try {
+      const snap = await _fbDb.ref('desenrola_v3').once('value');
+      if (snap && snap.exists()) payload.dados.firebase = snap.val();
+    } catch(e) { payload.dados.firebase_erro = e.message; }
+  }
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `backup-guiamento-${ts}.json`;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  toast(`✅ Backup exportado!`);
+  const meta = JSON.parse(localStorage.getItem('_gui_backup_meta')||'{}');
+  meta.ultimoBackup = new Date().toISOString();
+  localStorage.setItem('_gui_backup_meta', JSON.stringify(meta));
+}
 
 async function saveData() {
   DB._lastSaved = Date.now();
