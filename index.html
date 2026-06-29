@@ -658,41 +658,7 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
     <!-- ── RELATÓRIOS ───────────────────────────────────────────── -->
     <div id="pg-relatorios" class="page hid">
       <div class="ph"><div class="pt">📊 Relatórios</div><div class="fca g8"><select class="fi fs12" id="rel-ano" onchange="renderRelatorios()"></select></div></div>
-<div id="pg-fichas" class="page hid">
-  <div class="ph">
-    <div class="pt">👤 Fichas de Passageiros</div>
-    <button class="btn btn-acc btn-sm" onclick="openAddPassageiro()">+ Nova Ficha</button>
-  </div>
-  <div class="pb">
-    <div class="filt" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-      <select id="ficha-parque-sel" class="form-select" style="font-size:12px;width:auto" onchange="renderFichasPassageiros()">
-        <option value="">Todos os parques</option>
-        <option value="MK">🏰 Magic Kingdom</option>
-        <option value="EPCOT">🌍 EPCOT</option>
-        <option value="HS">🎬 Hollywood Studios</option>
-        <option value="AK">🦁 Animal Kingdom</option>
-        <option value="USF">🎬 Universal Studios</option>
-        <option value="IOA">⚡ Islands of Adventure</option>
-        <option value="EU">🌌 Epic Universe</option>
-      </select>
-    </div>
-    <div id="fichas-body"></div>
-  </div>
-</div>
-<div id="pg-nps" class="page hid">
-  <div class="ph">
-    <div class="pt">📊 NPS Multidimensional</div>
-    <button class="btn btn-acc btn-sm" onclick="openNPSForm()">+ Nova Avaliação</button>
-  </div>
-  <div class="pb">
-    <div class="filt" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
-      <select id="nps-guia-sel" class="form-select" style="font-size:12px;width:auto" onchange="renderNPSProfissional()">
-        <option value="">Todos os guias</option>
-      </select>
-    </div>
-    <div id="nps-body"></div>
-  </div>
-</div>
+
       <div class="pb">
         <div class="sg" id="rel-stats"></div>
         <div class="g2">
@@ -706,6 +672,8 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
         </div>
       </div>
     </div>
+<div id="pg-fichas" class="page hid"></div>
+<div id="pg-nps" class="page hid"></div>
 
   </main>
 </div><!-- /app -->
