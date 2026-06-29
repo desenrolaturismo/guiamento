@@ -2510,6 +2510,73 @@ function _renderRestauranteCard(r) {
   </div>`;
 }
 
+
+// ═══════════════════════════════════════════════════════════════
+// CARD PADRONIZADO — Lojas / Atividades / Serviços
+// Foto (gradient se sem img) | Nome | Categoria | Info | Editar | Excluir
+// ═══════════════════════════════════════════════════════════════
+function _renderEncKBCard(item, showEditDelete) {
+  const secao = item.secao||'loja';
+  const isKB  = item._source==='kb';
+  const iconMap  = {loja:'🛍️',atividade:'🎨',servico:'🏥',hotel:'🏨'};
+  const colorMap = {
+    loja:    'linear-gradient(135deg,#7c3aed,#a855f7)',
+    atividade:'linear-gradient(135deg,#0891b2,#06b6d4)',
+    servico: 'linear-gradient(135deg,#059669,#10b981)',
+    hotel:   'linear-gradient(135deg,#2C6AA3,#79ACD9)',
+  };
+  const icon  = iconMap[secao]||'📋';
+  const bg    = colorMap[secao]||'linear-gradient(135deg,#475569,#64748b)';
+  const foto  = item.foto||item.img||'';
+  const nome  = item.n||item.nome||'—';
+  const tipo  = item.tipo||item.subcategory||'';
+  const parque= item.parque||item.park||item.dest||'';
+  const desc  = item.descricao||item.desc||'';
+  const dica  = item.dica||(item.dicas&&item.dicas[0])||'';
+  const url   = item.url||'';
+  const id    = item.id||'';
+  const isCustom = !isKB;
+
+  // Botões de ação
+  const editOnclick = `openEncEdit(JSON.stringify({id:'${id}',secao:'${secao}',custom:${isCustom}}))`;
+  const delOnclick  = `if(confirm('Excluir?')){DB.encItems=(DB.encItems||[]).filter(x=>x.id!=='${id}');saveData().then(()=>{renderAtracoes();toast('Excluído');});}`;
+
+  return `<div style="background:var(--wh);border-radius:14px;border:1px solid #e2e8f0;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:box-shadow .2s" onmouseover="this.style.boxShadow='0 4px 16px rgba(44,106,163,.13)'" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,.06)'">
+    ${foto
+      ? `<img src="${esc(foto)}" alt="${esc(nome)}" style="width:100%;height:110px;object-fit:cover;flex-shrink:0" onerror="this.parentElement.querySelector('.kb-hero').style.display='flex';this.style.display='none'" loading="lazy"/>`
+      : ''
+    }
+    <div class="kb-hero" style="height:90px;display:${foto?'none':'flex'};align-items:center;justify-content:center;font-size:44px;background:${bg};flex-shrink:0">${icon}</div>
+
+    <div style="padding:12px;display:flex;flex-direction:column;gap:6px;flex:1">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
+        <span style="font-size:12px;font-weight:700;color:#0f172a;line-height:1.3">${esc(nome)}</span>
+        ${isKB ? '<span style="background:#f0fdf4;color:#15803d;border-radius:4px;padding:1px 5px;font-size:9px;font-weight:600;white-space:nowrap;flex-shrink:0">KB</span>' : '<span style="background:#fdf4ff;color:#7e22ce;border-radius:4px;padding:1px 5px;font-size:9px;font-weight:600;white-space:nowrap;flex-shrink:0">Custom</span>'}
+      </div>
+
+      <div style="display:flex;gap:4px;flex-wrap:wrap">
+        ${tipo ? `<span style="background:#f1f5f9;border-radius:4px;padding:1px 6px;font-size:10px;color:#475569">${esc(tipo)}</span>` : ''}
+        ${parque ? `<span style="background:#eff6ff;border-radius:4px;padding:1px 6px;font-size:10px;color:#1d4ed8">${esc(parque)}</span>` : ''}
+      </div>
+
+      ${desc ? `<p style="font-size:11px;color:#475569;line-height:1.5;margin:0;flex:1">${esc(desc.slice(0,160))}</p>` : ''}
+      ${dica ? `<div style="font-size:10px;color:#64748b;display:flex;gap:4px"><span>💡</span><span>${esc(dica.slice(0,120))}</span></div>` : ''}
+
+      <div style="display:flex;gap:5px;margin-top:4px;align-items:center">
+        ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener" style="flex:1;font-size:10px;color:#2563eb;text-decoration:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:4px 8px;text-align:center">🔗 Site</a>` : ''}
+        ${showEditDelete !== false
+          ? `<button style="font-size:10px;padding:4px 8px;background:#fdf4ff;border:1px solid #e9d5ff;color:#7e22ce;border-radius:6px;cursor:pointer;${url?'':'flex:1;'}" onclick="${editOnclick}">✏️ ${isKB?'Personalizar':'Editar'}</button>`
+          : ''
+        }
+        ${isCustom && showEditDelete !== false
+          ? `<button style="font-size:10px;padding:4px 8px;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:6px;cursor:pointer" onclick="${delOnclick}">🗑️</button>`
+          : ''
+        }
+      </div>
+    </div>
+  </div>`;
+}
+
 function _renderCustomCard(item) {
   const secao = item.secao||'';
   const iconMap={atracao:'🎢',restaurante:'🍽️',show:'🎭',atividade:'🎨',hotel:'🏨',loja:'🛍️',servico:'🏥'};
@@ -2536,6 +2603,12 @@ function _renderCustomCard(item) {
     </div>
   </div>`;
 }
+
+
+// ── KB: Lojas, Serviços, Atividades — Desenrola Digital v5 ──────────────────
+const KB_LOJAS_G     = [{"id":"kb_ollivanders_wand_shop_hogsmeade","slug":"ollivanders-wand-shop-hogsmeade","n":"Ollivanders — Loja de Varinhas","parque":"Islands of Adventure","area":"Islands of Adventure — Hogsmeade","dest":"","tipo":"Themed Shop","descricao":"A varinha TE ESCOLHE! Show teatral de 10 min onde Ollivander escolhe uma criança da plateia. Experiência mais memorável do Harry Potter para muitas famílias. GRÁTIS incluído no ingresso.","dica":"Crianças que ficam na frente têm mais chance de serem escolhidas.","dicas":["Crianças que ficam na frente têm mais chance de serem escolhidas.","Show acontece a cada 10-15 min — fila anda rápido.","A varinha literalmente faz efeitos quando 'escolhe' a criança — magia tecnológica."],"tags":["shop","harry-potter","ollivanders","theatrical-show","wand-choosing"],"url":"https://www.universalorlando.com/web/en/us/theme-parks/islands-of-adventure/the-wizarding-world-of-harry-potter/ollivanders","status":"Active","secao":"loja","_source":"kb"},{"id":"kb_world_of_disney_springs","slug":"world-of-disney-springs","n":"World of Disney","parque":"Disney Springs","area":"Disney Springs — Marketplace","dest":"","tipo":"Gift Shop","descricao":"A MAIOR loja Disney do mundo! 50.000 sq ft. Tudo de Disney. Sem ingresso necessário em Disney Springs. A referência máxima de merchandise Disney.","dica":"A maior loja Disney do mundo — 50.000 pés quadrados.","dicas":["A maior loja Disney do mundo — 50.000 pés quadrados.","Organizada por seção temática após reforma 2020.","Sem ingresso para Disney Springs — só precisa ir até lá."],"tags":["shop","largest-disney-store","world-of-disney","disney-springs","no-ticket"],"url":"https://disneyworld.disney.go.com/shops/disney-springs/world-of-disney/","status":"Active","secao":"loja","_source":"kb"},{"id":"kb_mousegear_epcot","slug":"mousegear-epcot","n":"MouseGear","parque":"EPCOT","area":"EPCOT — World Celebration","dest":"","tipo":"Gift Shop","descricao":"A maior loja do EPCOT! Merchandise exclusivo de Figment, Spaceship Earth e World Showcase. Pins dos festivais. Indoor AC.","dica":"Merchandise EXCLUSIVO do EPCOT — Figment items não encontrados em outros parques.","dicas":["Merchandise EXCLUSIVO do EPCOT — Figment items não encontrados em outros parques.","Maior seleção de pins exclusivos dos festivais do EPCOT.","Indoor com AC — boa pausa."],"tags":["shop","epcot","figment","spaceship-earth","exclusive-merchandise"],"url":"https://disneyworld.disney.go.com/shops/epcot/mousegear/","status":"Active","secao":"loja","_source":"kb"},{"id":"kb_the_emporium_mk","slug":"the-emporium-mk","n":"The Emporium","parque":"Magic Kingdom","area":"Magic Kingdom — Main Street, U.S.A.","dest":"","tipo":"Gift Shop","descricao":"A maior loja do Magic Kingdom! Tudo em merchandise Disney. Maior seleção de pins. Aberta até depois do fechamento.","dica":"Aberta até 30-60 min após o fechamento oficial do parque.","dicas":["Aberta até 30-60 min após o fechamento oficial do parque.","A maior seleção de pins de todo o MK — bom para colecionadores.","Loja de janelas históricas com displays temáticos — parte da experiência da Main Street."],"tags":["shop","main-street","largest","pins","merchandise"],"url":"https://disneyworld.disney.go.com/shops/magic-kingdom/emporium/","status":"Active","secao":"loja","_source":"kb"}];
+const KB_SERVICOS_G  = [{"id":"kb_disneyland_app_lightning_lane","slug":"disneyland-app-lightning-lane","n":"App do Disneyland & Guia Lightning Lane","parque":"Disneyland Resort","area":"","dest":"California","tipo":"Planning Guide","descricao":"App OBRIGATÓRIO! Tempos de espera em tempo real, LLMP USD 25-35, LLSP para top atrações. Instalar e vincular ingressos antes da viagem.","dica":"LLSP de Indiana Jones e Radiator Springs Racers às 7h — comprar primeiro.","dicas":["LLSP de Indiana Jones e Radiator Springs Racers às 7h — comprar primeiro.","LLMP: USD 25-35 para múltiplas atrações — decide no dia conforme as filas.","App Disneyland separado do app de WDW (My Disney Experience) — instalar os dois se visitar os dois resorts."],"tags":["planning-guide","app","lightning-lane","LLMP","LLSP"],"url":"https://disneyland.disney.go.com/plan/my-disneyland/","status":"Active","secao":"servico","_source":"kb"},{"id":"kb_disneyland_monorail_dl","slug":"disneyland-monorail-dl","n":"Monorail do Disneyland","parque":"Disneyland Resort","area":"","dest":"California","tipo":"Transportation","descricao":"O monorail ORIGINAL de 1959 — primeiro do ocidente! Conecta o parque ao Downtown Disney. Incluído no ingresso do parque.","dica":"Original de 1959 — o mais antigo monorail em operação no ocidente.","dicas":["Original de 1959 — o mais antigo monorail em operação no ocidente.","Pode entrar pelo Downtown Disney sem ingresso do parque para o passeio de volta.","Vista aérea de ambos os parques pelo caminho."],"tags":["transportation","monorail","original-1959","free-with-admission","historic"],"url":"https://disneyland.disney.go.com/attractions/disneyland/disneyland-monorail/","status":"Active","secao":"servico","_source":"kb"},{"id":"kb_disney_monorail","slug":"disney-monorail","n":"Monorail do Walt Disney World","parque":"Walt Disney World","area":"","dest":"Orlando","tipo":"Transportation","descricao":"Sistema de monorails gratuito! Conecta Magic Kingdom aos três hotéis Resort Monorail. O Contemporary tem o monorail passando DENTRO do lobby.","dica":"Sentar na frente do monorail com o maquinista para criança — pedir na parada.","dicas":["Sentar na frente do monorail com o maquinista para criança — pedir na parada.","Contemporary: monorail passa pelo lobby de 15 andares — único no mundo.","Evitar monorail na hora de saída do MK — esperas longas."],"tags":["transportation","monorail","free","magic-kingdom","epcot"],"url":"https://disneyworld.disney.go.com/guest-services/monorail/","status":"Active","secao":"servico","_source":"kb"},{"id":"kb_disney_skyliner","slug":"disney-skyliner","n":"Disney Skyliner","parque":"Walt Disney World","area":"","dest":"Orlando","tipo":"Transportation","descricao":"Bondinhos aéreos GRÁTIS do WDW! Conecta EPCOT, Hollywood Studios e 4 hotéis. Vistas aéreas dos parques. Inaugurado em 2019.","dica":"Bondinhos fecham com raios ou ventos fortes — planejar alternativas em dias com tempestade.","dicas":["Bondinhos fecham com raios ou ventos fortes — planejar alternativas em dias com tempestade.","Não operam na madrugada — verificar horários no app.","Vistas do EPCOT, Castelo da Cinderela e Hollywood Studios de cima — aproveitar."],"tags":["transportation","skyliner","gondola","free","epcot"],"url":"https://disneyworld.disney.go.com/guest-services/skyliner/","status":"Active","secao":"servico","_source":"kb"},{"id":"kb_early_theme_park_entry","slug":"early-theme-park-entry","n":"Early Theme Park Entry","parque":"Walt Disney World","area":"","dest":"Orlando","tipo":"Benefit","descricao":"30 minutos antes de TODOS os outros! Exclusivo hóspedes hotéis Disney. Use para: TRON, Seven Dwarfs, Guardians VQ, Slinky Dog, Rise of the Resistance.","dica":"O mais valioso benefício de se hospedar num hotel Disney.","dicas":["O mais valioso benefício de se hospedar num hotel Disney.","Magic Kingdom: entrar 30 min antes e ir direto para TRON ou Seven Dwarfs.","EPCOT: entrar e pegar VQ às 7h de dentro do parque para Guardians."],"tags":["benefit","hotel-perk","30-minutes-early","essential","strategy"],"url":"https://disneyworld.disney.go.com/plan/early-theme-park-entry/","status":"Active","secao":"servico","_source":"kb"},{"id":"kb_lightning_lane_wdw_guide","slug":"lightning-lane-wdw-guide","n":"Lightning Lane — Guia Completo","parque":"Walt Disney World","area":"","dest":"Orlando","tipo":"Planning Guide","descricao":"O sistema pago de skip-the-line do WDW! LLMP USD 15 (múltiplas atrações) + LLSP individual para as top 5. Estratégia obrigatória em alta temporada.","dica":"","dicas":[],"tags":["planning-guide","lightning-lane","paid-skip-line","essential-strategy","LLMP"],"url":"https://disneyworld.disney.go.com/genie/","status":"Active","secao":"servico","_source":"kb"},{"id":"kb_mears_connect_airport_transfer","slug":"mears-connect-airport-transfer","n":"Mears Connect — Transfer Aeroporto","parque":"Walt Disney World","area":"","dest":"Orlando","tipo":"Transportation","descricao":"Transfer oficial MCO ↔ WDW! USD 16/pessoa (compartilhado) ou USD 250 (exclusivo). Substituto do Magical Express desde 2022.","dica":"IMPORTANTE: O Magical Express foi encerrado em janeiro 2022 — Mears Connect é o substituto.","dicas":["IMPORTANTE: O Magical Express foi encerrado em janeiro 2022 — Mears Connect é o substituto.","Standard: compartilhado com outras famílias — pode ter paradas em outros hotéis.","Express: veículo exclusivo direto — mais caro mas sem paradas."],"tags":["transportation","airport-transfer","MCO","replacement-magical-express","paid"],"url":"https://mearsconnect.com/","status":"Active","secao":"servico","_source":"kb"},{"id":"kb_my_disney_experience_app","slug":"my-disney-experience-app","n":"My Disney Experience","parque":"Walt Disney World","area":"","dest":"Orlando","tipo":"Digital Service","descricao":"O app OBRIGATÓRIO do WDW! Tempos de espera, Lightning Lane, Mobile Order, reservas. Instalar ANTES da viagem e vincular os ingressos.","dica":"Instalar o app e criar conta ANTES da viagem — vincular ingressos no app.","dicas":["Instalar o app e criar conta ANTES da viagem — vincular ingressos no app.","Lightning Lane purchase abre às 7h para hóspedes de hotéis Disney e às 7h para todos no dia do parque.","Virtual Queue para Guardians of the Galaxy: disponível às 7h e às 13h — tentar os dois."],"tags":["digital-service","app","mandatory","lightning-lane","mobile-order"],"url":"https://disneyworld.disney.go.com/plan/my-disney-experience/","status":"Active","secao":"servico","_source":"kb"}];
+const KB_ATIVIDADES_G = [{"id":"kb_avengers_campus_character_meets","slug":"avengers-campus-character-meets","n":"Avengers Campus — Encontros com Personagens","parque":"Disney California Adventure","dest":"California","tipo":"Character Meet","descricao":"Spider-Man LANÇA TEIAS REAIS do teto! Thor, Doutor Estranho e mais em patrulhas pelo campus. Os melhores encontros Marvel de qualquer parque Disney.","dica":"Spider-Man no WEB lab LANÇA TEIAS reais — programado em horários, verificar no app.","url":"https://disneyland.disney.go.com/destinations/disney-california-adventure/avengers-campus/","secao":"atividade","_source":"kb"},{"id":"kb_mickey_meet_toontown_dl","slug":"mickey-meet-toontown-dl","n":"Casa do Mickey — Encontro com Mickey","parque":"Disneyland","dest":"California","tipo":"Character Meet","descricao":"Foto individual com Mickey na CASA DELE! Toontown reformado 2023 é espetacular. Lightning Lane disponível.","dica":"Toontown reformado em 2023 — área toda nova e muito mais interativa.","url":"https://disneyland.disney.go.com/attractions/disneyland/mickeys-house/","secao":"atividade","_source":"kb"},{"id":"kb_adventurers_outpost_mickey_minnie_ak","slug":"adventurers-outpost-mickey-minnie-ak","n":"Adventurers Outpost — Mickey e Minnie no Animal Kingdom","parque":"Animal Kingdom","dest":"Orlando","tipo":"Character Meet","descricao":"O único lugar onde Mickey E Minnie aparecem JUNTOS em safari! A única meet & greet do AK para esses dois. LLMP disponível.","dica":"ÚNICO lugar onde Mickey e Minnie são fotografados juntos na mesma foto.","url":"https://disneyworld.disney.go.com/attractions/animal-kingdom/adventurers-outpost/","secao":"atividade","_source":"kb"},{"id":"kb_meet_anna_elsa_epcot_royal_sommerhus","slug":"meet-anna-elsa-epcot-royal-sommerhus","n":"Encontro com Anna e Elsa — Royal Sommerhus","parque":"EPCOT","dest":"Orlando","tipo":"Character Meet","descricao":"Encontre Anna e Elsa no chalé norueguês do EPCOT! As princesas mais procuradas da Disney. LLMP praticamente obrigatório — fila sempre longa.","dica":"LLMP praticamente obrigatório — fila standby de Anna e Elsa é a maior de qualquer meet & greet WDW.","url":"https://disneyworld.disney.go.com/attractions/epcot/meet-anna-and-elsa-at-royal-sommerhus/","secao":"atividade","_source":"kb"},{"id":"kb_meet_tiana_princess_and_the_frog","slug":"meet-tiana-princess-and-the-frog","n":"Encontro com Tiana no EPCOT","parque":"EPCOT","dest":"","tipo":"Character Meet","descricao":"Princesa Tiana no EPCOT! A mais recente meet & greet principal após Tiana's Bayou Adventure. LLMP disponível.","dica":"Procura crescente com a abertura de Tiana's Bayou Adventure.","url":"https://disneyworld.disney.go.com/characters/epcot/tiana/","secao":"atividade","_source":"kb"},{"id":"kb_star_wars_galaxy_edge_character_experiences","slug":"star-wars-galaxy-edge-character-experiences","n":"Experiências com Personagens de Star Wars — Galaxy's Edge","parque":"Hollywood Studios","dest":"Orlando","tipo":"Character Meet","descricao":"Stormtroopers patrulhando, Kylo Ren confrontando, Chewbacca vagando! Personagens 'reais' de Batuu sem fila formal. Verificar schedule no app.","dica":"NÃO há fila formal — os personagens aparecem e interagem como se fossem residentes de Batuu.","url":"https://disneyworld.disney.go.com/destinations/hollywood-studios/star-wars-galaxys-edge/","secao":"atividade","_source":"kb"},{"id":"kb_gaston_meet_greet_beauty_beast","slug":"gaston-meet-greet-beauty-beast","n":"Encontro com Gastão em Fantasyland","parque":"Magic Kingdom","dest":"","tipo":"Character Meet","descricao":"O meet & greet MAIS ENGRAÇADO da Disney! Gastão é arrogante, se acha lindo e te insulta em personagem. Irresistível. Perto de Gaston's Tavern em Fantasyland.","dica":"Gastão FINGE ser superior a todos — entrar no jogo torna a experiência hilária.","url":"https://disneyworld.disney.go.com/characters/magic-kingdom/gaston/","secao":"atividade","_source":"kb"},{"id":"kb_meet_princesses_fairytale_hall","slug":"meet-princesses-fairytale-hall","n":"Princess Fairytale Hall","parque":"Magic Kingdom","dest":"","tipo":"Character Meet","descricao":"Encontro oficial com princesas Disney! Cinderela e Rapunzel fixas. Duas filas, duas princesas cada. Sala privativa com foto. LLMP disponível.","dica":"Duas filas separadas — cada uma tem 2 princesas.","url":"https://disneyworld.disney.go.com/attractions/magic-kingdom/princess-fairytale-hall/","secao":"atividade","_source":"kb"},{"id":"kb_princess_fairytale_hall","slug":"princess-fairytale-hall","n":"Princess Fairytale Hall","parque":"Magic Kingdom","dest":"Orlando","tipo":"Character Meet Greet","descricao":"Encontro oficial com princesas Disney! Duas salas, fotos incluídas. LLMP recomendado para evitar fila longa.","dica":"Verificar no app quais princesas disponíveis no dia.","url":"https://disneyworld.disney.go.com/attractions/magic-kingdom/princess-fairytale-hall/","secao":"atividade","_source":"kb"},{"id":"kb_town_square_theater_mickey_minnie","slug":"town-square-theater-mickey-minnie","n":"Town Square Theater — Mickey e Amigos","parque":"Magic Kingdom","dest":"Orlando","tipo":"Character Meet","descricao":"Foto individual com Mickey e Minnie! Teatro temático da Main Street. LLMP disponível. A única foto privada com Mickey no MK.","dica":"LLMP disponível — evitar a fila longa nos dias cheios.","url":"https://disneyworld.disney.go.com/attractions/magic-kingdom/town-square-theater/","secao":"atividade","_source":"kb"}];
 
 function renderTemporadaG(){
   const grid = document.getElementById('temporada-g-grid'); if(!grid) return;
@@ -4760,10 +4833,11 @@ async function saveEncByModal(modalId, secao) {
       duracao:v('enc-s-dur'), foto:v('enc-s-foto'), dica:v('enc-s-dica')};
   } else if (secao === 'atividade') {
     const nome = v('enc-atv-nome'), parque = v('enc-atv-parque');
-    if(!nome||!parque){toast('Informe nome e parque','warn');return;}
+    if(!nome){toast('Informe o nome da atividade','warn');return;}
     const existingId = v('enc-atv-id');
-    item = {id:existingId||'enc_'+Date.now(), n:nome, parque, secao:'atividade', custom:true,
-      tipo:v('enc-atv-tipo'), reserva:v('enc-atv-reserva')==='1',
+    item = {id:existingId||'atv_'+Date.now(), n:nome, parque, secao:'atividade', custom:true,
+      tipo:v('enc-atv-tipo'), duracao:v('enc-atv-dur'),
+      reserva:v('enc-atv-reserva')||'0',
       foto:v('enc-atv-foto'), dica:v('enc-atv-dica')};
   } else if (secao === 'hotel') {
     const nome = v('enc-h-nome');
@@ -5209,21 +5283,27 @@ function _renderEncTabFallback(encTab, fPk, search, custom, body){
   }
 
   else {
-    // Atividades, Lojas, Serviços — custom items
+    // Lojas, Atividades, Serviços — KB + custom items
     const secaoSingular = encTab.replace(/s$/, '').replace(/ices$/, 'ice');
-    const userItems = custom.filter(x=>x.secao===secaoSingular||x.secao===encTab);
-    if(!userItems.length){
-      const iconMap={atividades:'🎨',lojas:'🛍️',servicos:'🏥'};
-      const labelMap={atividades:'atividade',lojas:'loja',servicos:'serviço'};
+    const kbMap = {lojas: typeof KB_LOJAS_G!=='undefined'?KB_LOJAS_G:[], atividades: typeof KB_ATIVIDADES_G!=='undefined'?KB_ATIVIDADES_G:[], servicos: typeof KB_SERVICOS_G!=='undefined'?KB_SERVICOS_G:[]};
+    const kbItems   = (kbMap[encTab]||[]).filter(k=>{
+      if(!fDest) return true;
+      return (k.dest||'').includes(fDest)||(k.parque||'').toLowerCase().includes(fDest.toLowerCase());
+    }).filter(k=>!search||(k.n||'').toLowerCase().includes(search)||(k.descricao||'').toLowerCase().includes(search));
+    const userItems = custom.filter(x=>x.secao===secaoSingular||x.secao===encTab).filter(x=>!fDest||!(x.dest||x.parque)||((x.dest||'').includes(fDest)||(x.parque||'').toLowerCase().includes(fDest.toLowerCase()))).filter(x=>!search||(x.n||'').toLowerCase().includes(search));
+    const allItems  = [...kbItems, ...userItems];
+    const iconMap  = {atividades:'🎨',lojas:'🛍️',servicos:'🏥'};
+    const labelMap = {atividades:'atividade',lojas:'loja',servicos:'serviço'};
+    if(!allItems.length){
       body.innerHTML=`<div class="emp">
         <div class="emp-i">${iconMap[encTab]||'📋'}</div>
-        <div class="emp-t">Nenhum ${labelMap[encTab]||'item'} cadastrado</div>
-        <div class="emp-s">Clique em "+ Adicionar" para cadastrar o primeiro</div>
+        <div class="emp-t">Nenhum ${labelMap[encTab]||'item'} encontrado</div>
+        <div class="emp-s">Clique em "+ Adicionar" para cadastrar ou ajuste os filtros</div>
       </div>`;
       return;
     }
-    body.innerHTML=`<div style="font-size:12px;color:var(--tm);margin-bottom:8px">${userItems.length} item${userItems.length!==1?'s':''}</div>`
-      +`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px">${userItems.map(r=>_renderCustomCard(r)).join('')}</div>`;
+    body.innerHTML=`<div style="font-size:12px;color:var(--tm);margin-bottom:10px">${allItems.length} ${labelMap[encTab]||'item'}${allItems.length!==1?'s':''} <span style="color:#64748b;font-size:11px">(${kbItems.length} do Knowledge Base + ${userItems.length} personalizados)</span></div>`
+      +`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px">${allItems.map(r=>_renderEncKBCard(r,true)).join('')}</div>`;
   }
 }
 
@@ -6852,96 +6932,86 @@ function fillGuiaSelects() {
 </div>
 
 <!-- ═══ MODAL: ATIVIDADE ════════════════════════════════════════════════ -->
-<div class="mo hid" id="mo-enc-atividade">
-  <div class="mc2" style="max-width:540px">
-    <div class="mh" style="background:#fff7ed;border-bottom:2px solid #f97316">
-      <div class="mt" style="color:#c2410c">🎨 Atividade Especial</div>
-      <button class="mcl" onclick="closeModal('mo-enc-atividade')">×</button>
-    </div>
 
-<!-- ═══ MODAL: BLOQUEAR DATA ══════════════════════════════════════════════ -->
-<div class="mo hid" id="mo-bloquear-data">
-  <div class="mc2" style="max-width:400px">
-    <div class="mh"><div class="mt">🔒 Bloquear / Desbloquear Data</div><button class="mcl" onclick="closeModal('mo-bloquear-data')">×</button></div>
-    <div class="mb">
-      <p style="font-size:12px;color:#666;margin-bottom:14px">Bloqueie um período em que não poderá fazer guiamentos. Somente você pode gerenciar seus períodos bloqueados.</p>
-      <div class="fr">
-        <div class="fg"><label class="fl">Data de Início *</label><input class="fc" type="date" id="bd-data-ini"></div>
-        <div class="fg"><label class="fl">Data de Fim *</label><input class="fc" type="date" id="bd-data-fim"></div>
-      </div>
-      <div class="fg"><label class="fl">Motivo (opcional)</label><input class="fc" id="bd-motivo" placeholder="Férias, compromisso pessoal..."></div>
-      <div id="bd-lista" style="margin-top:14px;max-height:200px;overflow-y:auto"></div>
+<!-- ── MODAL ATIVIDADE ESPECIAL ─────────────────────────── -->
+<div class="mo hid" id="mo-enc-atividade" onclick="if(event.target===this)closeModal('mo-enc-atividade')">
+  <div class="mo-box" style="max-width:520px">
+    <div class="mo-hd" style="background:#fff7ed;border-bottom:2px solid #f97316">
+      <span class="mt" style="color:#c2410c">🎨 Atividade / Encontro</span>
+      <button class="mo-cl" onclick="closeModal('mo-enc-atividade')">✕</button>
     </div>
-    <div class="mf">
-      <button class="btn btn-sec" onclick="closeModal('mo-bloquear-data')">Fechar</button>
-      <button class="btn btn-danger" onclick="bloquearData()">🔒 Bloquear</button>
+    <div class="mo-bd">
+      <input type="hidden" id="enc-atv-id"/>
+      <div class="fg"><label class="fl">Nome da Atividade *</label>
+        <input class="fc" id="enc-atv-nome" placeholder="Ex: Princess Fairytale Hall | Animation Academy"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fg"><label class="fl">Parque *</label>
+          <select class="fc" id="enc-atv-parque">
+            <option value="">Selecionar...</option>
+            <option>Magic Kingdom</option><option>EPCOT</option>
+            <option>Hollywood Studios</option><option>Animal Kingdom</option>
+            <option>Universal Studios Florida</option><option>Islands of Adventure</option>
+            <option>Epic Universe</option><option>Disney California Adventure</option>
+            <option>Disneyland</option><option>Outro</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Tipo</label>
+          <select class="fc" id="enc-atv-tipo">
+            <option value="">—</option>
+            <option>Encontro com Personagens</option><option>Experiência Interativa</option>
+            <option>Tour</option><option>Aula / Workshop</option>
+            <option>Show ao Vivo</option><option>Walk-Through</option>
+            <option>Playground</option><option>Outro</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fg"><label class="fl">⏱️ Duração</label>
+          <input class="fc" id="enc-atv-dur" placeholder="Ex: 15 min | 1h"/></div>
+        <div class="fg"><label class="fl">📅 Reserva</label>
+          <select class="fc" id="enc-atv-reserva">
+            <option value="0">Sem reserva</option>
+            <option value="1">Reserva recomendada</option>
+            <option value="2">Reserva obrigatória</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Foto (URL)</label>
+        <input class="fc" id="enc-atv-foto" placeholder="https://..."/></div>
+      <div class="fg"><label class="fl">Dica para o Grupo</label>
+        <textarea class="fc" id="enc-atv-dica" placeholder="Chegar cedo, posicionar bem o grupo..." style="min-height:60px"></textarea>
+      </div>
+    </div>
+    <div class="mo-ft">
+      <button class="btn btn-sec enc-del" style="display:none" onclick="saveEncByModal('mo-enc-atividade','atividade','del')">🗑 Excluir</button>
+      <button class="btn btn-acc" onclick="saveEncByModal('mo-enc-atividade','atividade')">💾 Salvar Atividade</button>
     </div>
   </div>
 </div>
-    <div class="mb">
-      <input type="hidden" class="enc-edit-id" id="enc-atv-id">
-      <div class="fr">
-        <div class="fg"><label class="fl">Nome *</label><input class="fc" id="enc-atv-nome" placeholder="Nome da atividade"></div>
-        <div class="fg"><label class="fl">Parque *</label>
-          <select class="fc" id="enc-atv-parque"><option value="">Selecione...</option>
-              <option value="MK">🏰 Magic Kingdom</option>
-              <option value="EPCOT">🌍 EPCOT</option>
-              <option value="HS">🎬 Hollywood Studios</option>
-              <option value="AK">🦁 Animal Kingdom</option>
-              <option value="USO">🎥 Universal Studios</option>
-              <option value="IOA">🏝️ Islands of Adventure</option>
-              <option value="EU">🌌 Epic Universe</option>
-              <option value="SEA">🐬 SeaWorld</option>
-              <option value="BGT">🦁 Busch Gardens</option>
-              <option value="BB">❄️ Blizzard Beach</option>
-              <option value="TL">🌊 Typhoon Lagoon</option>
-              <option value="KSC">🚀 Kennedy Space Center</option></select>
-        </div>
-      </div>
-      <div class="fr">
-        <div class="fg"><label class="fl">Tipo</label>
-          <select class="fc" id="enc-atv-tipo">
-            <option value="atividade">Atividade Especial</option>
-            <option value="meet-greet">Meet &amp; Greet</option>
-            <option value="experiencia">Experiência VIP</option>
-          </select>
-        </div>
-        <div class="fg"><label class="fl">Reserva necessária?</label>
-          <select class="fc" id="enc-atv-reserva">
-            <option value="0">Não (Walk-in)</option>
-            <option value="1">Sim (Reservar com antecedência)</option>
-          </select>
-        </div>
-      </div>
-      <div class="fg"><label class="fl">URL da Foto</label><input class="fc" id="enc-atv-foto" placeholder="https://..."></div>
-      <div class="fg"><label class="fl">Dica do Guia</label><textarea class="fc" id="enc-atv-dica" placeholder="Como participar, custo, dicas..." style="min-height:80px"></textarea></div>
-    </div>
-    <div class="mf">
-      <button class="btn btn-red btn-sm enc-del" onclick="deleteEncCurrent('mo-enc-atividade')" style="display:none">🗑 Excluir</button>
-      <button class="btn btn-sec" onclick="closeModal('mo-enc-atividade')">Cancelar</button>
-      <button class="btn btn-acc" onclick="saveEncByModal('mo-enc-atividade','atividade')">💾 Salvar</button>
-    </div>
-  </div>
-<!-- ── MODAL HOTEL ──────────────────────────────────── -->
+
+<!-- ── MODAL HOTEL ─────────────────────────────────────── -->
 <div id="mo-enc-hotel" class="mo hid" onclick="if(event.target===this)closeModal('mo-enc-hotel')">
   <div class="mo-box" style="max-width:520px">
-    <div class="mo-hd"><span class="mt">Adicionar Hotel</span><button class="mo-cl" onclick="closeModal('mo-enc-hotel')">✕</button></div>
+    <div class="mo-hd" style="background:#eff6ff;border-bottom:2px solid #2C6AA3">
+      <span class="mt" style="color:#1e40af">🏨 Hotel / Resort</span>
+      <button class="mo-cl" onclick="closeModal('mo-enc-hotel')">✕</button>
+    </div>
     <div class="mo-bd">
-      <div class="fg"><label class="fl">Nome do Hotel *</label><input type="hidden" id="enc-h-id"/>
-      <input class="fc" id="enc-h-nome" placeholder="Ex: Yacht Club Resort"/></div>
+      <input type="hidden" id="enc-h-id"/>
+      <div class="fg"><label class="fl">Nome do Hotel *</label>
+        <input class="fc" id="enc-h-nome" placeholder="Ex: Yacht Club Resort | Hard Rock Hotel"/></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="fg"><label class="fl">Resort/Destino *</label>
+        <div class="fg"><label class="fl">Destino *</label>
           <select class="fc" id="enc-h-dest">
             <option value="">Selecionar...</option>
-            <option>Walt Disney World</option><option>Universal Orlando</option>
-            <option>Disneyland California</option><option>Disneyland Paris</option>
-            <option>Tokyo Disney Resort</option><option>Hong Kong Disneyland</option>
-            <option>Shanghai Disneyland</option><option>Outro</option>
+            <option>Orlando</option><option>California</option>
+            <option>Paris</option><option>Tokyo</option>
+            <option>Hong Kong</option><option>Shanghai</option><option>Outro</option>
           </select>
         </div>
         <div class="fg"><label class="fl">Categoria</label>
           <select class="fc" id="enc-h-cat">
-            <option value="">Selecionar...</option>
+            <option value="">—</option>
             <option>Value</option><option>Moderate</option><option>Deluxe</option>
             <option>Signature</option><option>Universal Signature</option><option>Premier</option>
           </select>
@@ -6955,101 +7025,116 @@ function fillGuiaSelects() {
         </div>
         <div class="fg"><label class="fl">💰 Faixa de Preço</label>
           <select class="fc" id="enc-h-preco">
-            <option value="">—</option><option>$ (econômico)</option><option>$$ (moderado)</option>
-            <option>$$$ (superior)</option><option>$$$$ (deluxe)</option>
+            <option value="">—</option><option>$ (econômico)</option>
+            <option>$$ (moderado)</option><option>$$$ (superior)</option><option>$$$$ (deluxe)</option>
           </select>
         </div>
       </div>
       <div class="fg"><label class="fl">Benefícios inclusos</label>
-        <textarea class="fc" id="enc-h-beneficios" placeholder="Ex: Express Pass ilimitado | Café da manhã incluso | Early park entry" style="min-height:60px"></textarea>
+        <textarea class="fc" id="enc-h-beneficios" placeholder="Ex: Express Pass ilimitado | Café da manhã incluso" style="min-height:60px"></textarea>
       </div>
       <div class="fg"><label class="fl">Foto (URL)</label><input class="fc" id="enc-h-foto" placeholder="https://..."/></div>
-      <div class="fg"><label class="fl">Notas / Dicas</label>
+      <div class="fg"><label class="fl">Dicas / Notas</label>
         <textarea class="fc" id="enc-h-dica" placeholder="Dicas operacionais para o guia..." style="min-height:60px"></textarea>
       </div>
     </div>
     <div class="mo-ft">
-      <button class="btn btn-sec enc-del" style="display:none" onclick="deleteEncItem('hotel')">🗑 Excluir</button>
+      <button class="btn btn-sec enc-del" style="display:none" onclick="saveEncByModal('mo-enc-hotel','hotel','del')">🗑 Excluir</button>
       <button class="btn btn-acc" onclick="saveEncByModal('mo-enc-hotel','hotel')">💾 Salvar Hotel</button>
     </div>
   </div>
 </div>
 
-<!-- ── MODAL LOJA ──────────────────────────────────── -->
+<!-- ── MODAL LOJA ─────────────────────────────────────── -->
 <div id="mo-enc-loja" class="mo hid" onclick="if(event.target===this)closeModal('mo-enc-loja')">
   <div class="mo-box" style="max-width:520px">
-    <div class="mo-hd"><span class="mt">Adicionar Loja</span><button class="mo-cl" onclick="closeModal('mo-enc-loja')">✕</button></div>
+    <div class="mo-hd" style="background:#fdf4ff;border-bottom:2px solid #a855f7">
+      <span class="mt" style="color:#7e22ce">🛍️ Loja</span>
+      <button class="mo-cl" onclick="closeModal('mo-enc-loja')">✕</button>
+    </div>
     <div class="mo-bd">
-      <div class="fg"><label class="fl">Nome da Loja *</label><input type="hidden" id="enc-lj-id"/>
-      <input class="fc" id="enc-lj-nome" placeholder="Ex: World of Disney | Diagon Alley Shops"/></div>
+      <input type="hidden" id="enc-lj-id"/>
+      <div class="fg"><label class="fl">Nome da Loja *</label>
+        <input class="fc" id="enc-lj-nome" placeholder="Ex: Ollivanders | World of Disney"/></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="fg"><label class="fl">Parque/Local</label>
+        <div class="fg"><label class="fl">Parque / Local *</label>
           <select class="fc" id="enc-lj-parque">
             <option value="">Selecionar...</option>
             <option>Magic Kingdom</option><option>EPCOT</option>
             <option>Hollywood Studios</option><option>Animal Kingdom</option>
-            <option>Universal Studios Florida</option><option>Islands of Adventure</option>
-            <option>Epic Universe</option><option>Disney Springs</option><option>CityWalk</option><option>Outro</option>
+            <option>Islands of Adventure</option><option>Universal Studios Florida</option>
+            <option>Epic Universe</option><option>Disney Springs</option>
+            <option>CityWalk</option><option>Disneyland</option><option>Outro</option>
           </select>
         </div>
         <div class="fg"><label class="fl">Tipo</label>
           <select class="fc" id="enc-lj-tipo">
             <option value="">—</option>
-            <option>Souvenires</option><option>Vestuário</option><option>Brinquedos</option>
-            <option>Cosméticos</option><option>Alimentos</option><option>Artigos colecionáveis</option>
-            <option>Ingressos/Extras</option><option>Geral</option>
+            <option>Souvenires / Presentes</option><option>Vestuário</option>
+            <option>Brinquedos</option><option>Loja Temática</option>
+            <option>Alimentos / Guloseimas</option><option>Artigos Colecionáveis</option>
+            <option>Geral</option>
           </select>
         </div>
       </div>
-      <div class="fg"><label class="fl">📍 Localização no Parque</label><input class="fc" id="enc-lj-local" placeholder="Ex: Entrada da Main Street | Hogsmeade"/></div>
+      <div class="fg"><label class="fl">📍 Localização no Parque</label>
+        <input class="fc" id="enc-lj-local" placeholder="Ex: Main Street | Hogsmeade Village"/></div>
       <div class="fg"><label class="fl">Foto (URL)</label><input class="fc" id="enc-lj-foto" placeholder="https://..."/></div>
       <div class="fg"><label class="fl">Dica para o Grupo</label>
-        <textarea class="fc" id="enc-lj-dica" placeholder="Ex: Melhor loja para comprar wands do HP | Fila fica curta de manhã cedo" style="min-height:60px"></textarea>
+        <textarea class="fc" id="enc-lj-dica" placeholder="Melhor horário para visitar, produtos exclusivos..." style="min-height:60px"></textarea>
       </div>
     </div>
     <div class="mo-ft">
-      <button class="btn btn-sec enc-del" style="display:none" onclick="deleteEncItem('loja')">🗑 Excluir</button>
+      <button class="btn btn-sec enc-del" style="display:none" onclick="saveEncByModal('mo-enc-loja','loja','del')">🗑 Excluir</button>
       <button class="btn btn-acc" onclick="saveEncByModal('mo-enc-loja','loja')">💾 Salvar Loja</button>
     </div>
   </div>
 </div>
 
-<!-- ── MODAL SERVIÇO ──────────────────────────────────── -->
+<!-- ── MODAL SERVIÇO ─────────────────────────────────── -->
 <div id="mo-enc-servico" class="mo hid" onclick="if(event.target===this)closeModal('mo-enc-servico')">
   <div class="mo-box" style="max-width:520px">
-    <div class="mo-hd"><span class="mt">Adicionar Serviço</span><button class="mo-cl" onclick="closeModal('mo-enc-servico')">✕</button></div>
+    <div class="mo-hd" style="background:#f0fdf4;border-bottom:2px solid #16a34a">
+      <span class="mt" style="color:#15803d">🏥 Serviço / Transporte</span>
+      <button class="mo-cl" onclick="closeModal('mo-enc-servico')">✕</button>
+    </div>
     <div class="mo-bd">
-      <div class="fg"><label class="fl">Nome do Serviço *</label><input type="hidden" id="enc-sv-id"/>
-      <input class="fc" id="enc-sv-nome" placeholder="Ex: First Aid | Guest Relations | PhotoPass"/></div>
+      <input type="hidden" id="enc-sv-id"/>
+      <div class="fg"><label class="fl">Nome do Serviço *</label>
+        <input class="fc" id="enc-sv-nome" placeholder="Ex: First Aid | Monorail | My Disney Experience"/></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="fg"><label class="fl">Parque/Local</label>
+        <div class="fg"><label class="fl">Parque / Destino</label>
           <select class="fc" id="enc-sv-parque">
             <option value="">Selecionar...</option>
+            <option>Walt Disney World</option><option>Universal Orlando</option>
             <option>Magic Kingdom</option><option>EPCOT</option>
             <option>Hollywood Studios</option><option>Animal Kingdom</option>
-            <option>Universal Studios Florida</option><option>Islands of Adventure</option>
+            <option>Islands of Adventure</option><option>Universal Studios Florida</option>
             <option>Epic Universe</option><option>Outro</option>
           </select>
         </div>
-        <div class="fg"><label class="fl">Tipo de Serviço</label>
+        <div class="fg"><label class="fl">Tipo</label>
           <select class="fc" id="enc-sv-tipo">
             <option value="">—</option>
             <option>First Aid / Pronto Socorro</option><option>Guest Relations</option>
-            <option>Baby Care Center</option><option>Locker / Guarda-volumes</option>
-            <option>Estacionamento</option><option>Transporte interno</option>
-            <option>Compra de ingressos</option><option>PhotoPass / MemoryMaker</option>
-            <option>Reserva de restaurante</option><option>Outro</option>
+            <option>Baby Care Center</option><option>Transporte (Gratuito)</option>
+            <option>Transfer Aeroporto</option><option>App / Serviço Digital</option>
+            <option>Planejamento / Guia</option><option>Outro</option>
           </select>
         </div>
       </div>
-      <div class="fg"><label class="fl">📍 Localização</label><input class="fc" id="enc-sv-local" placeholder="Ex: Próximo à entrada principal"/></div>
-      <div class="fg"><label class="fl">🕐 Horário</label><input class="fc" id="enc-sv-horario" placeholder="Ex: 09:00 – 21:00 | 24h"/></div>
-      <div class="fg"><label class="fl">Dica / Observação</label>
-        <textarea class="fc" id="enc-sv-dica" placeholder="Informações úteis sobre este serviço..." style="min-height:60px"></textarea>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fg"><label class="fl">📍 Localização</label>
+          <input class="fc" id="enc-sv-local" placeholder="Ex: Próximo à entrada"/></div>
+        <div class="fg"><label class="fl">🕐 Horário</label>
+          <input class="fc" id="enc-sv-horario" placeholder="Ex: 08:00–22:00 | 24h"/></div>
+      </div>
+      <div class="fg"><label class="fl">Dica / Informação</label>
+        <textarea class="fc" id="enc-sv-dica" placeholder="Como usar, quando acionar, dicas operacionais..." style="min-height:60px"></textarea>
       </div>
     </div>
     <div class="mo-ft">
-      <button class="btn btn-sec enc-del" style="display:none" onclick="deleteEncItem('servico')">🗑 Excluir</button>
+      <button class="btn btn-sec enc-del" style="display:none" onclick="saveEncByModal('mo-enc-servico','servico','del')">🗑 Excluir</button>
       <button class="btn btn-acc" onclick="saveEncByModal('mo-enc-servico','servico')">💾 Salvar Serviço</button>
     </div>
   </div>
