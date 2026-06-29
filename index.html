@@ -4555,6 +4555,30 @@ async function saveAvaliacao() {
 // ══════════════════════════════════════════════════════════════════════════
 // TEMPLATES
 // ══════════════════════════════════════════════════════════════════════════
+
+function duplicateTpl(id) {
+  const tpls = getTemplates();
+  const tpl = tpls.find(t => t.id === id);
+  if(!tpl) return;
+  const newTpl = {...tpl, 
+    id: 'tpl_' + Date.now(), 
+    titulo: tpl.titulo + ' (cópia)',
+    custom: true
+  };
+  DB.templates = [...tpls, newTpl];
+  saveData().then(()=>{ renderTemplates(); toast('📄 Template duplicado!'); });
+}
+
+function deleteTpl(id) {
+  const tpls = getTemplates();
+  const tpl = tpls.find(t => t.id === id);
+  if(!tpl) return;
+  const label = tpl.titulo || 'este template';
+  if(!confirm('Excluir "' + label + '"?')) return;
+  DB.templates = tpls.filter(t => t.id !== id);
+  saveData().then(()=>{ renderTemplates(); toast('🗑️ Template excluído'); });
+}
+
 function renderTemplates() {
   const tpls = getTemplates();
   g('tpl-body').innerHTML = `
@@ -4566,9 +4590,11 @@ function renderTemplates() {
       <div class="tpl-card">
         <div class="tpl-head">
           <div class="fca g8"><span style="font-size:20px">${t.emoji}</span><div class="tpl-name">${esc(t.titulo)}</div></div>
-          <div class="fca g8">
-            <button class="btn btn-sec btn-sm" onclick="openTplModal('${t.id}')">✏️ Editar</button>
-            <button class="btn btn-acc btn-sm" onclick="copyTpl('tpl-${t.id}')">📋 Copiar</button>
+          <div class="fca g8" style="flex-wrap:wrap;gap:6px">
+            <button class="btn btn-sm" style="background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;font-size:11px" onclick="copyTpl('tpl-${t.id}')">📋 Copiar</button>
+            <button class="btn btn-sm" style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;font-size:11px" onclick="openTplModal('${t.id}')">✏️ Editar</button>
+            <button class="btn btn-sm" style="background:#fdf4ff;border:1px solid #e9d5ff;color:#7e22ce;font-size:11px" onclick="duplicateTpl('${t.id}')">📄 Duplicar</button>
+            <button class="btn btn-sm" style="background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-size:11px" onclick="deleteTpl('${t.id}')">🗑️</button>
           </div>
         </div>
         <div class="tpl-body" id="tpl-${t.id}">${esc(t.corpo)}</div>
@@ -4578,8 +4604,29 @@ function renderTemplates() {
 }
 
 function copyTpl(id) {
-  const txt = g(id)?.textContent||'';
-  navigator.clipboard.writeText(txt).then(()=>toast('Template copiado! 📋')).catch(()=>toast('Selecione e copie manualmente','warn'));
+  const el = g(id);
+  if(!el) return;
+  // Get raw text (textContent decodes HTML entities)
+  const txt = el.textContent || el.innerText || '';
+  // Method 1: Clipboard API
+  if(navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(()=>toast('✅ Template copiado!')).catch(()=>_copyFallback(txt));
+  } else {
+    _copyFallback(txt);
+  }
+}
+function _copyFallback(txt) {
+  const ta = document.createElement('textarea');
+  ta.value = txt; ta.style.cssText='position:fixed;left:-9999px;top:-9999px;opacity:0';
+  document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0,99999);
+  try {
+    document.execCommand('copy');
+    toast('✅ Template copiado!');
+  } catch(e) {
+    // Open WhatsApp with the text pre-filled
+    toast('📋 Selecione o texto e copie (Ctrl+C)','warn');
+  }
+  document.body.removeChild(ta);
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -4711,7 +4758,6 @@ async function saveEncByModal(modalId, secao) {
     item = {id:existingId||'enc_'+Date.now(), n:nome, parque, secao:'atividade', custom:true,
       tipo:v('enc-atv-tipo'), reserva:v('enc-atv-reserva')==='1',
       foto:v('enc-atv-foto'), dica:v('enc-atv-dica')};
-  }
   } else if (secao === 'hotel') {
     const nome = v('enc-h-nome');
     if(!nome){toast('Informe o nome do hotel','warn');return;}
@@ -5073,7 +5119,7 @@ function _renderEncTabFallback(encTab, fPk, search, custom, body){
         if(fPk&&pk!==fPk) return;
         (shows||[]).forEach(sv=>{
           if(search&&!sv.n.toLowerCase().includes(search)) return;
-          items.push({id:sv.n,nome:sv.n,park:pk,cat:'show',tipo:sv.tipo||'daytime_show',desc:sv.dica||'',img:'',url:''});
+          items.push({id:sv.n,nome:sv.n,park:pk,cat:'show',tipo:sv.tipo||'daytime_show',desc:sv.dica||'',horario:sv.horario||'',local:sv.local||'',dur:sv.duracao?parseInt(sv.duracao):0,img:'',url:''});
         });
       });
     }
@@ -5085,20 +5131,42 @@ function _renderEncTabFallback(encTab, fPk, search, custom, body){
     if(!items.length){body.innerHTML='<div class="emp"><div class="emp-i">🎭</div><div class="emp-t">Nenhum show encontrado</div></div>';return;}
     body.innerHTML=`<div style="font-size:12px;color:var(--tm);margin-bottom:8px">${items.length} show${items.length!==1?'s':''}/festival${items.length!==1?'is':''}</div>`
       +`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">`
-      +items.map(sv=>`<div style="background:var(--wh);border-radius:12px;border:1px solid #e8f0f8;overflow:hidden">
-          ${sv.img?`<img src="${esc(sv.img)}" alt="${esc(sv.nome)}" style="width:100%;height:120px;object-fit:cover" onerror="this.style.display='none'" loading="lazy"/>`
-                  :`<div style="height:60px;display:flex;align-items:center;justify-content:center;font-size:28px;background:#f5f3ff">🎭</div>`}
-          <div style="padding:12px">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
-              <span style="font-size:12px;font-weight:700">${esc(sv.nome)}</span>
-              ${sv.sazonal?'<span style="background:#dbeafe;color:#1e40af;border-radius:4px;padding:1px 5px;font-size:9px">⭐ Sazonal</span>':''}
+      +items.map(sv=>{
+      const tipoColor={
+        'nighttime_spectacular':'linear-gradient(135deg,#1e1b4b,#312e81)',
+        'seasonal_event':'linear-gradient(135deg,#7c2d12,#92400e)',
+        'stage_show':'linear-gradient(135deg,#14532d,#166534)',
+        'parade':'linear-gradient(135deg,#831843,#9d174d)',
+        'character_meet':'linear-gradient(135deg,#0c4a6e,#075985)',
+        'annual_festival':'linear-gradient(135deg,#3b0764,#6b21a8)',
+        'seasonal_party':'linear-gradient(135deg,#450a0a,#7f1d1d)',
+        'fireworks':'linear-gradient(135deg,#1c1917,#292524)',
+        'daytime_show':'linear-gradient(135deg,#083344,#155e75)',
+        'castle_show':'linear-gradient(135deg,#1e3a5f,#2563eb)',
+        'stunt_show':'linear-gradient(135deg,#422006,#92400e)',
+        'live_animal_show':'linear-gradient(135deg,#14532d,#065f46)',
+      }[sv.tipo||'']||'linear-gradient(135deg,#1e293b,#334155)';
+      const emojiMap={'nighttime_spectacular':'🎆','seasonal_event':'🎃','stage_show':'🎭',
+        'parade':'🎠','character_meet':'🤝','annual_festival':'🎪','seasonal_party':'🎉',
+        'fireworks':'✨','daytime_show':'☀️','castle_show':'🏰','stunt_show':'💥',
+        'live_animal_show':'🦁','4d_show':'🥽','dinner_show':'🍽️','nighttime_parade':'🌙'};
+      const emoji=emojiMap[sv.tipo||'']||'🎭';
+      return `<div style="background:var(--wh);border-radius:12px;border:1px solid #e8f0f8;overflow:hidden;display:flex;flex-direction:column">
+          ${sv.img?`<div style="position:relative"><img src="${esc(sv.img)}" alt="${esc(sv.nome)}" style="width:100%;height:110px;object-fit:cover" onerror="this.parentElement.style.background='${tipoColor}';this.parentElement.innerHTML='<div style=\'height:110px;display:flex;align-items:center;justify-content:center;font-size:48px\'>${emoji}</div>'" loading="lazy"/></div>`
+          :`<div style="height:90px;display:flex;align-items:center;justify-content:center;font-size:48px;background:${tipoColor}">${emoji}</div>`}
+          <div style="padding:12px;flex:1;display:flex;flex-direction:column">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:4px;margin-bottom:6px">
+              <span style="font-size:12px;font-weight:700;color:#0f172a;line-height:1.3">${esc(sv.nome)}</span>
+              ${sv.sazonal||sv.tipo==='seasonal_event'||sv.tipo==='seasonal_party'?'<span style="background:#fef3c7;color:#92400e;border-radius:4px;padding:1px 5px;font-size:9px;white-space:nowrap">⭐ Sazonal</span>':''}
             </div>
-            ${sv.dur?`<div style="font-size:10px;color:#64748b;margin-bottom:4px">⏱️ ${sv.dur} min</div>`:''}
-            ${sv.desc?`<p style="font-size:10.5px;color:#475569;margin:0;line-height:1.4">${esc(sv.desc.slice(0,180))}</p>`:''}
-            ${sv.dicas&&sv.dicas.length?`<div style="margin-top:4px">${sv.dicas.slice(0,2).map(d=>`<div style="font-size:10px;color:#64748b">💡 ${esc(d.slice(0,100))}</div>`).join('')}</div>`:''}
-            ${sv.url?`<a href="${esc(sv.url)}" target="_blank" rel="noopener" style="font-size:10px;color:#2563eb;text-decoration:none">🔗 Info</a>`:''}
+            ${sv.park?`<div style="font-size:10px;color:#64748b;margin-bottom:3px">🏟️ ${esc(sv.park)}</div>`:''}
+            ${sv.dur?`<div style="font-size:10px;color:#64748b;margin-bottom:3px">⏱️ ${sv.dur} min</div>`:''}
+            ${sv.desc?`<p style="font-size:11px;color:#475569;margin:0 0 6px;line-height:1.4;flex:1">${esc(sv.desc.slice(0,180))}</p>`:''}
+            ${(sv.dicas||[]).slice(0,1).map(d=>`<div style="font-size:10px;color:#64748b">💡 ${esc(d.slice(0,100))}</div>`).join('')}
+            ${sv.url?`<a href="${esc(sv.url)}" target="_blank" rel="noopener" style="font-size:10px;color:#2563eb;text-decoration:none;display:block;margin-top:6px">🔗 Saiba mais</a>`:''}
           </div>
-        </div>`).join('')+`</div>`;
+        </div>`;
+    }).join('')+`</div>`;
   }
 
   else if(encTab==='hoteis'){
@@ -6537,7 +6605,7 @@ function openTplModal(id = null) {
   g('tpl-titulo').value = tpl?.titulo || '';
   g('tpl-corpo').value  = tpl?.corpo  || '';
   const delBtn = g('tpl-del-btn');
-  if (delBtn) delBtn.classList.toggle('hid', !id || tpl?.custom === false);
+  if (delBtn) delBtn.classList.toggle('hid', !id);
   openModal('mo-tpl');
 }
 
