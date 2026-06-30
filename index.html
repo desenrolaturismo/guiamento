@@ -497,10 +497,10 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
           <button class="enc-tab" onclick="switchEncTab('festivais',this)">🌸 Festivais</button>
         </div>
         <div class="filt">
-          <select class="fi" id="enc-destino" onchange="renderEnciclopediaKB()">
+          <select class="fi" id="enc-destino" onchange="_encOnDestinoChange()">
             <option value="">Carregando destinos...</option>
           </select>
-          <input class="fi" type="text" id="enc-search" placeholder="🔍 Buscar..." oninput="debounceCall('enc',renderEnciclopediaKB)">
+          <select class="fi" id="enc-park" onchange="_encFilterParkChange()" style="display:none"><option value="">🏰 Todos os parques</option></select><select class="fi" id="enc-area" onchange="_encApplyFilters()" style="display:none"><option value="">📍 Todas as áreas</option></select><input class="fi" type="text" id="enc-search" placeholder="🔍 Buscar..." oninput="debounceCall('enc',_encApplyFilters)">
         </div>
         <div id="enc-body"></div>
       </div>
@@ -3833,8 +3833,7 @@ async function exportarResumoDiaPDF(grupoId, data) {
   var tempoTotal = atracoes.reduce(function(acc,a){ return (a.tempoFila&&a.tempoReal&&a.tempoFila>a.tempoReal)?acc+(a.tempoFila-a.tempoReal):acc; },0);
 
   // Descrições vêm do Knowledge Base centralizado (uma busca só, reaproveitada pra cada item)
-  const _sug = pk ? await kbGetParkSuggestions(pk) : {atracoes:[
-    {key:'image_url', label:'📷 URL da Foto', type:'text'},]};
+  const _sug = pk ? await kbGetParkSuggestions(pk) : {atracoes:[]};
 
   var atrsHTML = atracoes.map(function(a,i) {
     var fotoUrl = getFoto(a.atracao||a.nome||'', pk)||'';
@@ -5140,22 +5139,14 @@ function kbInvalidateCache() {
 // ══════════════════════════════════════════════════════════════════════════
 
 const KB_CATEGORY_BY_TAB = {
-  atracoes: [
-    {key:'image_url', label:'📷 URL da Foto', type:'text'},'attraction', 'water_attraction'],
-  restaurantes: [
-    {key:'image_url', label:'📷 URL da Foto', type:'text'},'restaurant'],
-  shows: [
-    {key:'image_url', label:'📷 URL da Foto', type:'text'},'show'],
-  hoteis: [
-    {key:'image_url', label:'📷 URL da Foto', type:'text'},'hotel'],
-  personagens: [
-    {key:'image_url', label:'📷 URL da Foto', type:'text'},'character_meet'],
-  lojas: [
-    {key:'image_url', label:'📷 URL da Foto', type:'text'},'shop'],
-  servicos: [
-    {key:'image_url', label:'📷 URL da Foto', type:'text'},'utility'],
-  festivais: [
-    {key:'image_url', label:'📷 URL da Foto', type:'text'},'festival']
+  atracoes: ['attraction', 'water_attraction'],
+  restaurantes: ['restaurant'],
+  shows: ['show'],
+  hoteis: ['hotel'],
+  personagens: ['character_meet'],
+  lojas: ['shop'],
+  servicos: ['utility'],
+  festivais: ['festival']
 };
 const KB_TAB_ICON = { atracoes:'🎢', restaurantes:'🍽️', shows:'🎭', hoteis:'🏨', personagens:'🤝', lojas:'🛍️', servicos:'🏥', festivais:'🌸' };
 const KB_TAB_LABEL_SING = { atracoes:'atração', restaurantes:'restaurante', shows:'show', hoteis:'hotel', personagens:'personagem', lojas:'loja', servicos:'serviço', festivais:'festival/evento' };
@@ -5472,17 +5463,91 @@ async function _kbSaveAdd(){
 
 let _kbCurrentItems = {}; // uuid -> item, populado a cada render (usado por edição/ocultar)
 
+// ─── Helpers de filtro Enciclopédia ─────────────────────────────────────
+function _encParkLabel(slug){
+  const M={'magic-kingdom':'Magic Kingdom','epcot':'EPCOT','hollywood-studios':'Hollywood Studios',
+    'animal-kingdom':'Animal Kingdom','disneyland-park':'Disneyland Park',
+    'disney-california-adventure':'Disney California Adventure',
+    'disneyland-park-paris':'Disneyland Park (Paris)','disney-adventure-world':'Disney Adventure World',
+    'tokyo-disneyland':'Tokyo Disneyland','tokyo-disneysea':'Tokyo DisneySea',
+    'hong-kong-disneyland-park':'Hong Kong Disneyland','shanghai-disneyland':'Shanghai Disneyland',
+    'universal-studios-florida':'Universal Studios Florida','islands-of-adventure':'Islands of Adventure',
+    'epic-universe':'Epic Universe','universal-studios-hollywood':'Universal Studios Hollywood',
+    'seaworld-orlando':'SeaWorld Orlando','busch-gardens-tampa':'Busch Gardens Tampa',
+    'aquatica-orlando':'Aquatica','adventure-island':'Adventure Island',
+  };
+  return M[slug]||slug.replace(/-/g,' ').replace(/\w/g,c=>c.toUpperCase());
+}
+function _encGetParkId(it){
+  if(it.park_id) return it.park_id;
+  const p=(it._source_file||'').split('/');
+  return (p.length>4&&p[0]==='data'&&p[1]==='parks')?p[3]:null;
+}
+function _encClearSubFilters(){
+  ['enc-park','enc-area'].forEach(id=>{const e=g(id);if(e){e.innerHTML='';e.style.display='none';}});
+}
+function _encOnDestinoChange(){
+  _encClearSubFilters();
+  renderEnciclopediaKB();
+}
+// Chamado quando usuário troca de parque — re-popula áreas e re-renderiza sem re-buscar
+function _encFilterParkChange(){
+  const fPark=(g('enc-park')||{}).value||'';
+  const areaSel=g('enc-area');
+  if(areaSel){
+    if(fPark&&_kbCurrentItems){
+      const itens=Object.values(_kbCurrentItems).filter(it=>_encGetParkId(it)===fPark);
+      const areas=[...new Set(itens.map(it=>it.area||'').filter(Boolean))].sort();
+      if(areas.length>1){
+        areaSel.innerHTML='<option value="">📍 Todas as áreas</option>'+areas.map(a=>`<option value="${a}">${a}</option>`).join('');
+        areaSel.style.display='';
+      } else { areaSel.innerHTML=''; areaSel.style.display='none'; }
+    } else { areaSel.innerHTML=''; areaSel.style.display='none'; }
+  }
+  _encApplyFilters();
+}
+// Aplica todos os filtros sobre _kbCurrentItems sem rebuscar o Firebase
+function _encApplyFilters(){
+  const encTab=window._encTabAtual||'atracoes';
+  const body=g('enc-body'); if(!body||!_kbCurrentItems) return;
+  const search=(g('enc-search')?.value||'').toLowerCase();
+  const fPark=(g('enc-park')||{}).value||'';
+  const fArea=(g('enc-area')||{}).value||'';
+
+  let items=Object.keys(_kbCurrentItems).map(uuid=>({uuid,..._kbCurrentItems[uuid]}));
+  if(fPark) items=items.filter(it=>_encGetParkId(it)===fPark);
+  if(fArea) items=items.filter(it=>(it.area||'')===fArea);
+  if(search) items=items.filter(it=>{
+    const n=(it.official_name_pt||it.official_name||'').toLowerCase();
+    const d=(it.short_description_pt||it.description_pt||'').toLowerCase();
+    return n.includes(search)||d.includes(search);
+  });
+  items.sort((a,b)=>(!!a._hidden-!!b._hidden)||(a.official_name_pt||'').localeCompare(b.official_name_pt||'','pt'));
+
+  if(!items.length){
+    body.innerHTML=`<div class="emp"><div class="emp-i">${KB_TAB_ICON[encTab]||'📋'}</div><div class="emp-t">Nenhum ${KB_TAB_LABEL_SING[encTab]||'item'} encontrado</div><div class="emp-s">${fPark||fArea||search?'Tente ajustar os filtros':'Clique em "+ Adicionar" para cadastrar manualmente'}</div></div>`;
+    return;
+  }
+  const visiveis=items.filter(it=>!it._hidden).length;
+  const ocultos=items.length-visiveis;
+  body.innerHTML=`<div style="font-size:12px;color:var(--mut);margin-bottom:10px">${visiveis} ${KB_TAB_LABEL_SING[encTab]||'item'}${visiveis!==1?'s':''}${ocultos?` · ${ocultos} oculto${ocultos!==1?'s':''}`:''}</div>`
+    +`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px">`
+    +items.map(it=>_kbCard(it,it.uuid,encTab)).join('')
+    +`</div>`;
+}
+
+// Busca dados do Firebase, depois popula filtros de parque e renderiza
 async function renderEnciclopediaKB(){
   const encTab = window._encTabAtual || 'atracoes';
   const body = g('enc-body'); if(!body) return;
   const fDest = (g('enc-destino')||{}).value || '';
-  const search = (g('enc-search')?.value || '').toLowerCase();
 
   if(!fDest){
+    _encClearSubFilters();
     body.innerHTML = `<div class="emp">
       <div class="emp-i">🌍</div>
       <div class="emp-t">Selecione um destino</div>
-      <div class="emp-s">Escolha acima para carregar ${KB_TAB_LABEL_SING[encTab]||'os itens'} — isso evita carregar a base inteira de uma vez</div>
+      <div class="emp-s">Escolha acima para carregar ${KB_TAB_LABEL_SING[encTab]||'os itens'}</div>
     </div>`;
     return;
   }
@@ -5497,32 +5562,19 @@ async function renderEnciclopediaKB(){
   }
   _kbCurrentItems = merged;
 
-  let items = Object.keys(merged).map(uuid => ({ uuid, ...merged[uuid] }));
-  if(search){
-    items = items.filter(it => {
-      const nome = (it.official_name_pt||it.official_name||'').toLowerCase();
-      const desc = (it.short_description_pt||it.description_pt||'').toLowerCase();
-      return nome.includes(search) || desc.includes(search);
-    });
-  }
-  // Sem busca por nome: ainda assim, oculto sempre vai pro fim da lista (visível mas discreto, não escondido da equipe)
-  items.sort((a,b) => (!!a._hidden - !!b._hidden) || (a.official_name_pt||'').localeCompare(b.official_name_pt||'','pt'));
-
-  if(!items.length){
-    body.innerHTML = `<div class="emp">
-      <div class="emp-i">${KB_TAB_ICON[encTab]||'📋'}</div>
-      <div class="emp-t">Nenhum ${KB_TAB_LABEL_SING[encTab]||'item'} encontrado</div>
-      <div class="emp-s">Clique em "+ Adicionar" para cadastrar manualmente</div>
-    </div>`;
-    return;
+  // Populat filtro de parques
+  const parkSel=g('enc-park');
+  if(parkSel){
+    const parks=[...new Set(Object.values(merged).map(it=>_encGetParkId(it)).filter(Boolean))].sort();
+    if(parks.length>1){
+      parkSel.innerHTML='<option value="">🏰 Todos os parques</option>'+parks.map(p=>`<option value="${p}">${_encParkLabel(p)}</option>`).join('');
+      parkSel.style.display='';
+    } else { parkSel.innerHTML=''; parkSel.style.display='none'; }
+    const areaSel=g('enc-area');
+    if(areaSel){ areaSel.innerHTML=''; areaSel.style.display='none'; }
   }
 
-  const visiveis = items.filter(it=>!it._hidden).length;
-  const ocultos = items.length - visiveis;
-  body.innerHTML = `<div style="font-size:12px;color:var(--mut);margin-bottom:10px">${visiveis} ${KB_TAB_LABEL_SING[encTab]||'item'}${visiveis!==1?'s':''}${ocultos?` · ${ocultos} oculto${ocultos!==1?'s':''}`:''}</div>`
-    + `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px">`
-    + items.map(it => _kbCard(it, it.uuid, encTab)).join('')
-    + `</div>`;
+  _encApplyFilters();
 }
 
 // ── Troca de aba — guarda em window._encTabAtual e dispara render ──────
@@ -5530,6 +5582,7 @@ function switchEncTab(tab, btnEl){
   window._encTabAtual = tab;
   document.querySelectorAll('.enc-tab').forEach(b=>b.classList.remove('act'));
   if(btnEl) btnEl.classList.add('act');
+  _encClearSubFilters();
   renderEnciclopediaKB();
 }
 
