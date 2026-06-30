@@ -327,7 +327,7 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
       </div>
       <button class="lb" type="button" tabindex="3" onclick="doLogin(event)">Entrar no Sistema</button>
       <div class="lerr" id="lerr"></div>
-      <button id="btn-retry-login" style="display:none;margin-top:8px;width:100%;padding:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;cursor:pointer;font-size:12px;color:#1d4ed8;font-weight:600" onclick="this.textContent='🔄 Carregando...';this.disabled=true;loadUsuariosSistema().then(()=>{fillGuiaSelects();this.style.display='none';this.disabled=false;g('lerr').textContent='';if(USUARIOS_SISTEMA.length>0){doLogin(null);}else{g('lerr').textContent='Ainda sem usuários. Verifique o Firebase Console.';this.style.display='block';this.textContent='🔄 Tentar novamente';}}).catch(e=>{g('lerr').textContent='Erro: '+e.message;this.style.display='block';this.textContent='🔄 Tentar novamente';this.disabled=false;})">🔄 Tentar novamente</button>
+      <button id="btn-retry-login" style="display:none;margin-top:8px;width:100%;padding:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;cursor:pointer;font-size:12px;color:#1d4ed8;font-weight:600" onclick="this.textContent='🔄 Carregando...';this.disabled=true;loadUsuariosSistema().then(()=>{fillGuiaSelects();this.parentElement.style.background='linear-gradient(135deg,#1e293b,#334155)';this.style.display='none';this.disabled=false;g('lerr').textContent='';if(USUARIOS_SISTEMA.length>0){doLogin(null);}else{g('lerr').textContent='Ainda sem usuários. Verifique o Firebase Console.';this.style.display='block';this.textContent='🔄 Tentar novamente';}}).catch(e=>{g('lerr').textContent='Erro: '+e.message;this.style.display='block';this.textContent='🔄 Tentar novamente';this.disabled=false;})">🔄 Tentar novamente</button>
     </div>
   </div>
 </div>
@@ -3833,7 +3833,8 @@ async function exportarResumoDiaPDF(grupoId, data) {
   var tempoTotal = atracoes.reduce(function(acc,a){ return (a.tempoFila&&a.tempoReal&&a.tempoFila>a.tempoReal)?acc+(a.tempoFila-a.tempoReal):acc; },0);
 
   // Descrições vêm do Knowledge Base centralizado (uma busca só, reaproveitada pra cada item)
-  const _sug = pk ? await kbGetParkSuggestions(pk) : {atracoes:[]};
+  const _sug = pk ? await kbGetParkSuggestions(pk) : {atracoes:[
+    {key:'image_url', label:'📷 URL da Foto', type:'text'},]};
 
   var atrsHTML = atracoes.map(function(a,i) {
     var fotoUrl = getFoto(a.atracao||a.nome||'', pk)||'';
@@ -5139,14 +5140,22 @@ function kbInvalidateCache() {
 // ══════════════════════════════════════════════════════════════════════════
 
 const KB_CATEGORY_BY_TAB = {
-  atracoes: ['attraction', 'water_attraction'],
-  restaurantes: ['restaurant'],
-  shows: ['show'],
-  hoteis: ['hotel'],
-  personagens: ['character_meet'],
-  lojas: ['shop'],
-  servicos: ['utility'],
-  festivais: ['festival']
+  atracoes: [
+    {key:'image_url', label:'📷 URL da Foto', type:'text'},'attraction', 'water_attraction'],
+  restaurantes: [
+    {key:'image_url', label:'📷 URL da Foto', type:'text'},'restaurant'],
+  shows: [
+    {key:'image_url', label:'📷 URL da Foto', type:'text'},'show'],
+  hoteis: [
+    {key:'image_url', label:'📷 URL da Foto', type:'text'},'hotel'],
+  personagens: [
+    {key:'image_url', label:'📷 URL da Foto', type:'text'},'character_meet'],
+  lojas: [
+    {key:'image_url', label:'📷 URL da Foto', type:'text'},'shop'],
+  servicos: [
+    {key:'image_url', label:'📷 URL da Foto', type:'text'},'utility'],
+  festivais: [
+    {key:'image_url', label:'📷 URL da Foto', type:'text'},'festival']
 };
 const KB_TAB_ICON = { atracoes:'🎢', restaurantes:'🍽️', shows:'🎭', hoteis:'🏨', personagens:'🤝', lojas:'🛍️', servicos:'🏥', festivais:'🌸' };
 const KB_TAB_LABEL_SING = { atracoes:'atração', restaurantes:'restaurante', shows:'show', hoteis:'hotel', personagens:'personagem', lojas:'loja', servicos:'serviço', festivais:'festival/evento' };
@@ -5165,6 +5174,7 @@ function _kbUserName(){ return (typeof U !== 'undefined' && U && U.nome) ? U.nom
 
 const KB_FIELD_SCHEMA = {
   atracoes: [
+    {key:'image_url', label:'📷 URL da Foto', type:'text'},
     {key:'area', label:'Área do parque', type:'text'},
     {key:'fast_pass_type', label:'Sistema de fura-fila', type:'select', opts:[['','Nenhum'],['ll_multi','Lightning Lane Multi Pass'],['ll_single','Lightning Lane Single Pass'],['express','Express Pass'],['express_unlimited','Express Pass Unlimited'],['virtual_queue','Virtual Queue'],['outro','Outro']]},
     {key:'fast_pass_tier', label:'Tier', type:'select', opts:[['','—'],['tier1','Tier 1'],['tier2','Tier 2']], showIf:v=>v.fast_pass_type==='ll_multi'},
@@ -5173,6 +5183,7 @@ const KB_FIELD_SCHEMA = {
     {key:'tips_pt', label:'Dicas do guia (uma por linha)', type:'tips'},
   ],
   restaurantes: [
+    {key:'image_url', label:'📷 URL da Foto', type:'text'},
     {key:'location_type', label:'Localização', type:'select', opts:[['parque','Dentro de um parque'],['hotel','Dentro de um hotel']]},
     {key:'area', label:'Área do parque', type:'text', showIf:v=>v.location_type!=='hotel'},
     {key:'reserva', label:'Reserva', type:'select', opts:[['nao','Não precisa'],['recomendada','Recomendada'],['obrigatoria','Obrigatória']]},
@@ -5183,6 +5194,7 @@ const KB_FIELD_SCHEMA = {
     {key:'tips_pt', label:'Dicas do guia (uma por linha)', type:'tips'},
   ],
   shows: [
+    {key:'image_url', label:'📷 URL da Foto', type:'text'},
     {key:'area', label:'Área do parque', type:'text'},
     {key:'showtimes', label:'Horário(s) — sempre confira no app oficial', type:'text'},
     {key:'duration_minutes', label:'Duração (minutos)', type:'number'},
@@ -5192,6 +5204,7 @@ const KB_FIELD_SCHEMA = {
     {key:'tips_pt', label:'Dicas do guia (uma por linha)', type:'tips'},
   ],
   hoteis: [
+    {key:'image_url', label:'📷 URL da Foto', type:'text'},
     {key:'star_rating', label:'Classificação (estrelas, 1-5)', type:'number'},
     {key:'price_range', label:'Média de valor', type:'text'},
     {key:'benefits', label:'Benefícios do hotel (um por linha)', type:'tips'},
@@ -5199,6 +5212,7 @@ const KB_FIELD_SCHEMA = {
     {key:'tips_pt', label:'Dicas do guia (uma por linha)', type:'tips'},
   ],
   personagens: [
+    {key:'image_url', label:'📷 URL da Foto', type:'text'},
     {key:'location_type', label:'Localização', type:'select', opts:[['parque','Dentro de um parque'],['hotel','Dentro de um hotel']]},
     {key:'area', label:'Local no parque', type:'text'},
     {key:'meet_times', label:'Horários — sempre confira no app oficial', type:'text'},
@@ -5206,17 +5220,20 @@ const KB_FIELD_SCHEMA = {
     {key:'tips_pt', label:'Dicas do guia (uma por linha)', type:'tips'},
   ],
   lojas: [
+    {key:'image_url', label:'📷 URL da Foto', type:'text'},
     {key:'location_type', label:'Localização', type:'select', opts:[['parque','Dentro de um parque'],['hotel','Dentro de um hotel']]},
     {key:'area', label:'Área do parque', type:'text', showIf:v=>v.location_type!=='hotel'},
     {key:'short_description_pt', label:'Descrição', type:'textarea'},
     {key:'tips_pt', label:'Dicas do guia (uma por linha)', type:'tips'},
   ],
   servicos: [
+    {key:'image_url', label:'📷 URL da Foto', type:'text'},
     {key:'locations', label:'Onde encontrar (um local por linha — ex: "Magic Kingdom — perto da entrada")', type:'tips'},
     {key:'short_description_pt', label:'Descrição', type:'textarea'},
     {key:'tips_pt', label:'Dicas do guia (uma por linha)', type:'tips'},
   ],
   festivais: [
+    {key:'image_url', label:'📷 URL da Foto', type:'text'},
     {key:'operator', label:'Marca/Operadora (Disney, Universal, SeaWorld...)', type:'text'},
     {key:'park', label:'Parque', type:'text'},
     {key:'access_type', label:'Acesso', type:'select', opts:[['included','Incluído no ingresso regular'],['separate_ticket','Ingresso separado (hard-ticket)']]},
@@ -5263,7 +5280,7 @@ function _kbRenderExtraFields(encTab, item, idPrefix){
     } else if(f.type==='textarea' || f.type==='tips'){
       inputHtml = `<textarea id="${fieldId}" class="fc" data-kbfield="${f.key}" rows="${f.type==='tips'?2:3}">${esc(val)}</textarea>`;
     } else {
-      inputHtml = `<input id="${fieldId}" class="fc" type="${f.type==='number'?'number':'text'}" data-kbfield="${f.key}" value="${esc(val)}"/>`;
+      inputHtml = `<input id="${fieldId}" class="fc" type="${f.type==='number'?'number':f.type==='url'?'url':'text'}" data-kbfield="${f.key}" value="${esc(val)}"/>`;
     }
     return `<div data-kbfield-row="${f.key}" style="display:${visible?'block':'none'}">
       <label style="font-size:11px;font-weight:600;color:var(--mut)">${esc(f.label)}</label>
@@ -5344,7 +5361,7 @@ function _kbCard(item, uuid, encTab){
   badges.push(..._kbRenderExtraBadges(encTab, item));
 
   return `<div class="kb-card" style="background:var(--card);border-radius:12px;border:1px solid #e8f0f8;overflow:hidden;display:flex;flex-direction:column;opacity:${isHidden?'0.5':'1'}">
-    ${img ? `<img src="${esc(img)}" alt="${esc(nome)}" style="width:100%;height:150px;object-fit:cover" onerror="this.style.display='none'" loading="lazy"/>`
+    ${img ? `<img src="${esc(img)}" alt="${esc(nome)}" style="width:100%;height:150px;object-fit:cover" onerror="this.parentElement.style.background='linear-gradient(135deg,#1e293b,#334155)';this.style.display='none'" loading="lazy"/>`
           : `<div style="height:90px;display:flex;align-items:center;justify-content:center;font-size:36px;background:#f8fafc">${KB_TAB_ICON[encTab]||'📋'}</div>`}
     <div style="padding:12px;display:flex;flex-direction:column;gap:6px;flex:1">
       <div style="font-size:12px;font-weight:700;color:#0f172a">${esc(nome)}${isCustom?' <span style="font-size:9px;color:#7c3aed;font-weight:600">· personalizado</span>':''}${item._edited?' <span style="font-size:9px;color:#2563eb">· editado</span>':''}</div>
@@ -5698,7 +5715,7 @@ async function exportRoteiroPDF(rId) {
     const fotoUrl = getFoto(nome, rot.parque)||info.foto||'';
     const reqTxt = info.req ? `<span style="background:#fee2e2;color:#991b1b;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">📏 ${info.req}cm</span>` : '';
     return `<div class="atr-row">
-      ${fotoUrl ? `<img src="${fotoUrl}" alt="${esc(nome)}" style="width:100%;height:140px;object-fit:cover;border-radius:8px;margin-bottom:10px" onerror="this.style.display='none'">` : ''}
+      ${fotoUrl ? `<img src="${fotoUrl}" alt="${esc(nome)}" style="width:100%;height:140px;object-fit:cover;border-radius:8px;margin-bottom:10px" onerror="this.parentElement.style.background='linear-gradient(135deg,#1e293b,#334155)';this.style.display='none'">` : ''}
       <div class="atr-left">
         <div class="atr-name">${esc(nome)}</div>
         <div class="atr-tags"><span class="tag ${tagClass}">${tag}</span> ${reqTxt}</div>
