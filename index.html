@@ -361,7 +361,7 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
       <div class="ni" data-page="roteiros" onclick="showPage('roteiros')"><span class="ni-ico">🗺️</span> Roteiros</div>
       <div class="ni" data-page="atracoes" onclick="showPage('atracoes')"><span class="ni-ico">🎢</span> Atrações</div>
       <div class="ni" data-page="temporada-g" onclick="showPage('temporada-g')"><span class="ni-ico">🗓️</span> Temporada</div>
-      <div class="ni" data-page="avaliacoes" onclick="showPage('avaliacoes')"><span class="ni-ico">⭐</span> Avaliações</div>
+      
       <div class="ni" data-page="fichas" onclick="showPage('fichas')"><span class="ni-ico">👤</span> Fichas Pax</div>
       <div class="ni" data-page="nps" onclick="showPage('nps')"><span class="ni-ico">📊</span> NPS</div>
     </div>
@@ -629,22 +629,7 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
     </div>
 
     <!-- ── AVALIAÇÕES ───────────────────────────────────────────── -->
-    <div id="pg-avaliacoes" class="page hid">
-      <div class="ph">
-        <div class="pt">⭐ Avaliações</div>
-        <button class="btn btn-acc btn-sm" onclick="openAvalModal()">+ Nova Avaliação</button>
-      </div>
-      <div class="pb">
-        <div class="sg" id="av-stats" style="grid-template-columns:repeat(4,1fr)"></div>
-        <div class="tw">
-          <table>
-            <thead><tr><th>Grupo</th><th>Parque</th><th>Data</th><th>Guia</th><th>NPS</th><th>Depoimento</th><th>Ações</th></tr></thead>
-            <tbody id="av-tbody"></tbody>
-          </table>
-        </div>
-        <div id="av-empty" class="emp hid"><div class="emp-i">⭐</div><div class="emp-t">Nenhuma avaliação ainda</div><div class="emp-s">Após cada guiamento, registre a avaliação do grupo</div></div>
-      </div>
-    </div>
+    
 
     <!-- ── TEMPLATES ────────────────────────────────────────────── -->
     <div id="pg-templates" class="page hid">
@@ -756,7 +741,7 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
           </select>
         </div>
         <div class="fg"><label class="fl">🏨 Hospedagem</label>
-          <select class="fc" id="mg-hospedagem">
+          <select class="fc" id="mg-hospedagem" onchange="_mgAtualizarLLDerivado()">
             <option value="">Selecione...</option>
             <option value="on-site-disney">🏰 Hotel On-site Disney</option>
             <option value="on-site-universal">🎥 Hotel On-site Universal</option>
@@ -797,7 +782,7 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
             <option value="casual">🌿 Ritmo tranquilo</option>
           </select>
         </div>
-        <div class="fg"><label class="fl">Restrições Alimentares</label><input class="fc" id="mg-rest" placeholder="Sem glúten, vegano..."></div>
+        <div class="fg"><label class="fl">⚠️ Alergias / Restrições (por passageiro)</label><div class="fc" style="background:var(--bg2);font-size:12px;color:var(--mut);min-height:36px;display:flex;align-items:center" id="mg-rest">Adicione abaixo nos campos de passageiro ↓</div></div>
       </div>
       <div class="section-sep">🎯 Parques Contratados</div>
       <div id="mg-parques-list">
@@ -811,11 +796,8 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
         <div class="fg"><label class="fl">Segredo / Senha do MDE <span style="font-size:10px;color:#888">(acesso ao perfil Disney)</span></label><input class="fc" id="mg-mde-segredo" placeholder="Senha ou PIN de acesso" type="text"></div>
       </div>
       <div class="fr">
-        <div class="fg"><label class="fl">Hóspede Disney?</label>
-          <select class="fc" id="mg-hosp">
-            <option value="0">Não — LL disponível D-3</option>
-            <option value="1">Sim — LL disponível D-7</option>
-          </select>
+        <div class="fg"><label class="fl">⚡ Lightning Lane</label>
+          <div class="fc" style="display:flex;align-items:center;background:var(--bg2);font-size:12px;color:var(--mut)" id="mg-hosp-derivado">—</div>
         </div>
       </div>
       <div class="section-sep">✅ Situação do Grupo</div>
@@ -1042,37 +1024,7 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
   </div>
 </div>
 
-<!-- ═══ MODAL: AVALIAÇÃO ══════════════════════════════════════════════════ -->
-<div class="mo hid" id="mo-aval">
-  <div class="mc2" style="max-width:520px">
-    <div class="mh"><div class="mt">Nova Avaliação</div><button class="mcl" onclick="closeModal('mo-aval')">×</button></div>
-    <div class="mb">
-      <div class="fr">
-        <div class="fg"><label class="fl">Grupo *</label><select class="fc" id="av-grupo"><option value="">Selecione...</option></select></div>
-        <div class="fg"><label class="fl">Parque</label>
-          <select class="fc" id="av-parque"><option value="">Selecione...</option><option value="MK">🏰 Magic Kingdom</option><option value="EPCOT">🌍 EPCOT</option><option value="HS">🎬 Hollywood Studios</option><option value="AK">🦁 Animal Kingdom</option><option value="BB">❄️ Blizzard Beach</option><option value="TL">🌊 Typhoon Lagoon</option><option value="USO">🎥 Universal Studios</option><option value="IOA">🌊 Islands of Adventure</option><option value="EU">🌌 Epic Universe</option><option value="KSC">🚀 Kennedy Space Center</option><option value="SEA">🐬 SeaWorld</option><option value="BGT">🦁 Busch Gardens</option></select>
-        </div>
-      </div>
-      <div class="fr">
-        <div class="fg"><label class="fl">Data</label><input class="fc" type="date" id="av-data"></div>
-        <div class="fg"><label class="fl">Guia</label><select class="fc" id="av-guia"></select></div>
-      </div>
-      <div class="fg">
-        <label class="fl">Nota NPS (0 a 10) *</label>
-        <div class="nps-g" id="nps-buttons"></div>
-        <input type="hidden" id="av-nps" value="">
-      </div>
-      <div class="fg"><label class="fl">Depoimento</label><textarea class="fc" id="av-dep" placeholder="O que o grupo disse? Cole aqui o depoimento..." style="min-height:100px"></textarea></div>
-      <div class="fg"><label class="fl">Visibilidade</label>
-        <select class="fc" id="av-vis"><option value="publica">Pública (usar para marketing)</option><option value="privada">Privada (uso interno)</option></select>
-      </div>
-    </div>
-    <div class="mf">
-      <button class="btn btn-sec" onclick="closeModal('mo-aval')">Cancelar</button>
-      <button class="btn btn-acc" onclick="saveAvaliacao()">⭐ Salvar Avaliação</button>
-    </div>
-  </div>
-</div>
+
 
 <!-- ═══ MODAL: CONFIRMAR ══════════════════════════════════════════════════ -->
 <div class="mo hid" id="mo-confirm">
@@ -1272,7 +1224,7 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
       </div>
     </div>
     <div class="mf">
-      <button class="btn btn-red btn-sm hid" id="tpl-del-btn" onclick="deleteTpl()">🗑 Excluir</button>
+      <button class="btn btn-red btn-sm hid" id="tpl-del-btn" onclick="deleteTpl(editTplId)">🗑 Excluir</button>
       <button class="btn btn-sec" onclick="closeModal('mo-tpl')">Cancelar</button>
       <button class="btn btn-acc" onclick="saveTpl()">💾 Salvar Template</button>
     </div>
@@ -3310,6 +3262,22 @@ setInterval(function(){
 }, 60 * 1000);
 
 function _loginEntrar() {
+  // Migração one-time: módulo "Avaliações" (NPS único) foi unificado em "NPS" (7 dimensões).
+  // Nota antiga (0-10) torna-se a dimensão "experiencia". Nunca apaga o histórico original.
+  if (DB.avaliacoes && DB.avaliacoes.length && !DB._avaliacoesMigradas) {
+    if (!DB.npsAvaliacoes) DB.npsAvaliacoes = [];
+    DB.avaliacoes.forEach(function(a) {
+      DB.npsAvaliacoes.push({
+        id: a.id || ('nps_mig_' + Date.now() + '_' + Math.random().toString(36).slice(2,6)),
+        guia: a.guia || '', data: a.data || '', clienteNome: a.clienteNome || a.grupo || '',
+        experiencia: a.nps || 0, comentario: a.depoimento || a.comentario || '',
+        _migradoDeAvaliacoes: true
+      });
+    });
+    DB._avaliacoesMigradas = true;
+    console.warn('[Migração] ' + DB.avaliacoes.length + ' avaliação(ões) migrada(s) para DB.npsAvaliacoes (dimensão "experiencia"). Histórico original preservado em DB.avaliacoes.');
+    saveData();
+  }
   _guiResetActivity(); // M-04: resetar timer ao fazer login
   g('login-screen').classList.add('hid');
   g('app').classList.remove('hid');
@@ -3464,7 +3432,7 @@ function renderCurrentPage() { renderPage(curPage); }
 function renderPage(p) {
   const map = { dashboard:renderDashboard, dia:renderDia, grupos:renderGrupos,
     roteiros:renderRoteiros, atracoes:renderAtracoes, agenda:renderAgenda, guias:renderGuias,
-    avaliacoes:renderAvaliacoes, templates:renderTemplates, relatorios:renderRelatorios,
+    templates:renderTemplates, relatorios:renderRelatorios,
     'temporada-g': renderTemporadaG, fichas: renderFichasPassageiros, nps: renderNPSProfissional };
   if(map[p]) map[p]();
 }
@@ -3521,8 +3489,9 @@ function renderDashboard() {
   const grupos   = DB.grupos||[];
   const ativos   = grupos.filter(g2 => ['preparacao','ativo'].includes(g2.status));
   const hoje     = grupos.filter(g2 => (g2.parques||[]).some(pd => pd.data === todayStr) && g2.status !== 'cancelado');
-  const avs      = DB.avaliacoes||[];
-  const nps      = avs.length ? Math.round(avs.reduce((a,b)=>a+b.nps,0)/avs.length*10)/10 : 0;
+  const avs      = DB.npsAvaliacoes||[];
+  const npsBase  = avs.filter(a=>a.experiencia>0);
+  const nps      = npsBase.length ? Math.round(npsBase.reduce((a,b)=>a+b.experiencia,0)/npsBase.length*10)/10 : 0;
   const thisMon  = new Date().toISOString().slice(0,7);
   const alerts   = getAlerts();
   const nextDays = Array.from({length:7},(_,i)=>{ const d=new Date(today);d.setDate(today.getDate()+i+1);return fmtISO(d); });
@@ -4054,6 +4023,21 @@ function filterGrupo(id) {
   if (grupo) { g('g-search').value = grupo.nome; renderGrupos(); }
 }
 
+function _mgAtualizarRestricoes(){
+  var el=document.getElementById('mg-rest'); if(!el) return;
+  var lista=(window._paxData||[]).filter(function(p){return p.alergias;});
+  el.textContent = lista.length
+    ? lista.map(function(p){return (p.nome||'?')+': '+p.alergias;}).join(' · ')
+    : 'Nenhuma alergia/restrição informada nos passageiros';
+}
+
+function _mgAtualizarLLDerivado(){
+  var v=(document.getElementById('mg-hospedagem')||{value:''}).value;
+  var isDisney = v==='on-site-disney';
+  var el=document.getElementById('mg-hosp-derivado');
+  if(el) el.textContent = v ? (isDisney?'🏰 Hóspede Disney — LL disponível D-7':'LL disponível D-3') : '— selecione a hospedagem';
+}
+
 function openGrupoModal(id=null) {
   editId.grupo = id;
   parkRows = [];
@@ -4070,10 +4054,10 @@ function openGrupoModal(id=null) {
   g('mg-cri').value   = mg?.numCriancas||0;
   g('mg-ids').value   = (mg?.idadesCriancas||[]).join(', ');
   g('mg-perfil').value= mg?.perfil||'familia';
-  g('mg-rest').value  = mg?.restricoes||'';
+  _mgAtualizarRestricoes();
   g('mg-mde').value   = mg?.loginMDE||'';
   if(g('mg-mde-segredo')) g('mg-mde-segredo').value = mg?.segredoMDE||'';
-  g('mg-hosp').value  = mg?.hospedeiro?'1':'0';
+  _mgAtualizarLLDerivado();
   g('mg-pag').value   = mg?.statusPagamento||'pendente';
   g('mg-obs').value   = mg?.notas||'';
   g('mg-status').value= mg?.status||'preparacao';
@@ -4238,8 +4222,8 @@ async function saveGrupo() {
     destino: g('mg-destino')?.value||'Orlando',
     passageiros: getPaxFromFields(),
     tipoHospedagem: g('mg-hospedagem')?.value||'',
-    perfil:g('mg-perfil').value, restricoes:g('mg-rest').value.trim(),
-    loginMDE:g('mg-mde').value.trim(), segredoMDE:g('mg-mde-segredo').value.trim(), hospedeiro:g('mg-hosp').value==='1',
+    perfil:g('mg-perfil').value, restricoes:(window._paxData||[]).filter(p=>p.alergias).map(p=>(p.nome||'?')+': '+p.alergias).join('; '),
+    loginMDE:g('mg-mde').value.trim(), segredoMDE:g('mg-mde-segredo').value.trim(), hospedeiro:g('mg-hospedagem').value==='on-site-disney',
     parques:parkRows.filter(p=>p.parque&&p.data),
     statusPagamento:g('mg-pag').value, notas:g('mg-obs').value.trim(),
     status:g('mg-status').value,
@@ -4258,7 +4242,7 @@ async function saveGrupo() {
 async function deleteEntity(type, id) {
   if (type==='grupo') DB.grupos = (DB.grupos||[]).filter(g2=>g2.id!==id);
   else if (type==='roteiro') DB.roteiros = (DB.roteiros||[]).filter(r=>r.id!==id);
-  else if (type==='avaliacao') DB.avaliacoes = (DB.avaliacoes||[]).filter(a=>a.id!==id);
+  else if (type==='avaliacao') DB.npsAvaliacoes = (DB.npsAvaliacoes||[]).filter(a=>a.id!==id);
   await saveData();
   renderPage(curPage);
   toast('Excluído com sucesso ✅');
@@ -4800,8 +4784,8 @@ function _renderGuiasCore(body, pg, search, sfilt) {
 
   var gc = function(g2) { return (DB.grupos||[]).filter(function(gr){ return gr.guia===g2.nome; }).length; };
   var np = function(g2) {
-    var avs = (DB.avaliacoes||[]).filter(function(a){ return a.guia===g2.nome; });
-    return avs.length ? (avs.reduce(function(s,a){ return s+(+a.nps||0); },0)/avs.length).toFixed(1) : '—';
+    var avs = (DB.npsAvaliacoes||[]).filter(function(a){ return a.guia===g2.nome && a.experiencia>0; });
+    return avs.length ? (avs.reduce(function(s,a){ return s+(+a.experiencia||0); },0)/avs.length).toFixed(1) : '—';
   };
   var pl = function(u) {
     var ps = Array.isArray(u.perfis) ? u.perfis : [u.perfil||'guia'];
@@ -4964,38 +4948,6 @@ function calGoToday() { calDate=new Date(); renderAgenda(); }
 // ══════════════════════════════════════════════════════════════════════════
 // AVALIAÇÕES
 // ══════════════════════════════════════════════════════════════════════════
-function renderAvaliacoes() {
-  const avs = DB.avaliacoes||[];
-  const pros = avs.filter(a=>a.nps>=9).length;
-  const neus = avs.filter(a=>a.nps>=7&&a.nps<=8).length;
-  const dets = avs.filter(a=>a.nps<=6).length;
-  const nps  = avs.length ? Math.round(((pros-dets)/avs.length)*100) : 0;
-  const media = avs.length ? (avs.reduce((a,b)=>a+b.nps,0)/avs.length).toFixed(1) : '—';
-  g('av-stats').innerHTML = `
-    <div class="sc"><div class="si">📊</div><div class="sl">NPS Score</div><div class="sv" style="color:${nps>=50?'#10b981':nps>=0?'#f59e0b':'#ef4444'}">${avs.length?nps:'—'}</div><div class="ss">(promotores − detratores) %</div></div>
-    <div class="sc"><div class="si">⭐</div><div class="sl">Média</div><div class="sv">${media}</div><div class="ss">${avs.length} avaliações</div></div>
-    <div class="sc"><div class="si">😍</div><div class="sl">Promotores</div><div class="sv" style="color:#10b981">${pros}</div><div class="ss">nota 9 ou 10</div></div>
-    <div class="sc"><div class="si">😞</div><div class="sl">Detratores</div><div class="sv" style="color:#ef4444">${dets}</div><div class="ss">nota 0 a 6</div></div>
-  `;
-  const tb = g('av-tbody'), em = g('av-empty');
-  if (!avs.length) { tb.innerHTML=''; em.classList.remove('hid'); return; }
-  em.classList.add('hid');
-  const sorted = [...avs].sort((a,b)=>b.data?.localeCompare(a.data||'')||0);
-  tb.innerHTML = sorted.map(a => {
-    const g2   = (DB.grupos||[]).find(x=>x.id===a.grupoId);
-    const clr  = a.nps>=9?'bg-grn':a.nps>=7?'bg-amb':'bg-red';
-    return `<tr>
-      <td>${esc(g2?.nome||a.grupoId)}</td>
-      <td><span class="pt2 pk-${a.parque}">${a.parque}</span></td>
-      <td>${fmtDate(a.data)}</td>
-      <td>${esc(a.guia||'—')}</td>
-      <td><span class="bdg ${clr}" style="font-size:15px;padding:4px 10px">${a.nps}</span></td>
-      <td class="fs13" style="max-width:300px;word-break:break-word">${esc((a.depoimento||'—').slice(0,100))}${a.depoimento?.length>100?'…':''}</td>
-      <td><button class="btn-ico" onclick="confirmDelete('avaliacao','${a.id}','esta avaliação')" title="Excluir">🗑</button></td>
-    </tr>`;
-  }).join('');
-}
-
 function buildNPSButtons() {
   g('nps-buttons').innerHTML = Array.from({length:11},(_,i)=>{
     const cls = i<=6?'det':i<=8?'neu':'pro';
@@ -5007,40 +4959,6 @@ function selectNPS(n) {
   selNPS = n; g('av-nps').value = n;
   document.querySelectorAll('.nps-n').forEach((el,i) => el.classList.toggle('sel',i===n));
 }
-
-function openAvalModal() {
-  try {
-  selNPS=null;
-  const avNps = g('av-nps'); if(avNps) avNps.value='';
-  document.querySelectorAll('.nps-n').forEach(el=>el.classList.remove('sel'));
-  const avData = g('av-data'); if(avData) avData.value = fmtISO(new Date());
-  const avDep = g('av-dep'); if(avDep) avDep.value='';
-  const avVis = g('av-vis'); if(avVis) avVis.value='publica';
-  const sel = g('av-grupo');
-  if(sel) {
-    sel.innerHTML = '<option value="">Selecione o grupo...</option>';
-    (DB.grupos||[]).forEach(g2=>{ const o=document.createElement('option');o.value=g2.id;o.textContent=g2.nome;sel.appendChild(o); });
-  }
-  fillGuiaSelects();
-  openModal('mo-aval');
-  } catch(err) { console.error('openAvalModal error:', err); toast('Erro ao abrir avaliação: '+err.message,'warn'); }
-}
-
-async function saveAvaliacao() {
-  if (selNPS===null) { toast('Selecione a nota NPS','warn'); return; }
-  const grupoId = g('av-grupo').value;
-  if (!grupoId) { toast('Selecione o grupo','warn'); return; }
-  const a = { id:'av_'+Date.now(), grupoId, parque:g('av-parque').value, data:g('av-data').value, guia:g('av-guia').value, nps:selNPS, depoimento:g('av-dep').value.trim(), vis:g('av-vis').value };
-  DB.avaliacoes = [...(DB.avaliacoes||[]), a];
-  closeModal('mo-aval');
-  await saveData();
-  toast('Avaliação salva ⭐');
-  renderAvaliacoes();
-}
-
-// ══════════════════════════════════════════════════════════════════════════
-// TEMPLATES
-// ══════════════════════════════════════════════════════════════════════════
 
 function duplicateTpl(id) {
   const tpls = getTemplates();
@@ -5127,10 +5045,11 @@ function renderRelatorios() {
   }
   const ano = anoSel.value || anos[0];
   const grupos  = (DB.grupos||[]).filter(g2=>g2.createdAt?.startsWith(ano));
-  const avs     = (DB.avaliacoes||[]).filter(a=>a.data?.startsWith(ano));
+  const avs     = (DB.npsAvaliacoes||[]).filter(a=>a.data?.startsWith(ano));
   const guis    = (DB.guiamentos||[]).filter(gui=>(gui.data||'').startsWith(ano));
   const totalRec= 0; // financeiro removido
-  const npsAvg  = avs.length?(avs.reduce((a,b)=>a+b.nps,0)/avs.length).toFixed(1):'—';
+  const npsBase2= avs.filter(a=>a.experiencia>0);
+  const npsAvg  = npsBase2.length?(npsBase2.reduce((a,b)=>a+b.experiencia,0)/npsBase2.length).toFixed(1):'—';
   const totalLL = guis.reduce((a,g2)=>a+(g2.logLL?.length||0),0);
   g('rel-stats').innerHTML = `
     <div class="sc"><div class="si">👨‍👩‍👧</div><div class="sl">Grupos em ${ano}</div><div class="sv">${grupos.length}</div></div>
@@ -5493,8 +5412,9 @@ function updatePassageiroFields(){
         </div>
       </div>
       <input class="fc" style="font-size:10px;padding:3px 6px;width:100%" placeholder="Alergias/restrições alimentares (opcional)" value="${esc(p.alergias||'')}"
-             oninput="window._paxData[${i}].alergias=this.value"/>
+             oninput="window._paxData[${i}].alergias=this.value;_mgAtualizarRestricoes()"/>
     </div>`).join('');
+  _mgAtualizarRestricoes();
 }
 
 function checkAltAlert(idx, altVal){
@@ -7117,15 +7037,6 @@ async function saveTpl() {
   closeModal('mo-tpl');
   await saveData();
   toast('Template salvo ✅');
-  renderTemplates();
-}
-
-async function deleteTpl() {
-  if (!editTplId) return;
-  DB.templates = getTemplates().filter(t => t.id !== editTplId);
-  closeModal('mo-tpl');
-  await saveData();
-  toast('Template excluído');
   renderTemplates();
 }
 
