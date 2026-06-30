@@ -494,6 +494,7 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
           <button class="enc-tab" onclick="switchEncTab('personagens',this)">🤝 Personagens</button>
           <button class="enc-tab" onclick="switchEncTab('lojas',this)">🛍️ Lojas</button>
           <button class="enc-tab" onclick="switchEncTab('servicos',this)">🏥 Serviços</button>
+          <button class="enc-tab" onclick="switchEncTab('festivais',this)">🌸 Festivais</button>
         </div>
         <div class="filt">
           <select class="fi" id="enc-destino" onchange="renderEnciclopediaKB()">
@@ -511,7 +512,7 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
       <div class="ph"><div class="pt">🗓️ Calendário de Temporada Orlando</div></div>
       <div class="pb">
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-bottom:20px" id="temporada-g-grid"></div>
-        <div style="background:var(--wh);border-radius:10px;padding:16px;border:1px solid #e8f0f8">
+        <div style="background:var(--card);border-radius:10px;padding:16px;border:1px solid #e8f0f8">
           <div class="fw7 fs13" style="margin-bottom:10px">📖 Legenda</div>
           <div style="display:flex;flex-wrap:wrap;gap:12px;font-size:12px">
             <span>🟢 1-3 Baixa — Melhor época</span>
@@ -2480,7 +2481,7 @@ function openAddPassageiro(editIdx) {
   const m = document.createElement('div');
   m.id = '_modal-passageiro';
   m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto';
-  m.innerHTML = `<div style="background:var(--wh);border-radius:16px;padding:24px;width:min(500px,100%);display:flex;flex-direction:column;gap:14px">
+  m.innerHTML = `<div style="background:var(--card);border-radius:16px;padding:24px;width:min(500px,100%);display:flex;flex-direction:column;gap:14px">
     <div style="display:flex;justify-content:space-between;align-items:center">
       <h3 style="font-size:15px;font-weight:700">${pass?'✏️ Editar Passageiro':'👤 Novo Passageiro'}</h3>
       <button onclick="this.closest('#_modal-passageiro').remove()" style="background:none;border:none;font-size:20px;cursor:pointer">✕</button>
@@ -2675,7 +2676,7 @@ function openNPSForm() {
   const m = document.createElement('div');
   m.id = '_modal-nps';
   m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto';
-  m.innerHTML = `<div style="background:var(--wh);border-radius:16px;padding:24px;width:min(560px,100%);max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;gap:14px">
+  m.innerHTML = `<div style="background:var(--card);border-radius:16px;padding:24px;width:min(560px,100%);max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;gap:14px">
     <div style="display:flex;justify-content:space-between;align-items:center">
       <h3 style="font-size:15px;font-weight:700">⭐ Nova Avaliação NPS</h3>
       <button onclick="this.closest('#_modal-nps').remove()" style="background:none;border:none;font-size:20px;cursor:pointer">✕</button>
@@ -2772,7 +2773,7 @@ function renderTemporadaG(){
         <div style="font-size:7px;color:#fff;font-weight:700">${d.level}</div>
       </div>`;
     }).join('');
-    return `<div style="background:var(--wh);border-radius:10px;border:1px solid #e8f0f8;padding:14px">
+    return `<div style="background:var(--card);border-radius:10px;border:1px solid #e8f0f8;padding:14px">
       <div class="accordion-btn" style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
           <span class="fw7 fs14">${esc(m.label)} <span style="font-size:10px;color:#94a3b8">(clique para ver diário)</span></span>
@@ -5144,40 +5145,212 @@ const KB_CATEGORY_BY_TAB = {
   hoteis: ['hotel'],
   personagens: ['character_meet'],
   lojas: ['shop'],
-  servicos: ['utility']
+  servicos: ['utility'],
+  festivais: ['festival']
 };
-const KB_TAB_ICON = { atracoes:'🎢', restaurantes:'🍽️', shows:'🎭', hoteis:'🏨', personagens:'🤝', lojas:'🛍️', servicos:'🏥' };
-const KB_TAB_LABEL_SING = { atracoes:'atração', restaurantes:'restaurante', shows:'show', hoteis:'hotel', personagens:'personagem', lojas:'loja', servicos:'serviço' };
+const KB_TAB_ICON = { atracoes:'🎢', restaurantes:'🍽️', shows:'🎭', hoteis:'🏨', personagens:'🤝', lojas:'🛍️', servicos:'🏥', festivais:'🌸' };
+const KB_TAB_LABEL_SING = { atracoes:'atração', restaurantes:'restaurante', shows:'show', hoteis:'hotel', personagens:'personagem', lojas:'loja', servicos:'serviço', festivais:'festival/evento' };
 
 function _kbUserName(){ return (typeof U !== 'undefined' && U && U.nome) ? U.nome : 'Equipe'; }
 
 // ── Card único, usado por todas as categorias ───────────────────────────
+
+// ══════════════════════════════════════════════════════════════════════════
+// SCHEMA DE CAMPOS POR CATEGORIA — fonte única usada tanto para montar o
+// formulário (editar/adicionar) quanto para exibir o card. Reaproveita nomes
+// de campo que já existem no Knowledge Base (mesmo com baixa cobertura hoje),
+// para que dados futuros (pesquisa em escala) e dados já existentes convivam
+// no mesmo campo, sem órfãos.
+// ══════════════════════════════════════════════════════════════════════════
+
+const KB_FIELD_SCHEMA = {
+  atracoes: [
+    {key:'area', label:'Área do parque', type:'text'},
+    {key:'fast_pass_type', label:'Sistema de fura-fila', type:'select', opts:[['','Nenhum'],['ll_multi','Lightning Lane Multi Pass'],['ll_single','Lightning Lane Single Pass'],['express','Express Pass'],['express_unlimited','Express Pass Unlimited'],['virtual_queue','Virtual Queue'],['outro','Outro']]},
+    {key:'fast_pass_tier', label:'Tier', type:'select', opts:[['','—'],['tier1','Tier 1'],['tier2','Tier 2']], showIf:v=>v.fast_pass_type==='ll_multi'},
+    {key:'height_requirement_cm', label:'Altura mínima (cm)', type:'number'},
+    {key:'short_description_pt', label:'Descrição', type:'textarea'},
+    {key:'tips_pt', label:'Dicas do guia (uma por linha)', type:'tips'},
+  ],
+  restaurantes: [
+    {key:'location_type', label:'Localização', type:'select', opts:[['parque','Dentro de um parque'],['hotel','Dentro de um hotel']]},
+    {key:'area', label:'Área do parque', type:'text', showIf:v=>v.location_type!=='hotel'},
+    {key:'reserva', label:'Reserva', type:'select', opts:[['nao','Não precisa'],['recomendada','Recomendada'],['obrigatoria','Obrigatória']]},
+    {key:'service_type', label:'Tipo de serviço', type:'select', opts:[['quick','Quick Service'],['table','Table Service']]},
+    {key:'allergy_menu', label:'Menu para alérgicos', type:'select', opts:[['nao','Não'],['sim','Sim']]},
+    {key:'character_dining', label:'Refeição com personagens', type:'select', opts:[['nao','Não'],['sim','Sim']]},
+    {key:'short_description_pt', label:'Descrição', type:'textarea'},
+    {key:'tips_pt', label:'Dicas do guia (uma por linha)', type:'tips'},
+  ],
+  shows: [
+    {key:'area', label:'Área do parque', type:'text'},
+    {key:'showtimes', label:'Horário(s) — sempre confira no app oficial', type:'text'},
+    {key:'duration_minutes', label:'Duração (minutos)', type:'number'},
+    {key:'availability_type', label:'Disponibilidade', type:'select', opts:[['ano_todo','Ano inteiro'],['sazonal','Sazonal'],['festival','Festival/evento específico']]},
+    {key:'availability_note', label:'Detalhe (nome do festival, época do ano)', type:'text', showIf:v=>v.availability_type!=='ano_todo'},
+    {key:'short_description_pt', label:'Descrição', type:'textarea'},
+    {key:'tips_pt', label:'Dicas do guia (uma por linha)', type:'tips'},
+  ],
+  hoteis: [
+    {key:'star_rating', label:'Classificação (estrelas, 1-5)', type:'number'},
+    {key:'price_range', label:'Média de valor', type:'text'},
+    {key:'benefits', label:'Benefícios do hotel (um por linha)', type:'tips'},
+    {key:'short_description_pt', label:'Descrição', type:'textarea'},
+    {key:'tips_pt', label:'Dicas do guia (uma por linha)', type:'tips'},
+  ],
+  personagens: [
+    {key:'location_type', label:'Localização', type:'select', opts:[['parque','Dentro de um parque'],['hotel','Dentro de um hotel']]},
+    {key:'area', label:'Local no parque', type:'text'},
+    {key:'meet_times', label:'Horários — sempre confira no app oficial', type:'text'},
+    {key:'short_description_pt', label:'Descrição', type:'textarea'},
+    {key:'tips_pt', label:'Dicas do guia (uma por linha)', type:'tips'},
+  ],
+  lojas: [
+    {key:'location_type', label:'Localização', type:'select', opts:[['parque','Dentro de um parque'],['hotel','Dentro de um hotel']]},
+    {key:'area', label:'Área do parque', type:'text', showIf:v=>v.location_type!=='hotel'},
+    {key:'short_description_pt', label:'Descrição', type:'textarea'},
+    {key:'tips_pt', label:'Dicas do guia (uma por linha)', type:'tips'},
+  ],
+  servicos: [
+    {key:'locations', label:'Onde encontrar (um local por linha — ex: "Magic Kingdom — perto da entrada")', type:'tips'},
+    {key:'short_description_pt', label:'Descrição', type:'textarea'},
+    {key:'tips_pt', label:'Dicas do guia (uma por linha)', type:'tips'},
+  ],
+  festivais: [
+    {key:'operator', label:'Marca/Operadora (Disney, Universal, SeaWorld...)', type:'text'},
+    {key:'park', label:'Parque', type:'text'},
+    {key:'access_type', label:'Acesso', type:'select', opts:[['included','Incluído no ingresso regular'],['separate_ticket','Ingresso separado (hard-ticket)']]},
+    {key:'period', label:'Período típico do ano', type:'text'},
+    {key:'short_description_pt', label:'Descrição', type:'textarea'},
+    {key:'tips_pt', label:'Dicas do guia (uma por linha)', type:'tips'},
+  ],
+};
+
+// Rótulos amigáveis para exibição de valor (selects) em badges do card
+const KB_FIELD_VALUE_LABEL = {};
+Object.values(KB_FIELD_SCHEMA).forEach(fields => fields.forEach(f => {
+  if(f.opts) f.opts.forEach(([v,l]) => { KB_FIELD_VALUE_LABEL[f.key+':'+v] = l; });
+}));
+
+function _kbFieldVal(item, key){
+  // tips/arrays viram texto de 1-por-linha no form; outros campos, valor direto
+  const schema = [].concat(...Object.values(KB_FIELD_SCHEMA));
+  const def = schema.find(f=>f.key===key);
+  let v = item[key];
+  if(def && def.type==='tips'){
+    if(Array.isArray(v)) return v.join('\n');
+    return v||'';
+  }
+  return v===undefined||v===null ? '' : v;
+}
+
+// Monta o HTML de todos os campos extras de uma categoria, pré-preenchidos
+// com os valores atuais (item) quando editando, ou vazio quando adicionando.
+function _kbRenderExtraFields(encTab, item, idPrefix){
+  const schema = KB_FIELD_SCHEMA[encTab] || [];
+  if(!schema.length) return '';
+  const currentValues = {};
+  schema.forEach(f => { currentValues[f.key] = item ? item[f.key] : undefined; });
+  return schema.map(f => {
+    const fieldId = idPrefix + '-' + f.key;
+    const visible = !f.showIf || f.showIf(currentValues);
+    const val = _kbFieldVal(item||{}, f.key);
+    let inputHtml = '';
+    if(f.type==='select'){
+      inputHtml = `<select id="${fieldId}" class="fc" data-kbfield="${f.key}" onchange="_kbRefreshConditionalFields('${idPrefix}','${encTab}')">
+        ${f.opts.map(([v,l])=>`<option value="${esc(v)}" ${String(val)===v?'selected':''}>${esc(l)}</option>`).join('')}
+      </select>`;
+    } else if(f.type==='textarea' || f.type==='tips'){
+      inputHtml = `<textarea id="${fieldId}" class="fc" data-kbfield="${f.key}" rows="${f.type==='tips'?2:3}">${esc(val)}</textarea>`;
+    } else {
+      inputHtml = `<input id="${fieldId}" class="fc" type="${f.type==='number'?'number':'text'}" data-kbfield="${f.key}" value="${esc(val)}"/>`;
+    }
+    return `<div data-kbfield-row="${f.key}" style="display:${visible?'block':'none'}">
+      <label style="font-size:11px;font-weight:600;color:var(--mut)">${esc(f.label)}</label>
+      <div style="margin-top:4px">${inputHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+// Reavalia showIf sempre que um select muda (ex: mostrar Tier só se Multi Pass)
+function _kbRefreshConditionalFields(idPrefix, encTab){
+  const schema = KB_FIELD_SCHEMA[encTab] || [];
+  const currentValues = {};
+  schema.forEach(f => { const el = document.getElementById(idPrefix+'-'+f.key); currentValues[f.key] = el ? el.value : ''; });
+  schema.forEach(f => {
+    if(!f.showIf) return;
+    const row = document.querySelector(`[data-kbfield-row="${f.key}"]`);
+    if(row) row.style.display = f.showIf(currentValues) ? 'block' : 'none';
+  });
+}
+
+// Lê de volta todos os campos extras preenchidos no formulário
+function _kbCollectExtraFields(encTab, idPrefix){
+  const schema = KB_FIELD_SCHEMA[encTab] || [];
+  const out = {};
+  schema.forEach(f => {
+    const el = document.getElementById(idPrefix+'-'+f.key);
+    if(!el) return;
+    if(f.type==='tips'){
+      const linhas = (el.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
+      if(linhas.length) out[f.key] = linhas;
+    } else if(f.type==='number'){
+      if(el.value) out[f.key] = Number(el.value);
+    } else {
+      if(el.value) out[f.key] = el.value;
+    }
+  });
+  return out;
+}
+
+// Badges do card — um por campo extra preenchido, com rótulo amigável
+function _kbRenderExtraBadges(encTab, item){
+  const schema = KB_FIELD_SCHEMA[encTab] || [];
+  const badges = [];
+  schema.forEach(f => {
+    if(f.key==='short_description_pt' || f.key==='tips_pt') return; // tratados à parte
+    const v = item[f.key];
+    if(v===undefined||v===null||v===''||(Array.isArray(v)&&!v.length)) return;
+    if(f.key==='fast_pass_tier' && (!item.fast_pass_type || item.fast_pass_type!=='ll_multi')) return;
+    let texto;
+    if(f.type==='select') texto = KB_FIELD_VALUE_LABEL[f.key+':'+v] || v;
+    else if(f.key==='height_requirement_cm') texto = '📏 '+v+'cm';
+    else if(f.key==='duration_minutes') texto = '⏱️ '+v+'min';
+    else if(f.key==='star_rating') texto = '⭐'.repeat(Math.min(Number(v),5));
+    else if(Array.isArray(v)) texto = v.slice(0,2).join(' · ');
+    else texto = String(v);
+    const icone = {fast_pass_type:'⚡', area:'📍', reserva:'📅', service_type:'🍽️', allergy_menu:'🌾', character_dining:'🎭', price_range:'💰', location_type:'📍', showtimes:'🕐', meet_times:'🕐', availability_type:'🗓️'}[f.key] || '';
+    badges.push(`<span class="kb-bdg" style="background:#f1f5f9;color:#334155">${icone} ${esc(texto)}</span>`);
+  });
+  // Nota fixa de "confirme no app oficial" para horários de show/personagem
+  if((encTab==='shows' && item.showtimes) || (encTab==='personagens' && item.meet_times)){
+    badges.push(`<span class="kb-bdg" style="background:#fef3c7;color:#92400e">⚠️ confirme no app oficial</span>`);
+  }
+  return badges;
+}
+
 function _kbCard(item, uuid, encTab){
   const nome = item.official_name_pt || item.official_name || 'Sem nome';
   const desc = item.short_description_pt || item.description_pt || '';
   const img  = item.image_url || '';
   const isHidden = !!item._hidden;
   const isCustom = !!item.isCustom;
-  const dicas = (item.tips_pt || []).slice(0, 2);
+  const dicas = (item.tips_pt || []);
 
-  // Badges adaptativos — só aparece o que existir no registro
+  // Badges padrão (sempre relevantes, fora do schema por categoria) + badges
+  // específicos da categoria (fura-fila, reserva, horário etc.)
   const badges = [];
-  if (item.height_requirement_cm) badges.push(`<span class="kb-bdg" style="background:#fee2e2;color:#991b1b">📏 ${item.height_requirement_cm}cm</span>`);
-  if (item.lightning_lane_tier) badges.push(`<span class="kb-bdg" style="background:#dbeafe;color:#1e40af">⚡ LL ${esc(item.lightning_lane_tier)}</span>`);
-  if (item.cuisine_type || item.tipo_culinaria) badges.push(`<span class="kb-bdg" style="background:#fef3c7;color:#92400e">🍴 ${esc(item.cuisine_type || item.tipo_culinaria)}</span>`);
-  if (item.requires_reservation) badges.push(`<span class="kb-bdg" style="background:#fee2e2;color:#991b1b">📅 Reserva</span>`);
-  if (item.star_rating || item.estrelas) badges.push(`<span class="kb-bdg" style="background:#fef9c3;color:#854d0e">${'⭐'.repeat(Math.min(item.star_rating||item.estrelas,5))}</span>`);
-  if (item.duration_minutes) badges.push(`<span class="kb-bdg" style="background:#f1f5f9;color:#334155">⏱️ ${item.duration_minutes}min</span>`);
   if (item.status && item.status !== 'Active') badges.push(`<span class="kb-bdg" style="background:#fef2f2;color:#b91c1c">⚠️ ${esc(item.status)}</span>`);
+  badges.push(..._kbRenderExtraBadges(encTab, item));
 
-  return `<div class="kb-card" style="background:var(--wh);border-radius:12px;border:1px solid #e8f0f8;overflow:hidden;display:flex;flex-direction:column;opacity:${isHidden?'0.5':'1'}">
-    ${img ? `<img src="${esc(img)}" alt="${esc(nome)}" style="width:100%;height:130px;object-fit:cover" onerror="this.style.display='none'" loading="lazy"/>`
-          : `<div style="height:80px;display:flex;align-items:center;justify-content:center;font-size:36px;background:#f8fafc">${KB_TAB_ICON[encTab]||'📋'}</div>`}
+  return `<div class="kb-card" style="background:var(--card);border-radius:12px;border:1px solid #e8f0f8;overflow:hidden;display:flex;flex-direction:column;opacity:${isHidden?'0.5':'1'}">
+    ${img ? `<img src="${esc(img)}" alt="${esc(nome)}" style="width:100%;height:150px;object-fit:cover" onerror="this.style.display='none'" loading="lazy"/>`
+          : `<div style="height:90px;display:flex;align-items:center;justify-content:center;font-size:36px;background:#f8fafc">${KB_TAB_ICON[encTab]||'📋'}</div>`}
     <div style="padding:12px;display:flex;flex-direction:column;gap:6px;flex:1">
       <div style="font-size:12px;font-weight:700;color:#0f172a">${esc(nome)}${isCustom?' <span style="font-size:9px;color:#7c3aed;font-weight:600">· personalizado</span>':''}${item._edited?' <span style="font-size:9px;color:#2563eb">· editado</span>':''}</div>
       ${badges.length ? `<div style="display:flex;flex-wrap:wrap;gap:3px">${badges.join('')}</div>` : ''}
-      ${desc ? `<p style="font-size:11px;color:#475569;line-height:1.5;margin:0">${esc(desc.slice(0,160))}</p>` : ''}
-      ${dicas.length ? `<div style="border-top:1px solid #f0f5fa;padding-top:4px">${dicas.map(d=>`<div style="font-size:10px;color:#64748b">💡 ${esc(String(d).slice(0,110))}</div>`).join('')}</div>` : ''}
+      ${desc ? `<p style="font-size:11px;color:#475569;line-height:1.5;margin:0">${esc(desc)}</p>` : ''}
+      ${dicas.length ? `<div style="border-top:1px solid #f0f5fa;padding-top:4px;display:flex;flex-direction:column;gap:2px">${dicas.map(d=>`<div style="font-size:10px;color:#64748b">💡 ${esc(String(d))}</div>`).join('')}</div>` : ''}
       <div style="display:flex;gap:4px;justify-content:flex-end;margin-top:auto;padding-top:6px">
         <button class="btn btn-sm" style="font-size:10px;padding:3px 8px;background:#fdf4ff;border:1px solid #e9d5ff;color:#7e22ce" onclick="_kbOpenEdit('${esc(uuid)}','${encTab}')" title="Editar">✏️</button>
         <button class="btn btn-sm" style="font-size:10px;padding:3px 8px;background:#fff8f0;border:1px solid #fed7aa;color:#c2410c" onclick="_kbToggleHide('${esc(uuid)}','${encTab}',${isHidden?'false':'true'})" title="${isHidden?'Mostrar':'Ocultar'}">${isHidden?'👁️':'🙈'}</button>
@@ -5213,16 +5386,14 @@ function _kbOpenEdit(uuid, encTab){
   const m = document.createElement('div'); m.id='_m-kb-edit';
   m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto';
   const nome = item.official_name_pt || item.official_name || '';
-  const desc = item.short_description_pt || item.description_pt || '';
-  m.innerHTML = `<div style="background:var(--wh);border-radius:16px;padding:24px;width:min(520px,100%);display:flex;flex-direction:column;gap:12px">
+  m.innerHTML = `<div style="background:var(--card);border-radius:16px;padding:24px;width:min(560px,100%);display:flex;flex-direction:column;gap:12px;max-height:90vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center">
       <h3 style="font-size:15px;font-weight:700">✏️ Editar — ${KB_TAB_LABEL_SING[encTab]||'item'}</h3>
       <button onclick="document.getElementById('_m-kb-edit').remove()" style="background:none;border:none;font-size:20px;cursor:pointer">✕</button>
     </div>
     <div><label style="font-size:11px;font-weight:600;color:var(--mut)">Nome</label>
       <input id="_kb-e-nome" class="fc" style="margin-top:4px" value="${esc(nome)}"/></div>
-    <div><label style="font-size:11px;font-weight:600;color:var(--mut)">Descrição</label>
-      <textarea id="_kb-e-desc" class="fc" rows="3" style="margin-top:4px">${esc(desc)}</textarea></div>
+    ${_kbRenderExtraFields(encTab, item, '_kb-e')}
     <div style="font-size:11px;color:var(--mut)">Item original do Knowledge Base não é alterado — sua edição fica registrada por cima, e pode ser desfeita a qualquer momento.</div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn btn-ghost" onclick="document.getElementById('_m-kb-edit').remove()">Cancelar</button>
@@ -5234,11 +5405,9 @@ function _kbOpenEdit(uuid, encTab){
 async function _kbSaveEdit(){
   if(!_kbEditUuid) return;
   const nome = document.getElementById('_kb-e-nome')?.value?.trim();
-  const desc = document.getElementById('_kb-e-desc')?.value?.trim();
-  const fields = {};
+  const fields = _kbCollectExtraFields(_kbEditTab, '_kb-e');
   const original = _kbEditItem || {};
   if(nome && nome !== (original.official_name_pt||original.official_name)) fields.official_name_pt = nome;
-  if(desc !== (original.short_description_pt||original.description_pt||'')) fields.short_description_pt = desc;
   if(Object.keys(fields).length){
     await kbEditFields(_kbEditUuid, fields, _kbUserName());
     toast('Edição salva');
@@ -5254,16 +5423,15 @@ function openEncAddForTab(){
   if(!fDest){ toast('Selecione um destino antes de adicionar um item', 'warn'); return; }
   const ex = document.getElementById('_m-kb-add'); if(ex) ex.remove();
   const m = document.createElement('div'); m.id='_m-kb-add';
-  m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
-  m.innerHTML = `<div style="background:var(--wh);border-radius:16px;padding:24px;width:min(480px,100%);display:flex;flex-direction:column;gap:12px">
+  m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto';
+  m.innerHTML = `<div style="background:var(--card);border-radius:16px;padding:24px;width:min(560px,100%);display:flex;flex-direction:column;gap:12px;max-height:90vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center">
       <h3 style="font-size:15px;font-weight:700">+ Novo ${KB_TAB_LABEL_SING[encTab]||'item'}</h3>
       <button onclick="document.getElementById('_m-kb-add').remove()" style="background:none;border:none;font-size:20px;cursor:pointer">✕</button>
     </div>
     <div><label style="font-size:11px;font-weight:600;color:var(--mut)">Nome *</label>
       <input id="_kb-a-nome" class="fc" style="margin-top:4px"/></div>
-    <div><label style="font-size:11px;font-weight:600;color:var(--mut)">Descrição</label>
-      <textarea id="_kb-a-desc" class="fc" rows="3" style="margin-top:4px"></textarea></div>
+    ${_kbRenderExtraFields(encTab, null, '_kb-a')}
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn btn-ghost" onclick="document.getElementById('_m-kb-add').remove()">Cancelar</button>
       <button class="btn btn-primary" onclick="_kbSaveAdd()">💾 Adicionar</button>
@@ -5275,11 +5443,11 @@ function openEncAddForTab(){
 async function _kbSaveAdd(){
   const nome = document.getElementById('_kb-a-nome')?.value?.trim();
   if(!nome){ toast('Informe o nome', 'warn'); return; }
-  const desc = document.getElementById('_kb-a-desc')?.value?.trim()||'';
   const encTab = window._encTabAtual || 'atracoes';
+  const fields = _kbCollectExtraFields(encTab, '_kb-a');
   const cats = KB_CATEGORY_BY_TAB[encTab] || ['attraction'];
   const fDest = (g('enc-destino')||{}).value || '';
-  await kbAddCustom(cats[0], fDest, { official_name_pt: nome, short_description_pt: desc }, _kbUserName());
+  await kbAddCustom(cats[0], fDest, Object.assign({ official_name_pt: nome }, fields), _kbUserName());
   toast('Item adicionado!');
   document.getElementById('_m-kb-add')?.remove();
   renderEnciclopediaKB();
