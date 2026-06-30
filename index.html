@@ -327,7 +327,7 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
       </div>
       <button class="lb" type="button" tabindex="3" onclick="doLogin(event)">Entrar no Sistema</button>
       <div class="lerr" id="lerr"></div>
-      <button id="btn-retry-login" style="display:none;margin-top:8px;width:100%;padding:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;cursor:pointer;font-size:12px;color:#1d4ed8;font-weight:600" onclick="this.textContent='🔄 Carregando...';this.disabled=true;loadUsuariosSistema().then(()=>{fillGuiaSelects();this.parentElement.style.background='linear-gradient(135deg,#1e293b,#334155)';this.style.display='none';this.disabled=false;g('lerr').textContent='';if(USUARIOS_SISTEMA.length>0){doLogin(null);}else{g('lerr').textContent='Ainda sem usuários. Verifique o Firebase Console.';this.style.display='block';this.textContent='🔄 Tentar novamente';}}).catch(e=>{g('lerr').textContent='Erro: '+e.message;this.style.display='block';this.textContent='🔄 Tentar novamente';this.disabled=false;})">🔄 Tentar novamente</button>
+      <button id="btn-retry-login" style="display:none;margin-top:8px;width:100%;padding:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;cursor:pointer;font-size:12px;color:#1d4ed8;font-weight:600" onclick="this.textContent='🔄 Carregando...';this.disabled=true;loadUsuariosSistema().then(()=>{fillGuiaSelects();this.style.display='none';this.disabled=false;g('lerr').textContent='';if(USUARIOS_SISTEMA.length>0){doLogin(null);}else{g('lerr').textContent='Ainda sem usuários. Verifique o Firebase Console.';this.style.display='block';this.textContent='🔄 Tentar novamente';}}).catch(e=>{g('lerr').textContent='Erro: '+e.message;this.style.display='block';this.textContent='🔄 Tentar novamente';this.disabled=false;})">🔄 Tentar novamente</button>
     </div>
   </div>
 </div>
@@ -5352,7 +5352,7 @@ function _kbCard(item, uuid, encTab){
   badges.push(..._kbRenderExtraBadges(encTab, item));
 
   return `<div class="kb-card" style="background:var(--card);border-radius:12px;border:1px solid #e8f0f8;overflow:hidden;display:flex;flex-direction:column;opacity:${isHidden?'0.5':'1'}">
-    ${img ? `<img src="${esc(img)}" alt="${esc(nome)}" style="width:100%;height:150px;object-fit:cover" onerror="this.parentElement.style.background='linear-gradient(135deg,#1e293b,#334155)';this.style.display='none'" loading="lazy"/>`
+    ${img ? `<img src="${esc(img)}" alt="${esc(nome)}" style="width:100%;height:150px;object-fit:cover" onerror="this.style.display='none'" loading="lazy"/>`
           : `<div style="height:90px;display:flex;align-items:center;justify-content:center;font-size:36px;background:#f8fafc">${KB_TAB_ICON[encTab]||'📋'}</div>`}
     <div style="padding:12px;display:flex;flex-direction:column;gap:6px;flex:1">
       <div style="font-size:12px;font-weight:700;color:#0f172a">${esc(nome)}${isCustom?' <span style="font-size:9px;color:#7c3aed;font-weight:600">· personalizado</span>':''}${item._edited?' <span style="font-size:9px;color:#2563eb">· editado</span>':''}</div>
@@ -5768,7 +5768,7 @@ async function exportRoteiroPDF(rId) {
     const fotoUrl = getFoto(nome, rot.parque)||info.foto||'';
     const reqTxt = info.req ? `<span style="background:#fee2e2;color:#991b1b;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">📏 ${info.req}cm</span>` : '';
     return `<div class="atr-row">
-      ${fotoUrl ? `<img src="${fotoUrl}" alt="${esc(nome)}" style="width:100%;height:140px;object-fit:cover;border-radius:8px;margin-bottom:10px" onerror="this.parentElement.style.background='linear-gradient(135deg,#1e293b,#334155)';this.style.display='none'">` : ''}
+      ${fotoUrl ? `<img src="${fotoUrl}" alt="${esc(nome)}" style="width:100%;height:140px;object-fit:cover;border-radius:8px;margin-bottom:10px" onerror="this.style.display='none'">` : ''}
       <div class="atr-left">
         <div class="atr-name">${esc(nome)}</div>
         <div class="atr-tags"><span class="tag ${tagClass}">${tag}</span> ${reqTxt}</div>
