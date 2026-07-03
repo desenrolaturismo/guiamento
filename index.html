@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Anton&display=swap" rel="stylesheet">
-<title>Desenrola · GuiD v2.21</title>
+<title>Desenrola · GuiD v2.22</title>
 <style>
 :root{--bg:#081525;--sb:#0d1f3d;--acc:#2C6AA3;--acc2:#79ACD9;--card:#ffffff;--page:#f0f2f8;--txt:#1a1d2e;--mut:#6b7280;--bdr:#e5e7eb;--red:#ef4444;--yel:#f59e0b;--grn:#A4B56E;--blu:#3b82f6;--sw:230px;--hh:56px}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -31,9 +31,8 @@ body{font-family:'Montserrat',-apple-system,'Inter',sans-serif;background:var(--
 #app{display:flex;height:100vh}
 /* ── SIDEBAR ── */
 #sb{width:var(--sw);background:var(--sb);flex-shrink:0;display:flex;flex-direction:column;border-right:2px solid #2C6AA3;overflow-y:auto}
-.sb-head{padding:18px 16px 14px;border-bottom:1px solid rgba(44,106,163,.3)}
-.sb-logo{font-size:15px;font-weight:800;color:#fff}.sb-logo span{color:var(--acc)}
-.sb-sub{font-size:10px;color:#79ACD9;margin-top:2px;text-transform:uppercase;letter-spacing:.07em}
+.sb-head{padding:18px 16px 14px;border-bottom:2px solid var(--acc)}
+
 .nav-sec{padding:12px 0 2px}
 .nav-lbl{font-size:10px;font-weight:700;color:#79ACD9;padding:0 16px;text-transform:uppercase;letter-spacing:.12em;margin-bottom:3px;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700}
 .ni{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;transition:background .15s;color:#7a84a0;font-size:13px;position:relative;user-select:none}
@@ -55,7 +54,7 @@ body{font-family:'Montserrat',-apple-system,'Inter',sans-serif;background:var(--
 .out-btn:hover{color:#ef4444}
 /* ── MAIN ── */
 #mc{flex:1;overflow-y:auto;background:var(--page)}
-.ph{background:#fff;border-bottom:2px solid #2C6AA3;padding:0 28px;height:var(--hh);display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;z-index:20}
+.ph{background:var(--page);border-bottom:2px solid var(--acc);padding:0 28px;height:var(--hh);display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;z-index:20}
 .pt{font-size:18px;font-weight:800;color:#1a2e4a;font-family:'Montserrat',sans-serif}
 .pb{padding:24px 28px}
 /* ── CARDS ── */
@@ -89,7 +88,7 @@ tr:last-child td{border-bottom:none}
 .pk-TL{background:#a7f3d0;color:#064e3b}.pk-KSC{background:#e5e7eb;color:#1f2937}.pk-SEA{background:#bae6fd;color:#075985}.pk-BGT{background:#bbf7d0;color:#14532d}
 /* ── BUTTONS ── */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
-.btn-acc{background:var(--acc);color:#0f1117}.btn-acc:hover{opacity:.9}
+.btn-acc{background:var(--acc);color:#fff}.btn-acc:hover{opacity:.9;background:#1e5a8a}
 .btn-sec{background:#fff;color:var(--txt);border:1px solid var(--bdr)}.btn-sec:hover{background:#f8f9fc}
 .btn-red{background:#fee2e2;color:#991b1b}.btn-red:hover{background:#fecaca}
 .btn-sm{padding:5px 10px;font-size:12px;border-radius:7px}
@@ -129,17 +128,14 @@ select.fc{cursor:pointer}
 .at2{font-size:14px;color:var(--txt);margin:2px 0;font-weight:600}
 .as{font-size:12px;color:var(--mut)}
 /* ── LL LOG ── */
-.ll-row{display:grid;grid-template-columns:58px 1fr 90px 80px 36px;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid #f3f4f8;font-size:13px}
-.ll-row:last-child{border-bottom:none}
-.ll-time{font-weight:700;font-size:12px;font-variant-numeric:tabular-nums;color:var(--txt)}
+
 /* ── CHECKLIST ── */
 .cli{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f3f4f8}
 .cli:last-child{border-bottom:none}
-.clb{width:19px;height:19px;border-radius:5px;border:2px solid var(--bdr);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+
 .clb.ck{background:var(--acc);border-color:var(--acc)}
 .clb.ck::after{content:'✓';color:#fff;font-size:11px;font-weight:800}
-.clt{font-size:13px;color:var(--txt)}
-.clt.dn{text-decoration:line-through;color:var(--mut)}
+
 /* ── CALENDAR ── */
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 .cal-hd{text-align:center;font-size:10px;font-weight:700;color:var(--mut);padding:6px 0;text-transform:uppercase;letter-spacing:.05em}
@@ -148,12 +144,9 @@ select.fc{cursor:pointer}
 .cal-d.tod{border-color:var(--acc);background:rgba(0,200,150,.04)}
 .cal-d.om{background:#f8f9fc;opacity:.55}
 .cal-n{font-size:12px;font-weight:700;color:var(--txt);margin-bottom:4px}
-.cal-ev{font-size:10px;padding:2px 5px;border-radius:3px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+
 /* ── NPS ── */
-.nps-g{display:flex;gap:6px;flex-wrap:wrap}
-.nps-n{width:42px;height:42px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;border:2px solid transparent;cursor:pointer;transition:all .15s}
-.nps-n.det{background:#fee2e2;color:#991b1b}.nps-n.neu{background:#fef3c7;color:#92400e}.nps-n.pro{background:#d1fae5;color:#065f46}
-.nps-n.sel{border-color:currentColor;transform:scale(1.12);box-shadow:0 2px 8px rgba(0,0,0,.15)}
+
 /* ── TOAST ── */
 #toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:#1a1d2e;color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;transform:translateY(120px);transition:transform .3s;max-width:320px;display:flex;align-items:center;gap:8px;box-shadow:0 8px 32px rgba(0,0,0,.3)}
 #toast.sh{transform:translateY(0)}
@@ -182,9 +175,9 @@ select.fc{cursor:pointer}
 /* ── RESPONSIVE ── */
 @media(max-width:768px){#sb{display:none}.sg{grid-template-columns:1fr 1fr}.fr,.fr3{grid-template-columns:1fr}.pb{padding:16px}}
 /* ── UTILS ── */
-.hid{display:none!important}.tm{color:var(--mut)}.fw7{font-weight:700}.fs11{font-size:11px}.fs12{font-size:12px}.fs13{font-size:13px}.fs22{font-size:22px}
+.hid{display:none!important}.tm{color:var(--mut)}.fw7{font-weight:700}.fs11{font-size:11px}.fs12{font-size:12px}.fs13{font-size:13px}
 .flex{display:flex}.fca{display:flex;align-items:center}.fcb{display:flex;align-items:center;justify-content:space-between}
-.g8{gap:8px}.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mt20{margin-top:20px}.mb16{margin-bottom:16px}.mb20{margin-bottom:20px}
+.g8{gap:8px}.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mb16{margin-bottom:16px}.mb20{margin-bottom:20px}
 .page{animation:pfade .2s ease}
 @keyframes pfade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
@@ -210,29 +203,18 @@ select.fc{cursor:pointer}
 .tag-show{background:#fce7f3;color:#831843;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px}
 .tag-atv{background:#f3e8ff;color:#6b21a8;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px}
 /* ── INTENSIDADE ESCALA ── */
-.inten-bar{display:flex;gap:3px;align-items:center}
-.inten-dot{width:14px;height:14px;border-radius:3px}
-.inten-1{background:#22c55e}.inten-2{background:#86efac}.inten-3{background:#eab308}.inten-4{background:#f97316}.inten-5{background:#ef4444}
-.inten-empty{background:#e5e7eb}
+
 /* ── ATRAÇÕES ENCYCLOPEDIA ── */
-.atr-enc-card{display:flex;flex-direction:column;background:var(--card);border-radius:10px;overflow:hidden;border:1px solid var(--bdr);width:280px;min-width:260px;max-width:300px;box-shadow:0 2px 6px #0002;transition:transform .15s;}
-.atr-enc-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.1)}
-.atr-enc-photo{width:100%;height:140px;object-fit:cover;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:40px;border-bottom:1px solid var(--bdr)}
-.atr-enc-body{padding:12px}
-.atr-enc-name{font-size:13px;font-weight:700;color:var(--txt);margin-bottom:6px;line-height:1.3}
-.atr-enc-desc{font-size:11px;color:var(--mut);margin-bottom:8px;line-height:1.5}
-.atr-enc-meta{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
-.atr-enc-tag{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600;background:#f3f4f6;color:#374151}
+
 /* ── ROTEIRO PDF BUTTON ── */
 .btn-pdf{background:#ef4444;color:#fff;padding:6px 12px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
 .btn-pdf:hover{background:#dc2626}
 /* ── RESERVA BADGE ── */
-.badge-reserva{background:#fef3c7;color:#92400e;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:700}
-.badge-livre{background:#d1fae5;color:#065f46;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:700}
+
 /* ── TABS ENCYCLOPEDIA ── */
-.enc-tabs{display:flex;gap:2px;background:var(--page);border-radius:10px;padding:3px;margin-bottom:20px}
-.enc-tab{flex:1;padding:8px;border-radius:8px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:500;color:var(--mut);transition:all .15s;text-align:center}
-.enc-tab.act{background:#fff;color:var(--txt);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.enc-tabs{display:flex;gap:4px;background:#f0f5fa;border-radius:10px;padding:4px;margin-bottom:16px}
+.enc-tab{flex:1;padding:8px 4px;border-radius:7px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--mut);transition:all .15s;text-align:center;font-family:'Montserrat',sans-serif}
+.enc-tab.act{background:#2C6AA3;color:#fff;box-shadow:0 2px 8px rgba(44,106,163,.25)}
 
 /* ── CALENDAR GRUPO PILLS ── */
 .cal-pill{font-size:10px;padding:2px 6px;border-radius:4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;color:#fff;display:flex;align-items:center;gap:3px;cursor:pointer}
@@ -246,56 +228,33 @@ select.fc{cursor:pointer}
 .guia-nome{font-size:15px;font-weight:700;color:var(--txt);margin-bottom:3px}
 .guia-meta{font-size:12px;color:var(--mut)}
 .guia-parques{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
-.guia-stat{display:flex;align-items:center;gap:8px}
+
 .status-ativo{background:#d1fae5;color:#065f46;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:600}
 .status-inativo{background:#fee2e2;color:#991b1b;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:600}
 
 /* ── BRAND DESENROLA ── */
-.btn-acc{background:var(--acc);color:#fff}
-.btn-acc:hover{background:#1e5a8a}
-.ph{background:var(--page);border-bottom:2px solid var(--acc)}
+
 /* Badge do logo no header */
-.sb-head{border-bottom:2px solid var(--acc)}
+
 /* Cor dos check boxes e toggles */
 input[type=checkbox]{accent-color:var(--acc)}
 select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline:none;box-shadow:0 0 0 2px rgba(44,106,163,.15)}
 /* Cards com brand accent */
 /* Abas */
-.enc-tab.act{background:var(--acc);color:#fff}
+
 /* Botão principal brand */
-.btn-brand{background:var(--acc);color:#fff;padding:8px 18px;border:none;border-radius:8px;font-family:'Montserrat',sans-serif;font-weight:600;cursor:pointer;letter-spacing:.02em;transition:background .15s}
-.btn-brand:hover{background:#1e5a8a}
 
 /* ── ENCICLOPÉDIA CARDS REDESIGN ── */
-.enc-grid{display:flex;flex-wrap:wrap;gap:16px;padding:4px;align-items:flex-start;}
-.enc-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.07);border:1px solid var(--bdr);display:flex;flex-direction:column;transition:box-shadow .15s}
-.enc-card:hover{box-shadow:0 4px 20px rgba(44,106,163,.13)}
-.enc-photo{width:100%;height:160px;object-fit:cover;display:block;background:#1a2e4d;}
-.enc-photo-placeholder{width:100%;height:150px;display:flex;align-items:center;justify-content:center;font-size:48px;background:linear-gradient(135deg,#e8f0f8,#d0dfe8)}
+
 .enc-body{padding:14px;flex:1;display:flex;flex-direction:column;gap:7px}
-.enc-name{font-size:14px;font-weight:700;color:#1a2e4a;line-height:1.3}
+
 .enc-park{font-size:11px;color:var(--mut);font-weight:500}
-.enc-inten-row{display:flex;align-items:center;gap:6px}
-.enc-inten-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
-.enc-inten-lbl{font-size:11px;color:var(--txt);font-weight:500}
-.enc-row2{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.enc-badge{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;border:1px solid}
-.enc-badge-tipo{background:#eff6ff;color:#1e40af;border-color:#bfdbfe}
-.enc-badge-altura{background:#fff1f2;color:#be123c;border-color:#fecdd3}
-.enc-badge-ll{background:#fdf4ff;color:#7e22ce;border-color:#e9d5ff}
-.enc-badge-res{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}
-.enc-badge-qs{background:#fff7ed;color:#c2410c;border-color:#fed7aa}
-.enc-desc{font-size:11px;color:#4b5563;line-height:1.55;flex:1}
-.enc-dica{font-size:11px;color:#065f46;background:#f0fdf4;border-radius:6px;padding:6px 8px;border-left:3px solid #A4B56E;line-height:1.5}
-.enc-actions{display:flex;gap:6px;margin-top:4px;padding-top:8px;border-top:1px solid var(--bdr)}
-.enc-btn{flex:1;padding:6px;border-radius:7px;border:1px solid var(--bdr);background:none;cursor:pointer;font-size:12px;font-weight:600;transition:all .15s}
-.enc-btn:hover{background:var(--acc);color:#fff;border-color:var(--acc)}
-.enc-btn-del{color:#ef4444}
-.enc-btn-del:hover{background:#ef4444;color:#fff;border-color:#ef4444}
+
 /* tabs da enc */
-.enc-tabs{display:flex;gap:4px;background:#f0f5fa;border-radius:10px;padding:4px;margin-bottom:16px}
-.enc-tab{flex:1;padding:8px 4px;border-radius:7px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--mut);transition:all .15s;font-family:'Montserrat',sans-serif}
-.enc-tab.act{background:#2C6AA3;color:#fff;box-shadow:0 2px 8px rgba(44,106,163,.25)}
+/* ── Roteiro: pills de tipo & drag (fundido do 2º bloco style — v2.22) ── */
+.rot-tipo-pill{padding:5px 12px;border:1px solid var(--bdr);background:#fff;border-radius:20px;font-size:12px;cursor:pointer;font-weight:600;transition:all .15s}
+.rot-tipo-pill.on{background:var(--acc);color:#0f1117;border-color:var(--acc)}
+.rot-drag-over{border-top:2px solid var(--acc)!important}
 </style>
 </head>
 <body>
@@ -306,7 +265,7 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
     <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:24px">
       <img src="data:image/jpeg;base64,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/wD/AP8A/wD/AP8A/wD/AP8A+v3n/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A+vyj/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A+vyj/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/TD/APr8o/8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A+4zfLP8Aevyj/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/vTzzfPDxzyj/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A+zztf/e9vzyj/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8Ah/zb/sb/AP7/AJf/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/p89c7q9W/8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8AOP7uPNTP/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AO8s0/rp9/3Or/8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP18b/8A1/8Ad3zxT/8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD6PLDP89vfPPF//wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wDTzzzztx/x7/8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8AM547fd/Q0/8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/2gAMAwEAAgADAAAAEPfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffav7/ffffffffffffffffffffffffffffavPPffffffffffffffffffffffffffffavPPfffffffffffffffffffffffffPvfavPPffffffffffffffffffffffcD/ADxzGDzz3333333333333333333332zzzjrzzzzz333333333333333333332XzkX3W0jzzz333333333333333333337Txf3nP33jD/AN999999999999999999978r+53TX9999999999999999999999996889LGAFd99999999999999999999999r8sd95Tf9qfp999999999999999999999X8599N9if8se99999999999999999999K88s8yj/088W999999999999999999999+88888t+U839999999999999999999999e/8AdJf/AFTr33333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333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" alt="Desenrola Turismo" style="width:72px;height:72px;border-radius:16px;object-fit:cover;margin-bottom:12px">
       <div class="lc-logo">Desenrola <span>Turismo</span></div>
-      <div class="lc-tag">GuiD · Guiamento Digital · v2.21</div>
+      <div class="lc-tag">GuiD · Guiamento Digital · v2.22</div>
     </div>
     <div id="lf">
       <div class="lf">
@@ -345,7 +304,7 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
         <img src="data:image/jpeg;base64,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/wD/AP8A/wD/AP8A/wD/AP8A+v3n/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A+vyj/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A+vyj/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/TD/APr8o/8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A+4zfLP8Aevyj/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/vTzzfPDxzyj/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A+zztf/e9vzyj/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8Ah/zb/sb/AP7/AJf/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/p89c7q9W/8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8AOP7uPNTP/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AO8s0/rp9/3Or/8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP18b/8A1/8Ad3zxT/8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD6PLDP89vfPPF//wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wDTzzzztx/x7/8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8AM547fd/Q0/8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/2gAMAwEAAgADAAAAEPfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffav7/ffffffffffffffffffffffffffffavPPffffffffffffffffffffffffffffavPPfffffffffffffffffffffffffPvfavPPffffffffffffffffffffffcD/ADxzGDzz3333333333333333333332zzzjrzzzzz333333333333333333332XzkX3W0jzzz333333333333333333337Txf3nP33jD/AN999999999999999999978r+53TX9999999999999999999999996889LGAFd99999999999999999999999r8sd95Tf9qfp999999999999999999999X8599N9if8se99999999999999999999K88s8yj/088W999999999999999999999+88888t+U839999999999999999999999e/8AdJf/AFTr33333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333/xAAwEQABAwMDAgQEBgMAAAAAAAABAgMEABAREiExM0ATMkFRFEKBkRUgI1JxgCKxwf/aAAgBAgEBPwD+iU04ZNaj71FJ8ZPfTuibResnvp3RNovWT3RWkcmgpJ4N53RNovWT2+cU9PCdm96W+4vzG6JDiODTM8K2c2qacs7Wi9ZPbEgDJqVKLh0p4/3dEd1flFfBPe1LZcR5hYOq0eH6Wi9ZPbT38fpj62SkqOBzUeGlsZVubZtIhBQ1N7H2ojGxtF6ye1UQkEmlrK1FR9bQWdKfEPJuxIC31J+30vOY38RI/mtCvaoqVB5O3ay1YZVZIyQKAAGBaVLGNDf3oEpORzUeWl0YOx7md0TZrqJ/kWeilweY/wDKdaU0cKsxFW7uNhTTPhjGonuJKdTShYHFNrC0hQ9bPNJdTpNMRyt3Qr05oAAYFpMoNf4jc0ZLpOdVRpitWlztn2/DcKbQZGP01fS6Wwlale9pUoNDSnmiSTk3YXrbCu1mseInUnkXYnFI0ub0mUyr5qMlkfNT0/bDf3okk5NMRlvccU62W1lBtB6I7aVD+dv7fmjxlOnJ4pKQkaU8VNOXjaEMMjt3orbu/BpcB0eXevhXv20mE8fTFNQEjdZzQAAwLOwVLWVZ5r8OV+6mW/DQE+39K//EAC4RAAEDAwMCBAUFAQAAAAAAAAECAwQAEBESITEzQBMyQVEUI0KBkRUgUnGAIv/aAAgBAwEBPwD/AAlCGXRWke1SgPBV30HrC0roq76D1haV0Vd0EKPAopI5F4PWFpXRV2/NMwSrdzakMNo8ouuO2vkU9BKd296hbPYNpXRV2wBJwKjRQ2NSubrkNI8xr41n3pDza/KbeEnXr9bSuirtoLGfmH7WUoJGTxT8tThwnYWxaPNKTpc4oHO4tK6Ku1SCogCkICEhI9LTntStA4F345QylXtz97wX9vDUf6rWn3qSoFpW/axE5eFlHAzRJJybRYhzrX+KIChg8VIiqaORuO5hdYWd8iv6NmZIbPlFNOpdGU2flIa2O5p17Wc6QO4jK0upNjvTiChRSfSzTqmlahT0gIa1p9eKJJOTaNFLv/R2FCM0BjTUmGnTqb7ZlzxEBVpzBPzE/e6nCpCU+1o0UunUrigABgXfRocKe1hP6FaVcG78EKOpvalRXk/TQjOn6aZgb5c/FAADAp+ShrnmmnA4gKFpvWPbRZYxoc/P7pElLQwOaUoqOo81DGGRaafnHt2ZTjW3IpE5s+bavimf5UqYyPWnZ6jsgYokk5NmpqUICccV+oJ/jTzniLKvf/Ff/8QAOhAAAQIDAgsECgIDAQAAAAAAAgEDAAQFESASEyEiMTI0QVBRclJTYXEQFCMwQmKBkZKhFTNDoMGC/9oACAEBAAE/Av8AQVpICUseEKLn70jFN92P2jFN92P2jFN92P2irAIy4WCiZ25ON0fZj67lY2cOrjdH2Y+u5WNnDq43R9mPruVjZw6uN0fZj67lY2cOrjdH2Y+u5WNnDq43R9mPruVjZw6uJC2Z6oEvkkeqTHcOfjCyr6f4XPxhRIdYVTzvUfZj67lY2cOrh7Eq9Mf1hk57oZpAJldNS8EhuVYa1GhT6XNMOScu5rND9MkO0cf8J2eBQ9KvS6+0DJz3emj7MfXcrGzh1cNECMkEUtVd0StKEbCfzl7O6ERESxNHuVRFSxcqRNUoTzmM1ezugwJslE0sVIo+zH13Kxs4dXDGWTfcQATLErKNyoZMpby97Myrc0Fha24op7By7Rgfb+9ysbOHVwttsnXEAEtVYlZUZVrBTW3rzvPTjDGu4lvJIOsh8DSr5rZH8w5uaGErJ72h+8N1dktcSH9w2828lrZoXuKxs4dXC6bKYlrGEmeX6S68+3LhhOLZ/wBiZqTr+QcwOSXhIgK0VVF8IlaqqZsxl+ZIEkIUIVtRb1Y2cOrhVOlsfMWrqBlW7NTISrWEWncnOHnjmHMM1y3BHCt8Etuyc6cqXNtdKQBi4CGK2it2sbOHVwqnsYmUHtFnLcM0bBTLQkTMwUy8pl9E5XaaxjBfX5cGFSxbLtNm8S7iiXML9LdrGzh1cJlmsdMthzXLdq8xqsJ5lekmMRLCK62lYqUvipjCTVPLek5wHJYVccFDTItqx6wz3oflHrDPeh+UesM96H5RVnANgMExLO3LwmkBbMkXZG7MOY6YNzmt2myVqo+4mT4U9EywMwyoL9IdaJlxQNLFTiVGTMdLxS5MlgSrpfKtwRUlsFFVYlKXZYb/AONyZlQmQsLTuWJiTdl1zktHtJxGj7MfXcn9hd8vQlm+GfUbfaK7Eskvg+wwfpeWyzLoiZSnW5db5IcxP+PD/wDXD6OvsXE+a5OpbJO9NwTIFtFVRYlKphWA/p7VyYmm5YLT07kiYnXZhcq2D2U4jRiz3Q5pbcMcMCHmlkKli2Ldps7lRhxelfRMPjLsqZQ88b7ima5brDDkweC2lv8AyGqQ0ie0JSXwyQtKll3En1h6kKiWsnb4FBCokoklipwmnOYudD5s27UmcVNku485LuiJN/1iWEt+hYqUxjZjATVC7KypzTlg5B3rDLIMN4AJYlypyqOtY0Uzx/acJRVEkVNKQ04jrQuJ8SXKhLesS+TXHKl6mv4sX0+XChVtW25LSxzLmCOjevKGWQYbQATJemmsRMmG63JwmkP2iTC7sqXalJYBK+2mausnK6BYOF4pZclZU5pywdG8uUMshLtoAJkv1gLHmz5pZwll1WXhcHSkNuC62JjoW5picpioqmwlqdmNF6UkDmVwlzW+fOG2gZBABLE9xWU9k2vjwqmTeKPFGuYWjwW8/KMzGuGXmmmHKN3bv5JC0mZTsL9Y/ipnkP3gaO78bgp5ZYZpjDWVUw1+a488DDama5ImKg8+uQlAOSRSXzNDbMlWzKltysbMHXwunT+EiMurnfCvP3rroMtqZrYiRNTRTTuEuQU0J6KP/c503Kxs4dXDJKp6G5hfI4RbUtT3T8w3Lt4Rr9OcTU0c0dpZB3D6aMP9peSXKyua0nnw2WnXZbIi2h2VhioMP5MLBLkV/RpiZqjbWRrPL9Q66bx4bhWrcpI2SdvaK5WF9u2Py8PanH2dRxbOSwFYcTXbFfLJCVhre2cfzDHYc+yQVZD4WiXzWDq7y6giP7h2Yde/scVbwvvAOCLponJCj1qY79z8o9amO/c/KPWpjv3PygzNxbTJSXxX/RE//8QAKhAAAQIDBwMFAQEAAAAAAAAAAQARICExQVBRYXGh8IGRsRAw0eHxwaD/2gAIAQEAAT8h/wACpoLZiwL82vza/No0HspYb73TwIOfkb73TwIOfkb73TwIOfkb73TwIOfkb73TwIOfkb73TwIOfkby3ZQoF+Qqn3i2wDRbp4EHPyN3lJhtHJGco0QmByFsx7wEAGIcIPVYg7ZGBylqDupwBYGZdfXdPAg5+Ru0zemBSl4OjXFAQAAoB7JEAEqCnJrHVaYIhWuBW6eBBz8jdj/YuwGJTYF2tU+62FgpVCGvOYEUBhODn5G63JjYBCk0p46J2HUYoA9f+4jZnUlCV2hBEmzehNQWRp7HPyN12Vu2ElmrBboRInOMTOpiCB3QkyKATMKY1CBgmgRbFz8jdTGF+oYCEonFLHI9dFQWAYCA8u3hMEuZ9oQ1QLgiHn5G6p0H9SkB/WG5KkBCmEhcgSJhqUQhVEoTAmuTwnPyN04Q9lbDML5SEIBJYVTMJu6iHFZNbYqGhHDtavxy/HL8cg8cFIDYbpen7DwwlJZelkJpYJktz9NVMsCvNkF5M4wHO8GOAa1aAPNVAAngYxHzQDBh6t5YaNQtPpQvHgZCA24K+k+tskJhOZgNsgbH3RTEmJ0IT246KZM3Rd+lHbQM3Me04BMdWgp4zFAx6qvq8pyo1KP8noXizhDs/YAFaGJEPUBYwmDkBkbx6WSVBiU4ULaGaatNmpBRw7IQKWgU+327omApiDZdM5Fg4utN2hIEHIO8IJIEFiE8NPdRjEshrbDTEdNDzMqbTmYCiW3LXSHCYjhUnAGB4Iv1XERPSZAx6IhyqS8A3KDTBMFg3OMNQxTb0O0Gl0upn2dvM4TTApFrGE8q3gMyYa1EbrBU2k4mPOD7P26ami+qM243EBAAghwagq3zJtjREEiCGIsiHHcfXQhEx2exocxtdVGxJjETYXTIR36X9AiEugoLUGqnGT5D8EbBQ7aOyp6ttgoLScAjXAB27lSVDITwcTI3WCU6Rdmvu+RMlhRGGPQZ/E4Dl8yN2MDJPk+UABAQaEe1KXwtaFRsUqD1laRvBr8l4u0vmqh0wTR2O7GMkASQAFpQItY4o+UXkH2gdsYf5A/gHdz9XfK+rA3W6a+yOptGK4p/UDsgFL83qROR4PLtEMBehAC/Rr9Gv0akmxneP+ET/8QAKxABAAECBAUEAgMBAQAAAAAAAREAISAxQWFRcYGhwVCRsfAQ0TCg4fGA/9oACAEBAAE/EP6Co9MgQQb9fRPFfRPFfRPFPqUFBJtf+rPY3tb2N7G9je1jpLfuBQMnUD5KCkxxnPin4T3fl6z7GzeGLM6ufIloTU37fOb2oDQgx7qXvgcCTMSRpEBX+4hTLS85Ogk9mokmY7APhv6p7GZFUBlaB1RE91q2y50ANIBAHAP4TLhAJE3KkPmVvdau3Kn41A4T1H2NmI8rzSaFQpHgXQOBt8/yuSksLvk2opoVdrCG1vT1nQwg+XgGc0ERFh38AaGJCELOb7hl1imwFoDsCjmzbr9UlbeHzg0IUugA6l+1RnrPO5jM6+pjCFt0BdrhzbL0NMLIuSd04DVppbtkv6WIOeJgoyojqVLMbHtAz5l9mgQ5LyDZ9QGC0anLLyJPIcOYFhMPgDVpx9oFuCNDBbJZGOBH7wmWzJ5fA/Pc4lNDHp4wWuF3OyzoR1nBNd/bHmm8dUyaJ+98ObM31PB70DsKo4JhywWSs2Tycno+nLSaSaG2/YNABBY4YGyHBA58T59sIIFTAGa0kaDyFp0yqJzIoWNDz1xEQiJBbjqQ85r6f5r6f5r6f5qW9RWhmQPpInpGDZA+DAUCWxSoSI7BYewYWqltM23hw/FkVdyWTS21a5DROI+pHDXneQuAhDEo5gd4wJyOFlehSqBLFn3eKAAACANPxnViSsb/AKm1IpHbCVz4Oz6iSfVRgkWcJ2fjU+lnvUYDV/s6l4cLrHq1wpNFEVDYjet8VL2aCabogXs+nm68fcDxgYvM+05YHqlJCaJAqyscjTmUIBERuJ+esaA/reihprmAbur6jOTkZzI/DB20aEjzR7Q4OCMOFrd0GTv4cPb8KNOTXbIKYW2xoNANDCOeF3sXFaVqE8sPyvucqSC3FZ7zTkWXtC5C08wqFHh4Vuekn7kQh4MKBjeN3J3PUwuWRIjCNSjkug1651MxVIydbx0wwesVyx8roUL64S68TVwG8LJXLOdzM6+kxLhY0RkrTdrwXM6MnTA992QXHkD3CueHJyR3sfkpp5cniuAubJU/0PA1qJ77rnrJ1XCggCJCOtR6jvm7GOnpJX50XVZDk36sMq6QTO0bOvB52wQlRK7jH6wAJ3EFjy8Cs8HE5pNXGIZE5uufSeXk4TkyR2SSoAptw2dxt0wGWFAJE4NKmZh/9ZtnzpyyoUQjiKUjKHQOvPLnlRFzsM14rq7/AMAuu90l49KHVrazfA/PXEO8AfNGfWakAppGj6cKaBHj+4Kfjdx8TRLiyY7lL1TiBDsLe80AAAAsB+cjHg5INWhaZX9RsXfjaiSISEDIkumXfAb+sD0vBYAL5NE9jrzz/kMyK7qtANVp9JIl28y6v4bgAGBDxs/b93pYoyWay4C47H2340GFpRInEf4kEZkV24D7FTtksiz5eL+UlllZ7nxgg/xuDz6aYuKVz1M1yts0SAa0xJ9h+dsZlClSAKa/JyX93w96y1ATkOAaGCeC47sB8hwXyz48w9PABhy7WSjpRgbu670Gvu/5EpgtNRAZTTwo0ChHUIe9u1SybTOB5Cx7YpVLwUllgHjNfefNfefNfefNCheBkXCXS7/RE//Z" alt="Desenrola" style="width:44px;height:44px;border-radius:10px;object-fit:cover;flex-shrink:0">
         <div>
           <div style="font-size:14px;font-weight:800;color:#fff;letter-spacing:.01em">Desenrola<span style="color:#79ACD9"> Turismo</span></div>
-          <div style="font-size:9px;color:#79ACD9;text-transform:uppercase;letter-spacing:.1em;margin-top:1px">GuiD · v2.21</div>
+          <div style="font-size:9px;color:#79ACD9;text-transform:uppercase;letter-spacing:.1em;margin-top:1px">GuiD · v2.22</div>
         </div>
       </div>
     </div>
@@ -359,7 +318,7 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
       <div class="nav-lbl">Gestão</div>
       <div class="ni" data-page="grupos" onclick="showPage('grupos')"><span class="ni-ico">👨‍👩‍👧</span> Grupos</div>
       <div class="ni" data-page="roteiros" onclick="showPage('roteiros')"><span class="ni-ico">🗺️</span> Roteiros</div>
-      <div class="ni" data-page="atracoes" onclick="showPage('enciclopedia')"><span class="ni-ico">🎢</span> Atrações</div>
+      <div class="ni" data-page="atracoes" onclick="showPage('atracoes')"><span class="ni-ico">🎢</span> Atrações</div>
       <div class="ni" data-page="temporada-g" onclick="showPage('temporada-g')"><span class="ni-ico">🗓️</span> Temporada</div>
       
       
@@ -908,11 +867,6 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
     </div>
   </div>
 </div>
-<style>
-.rot-tipo-pill{padding:5px 12px;border:1px solid var(--bdr);background:#fff;border-radius:20px;font-size:12px;cursor:pointer;font-weight:600;transition:all .15s}
-.rot-tipo-pill.on{background:var(--acc);color:#0f1117;border-color:var(--acc)}
-.rot-drag-over{border-top:2px solid var(--acc)!important}
-</style>
 
 <!-- ═══ MODAL: LL ENTRY ═══════════════════════════════════════════════════ -->
 <div class="mo hid" id="mo-ll">
@@ -1062,82 +1016,6 @@ select.fc:focus,input.fc:focus,textarea.fc:focus{border-color:var(--acc);outline
     <div class="mf">
       <button class="btn btn-sec" onclick="closeModal('mo-edit-card')">Cancelar</button>
       <button class="btn btn-acc" onclick="saveEditCard()">💾 Salvar</button>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ MODAL: ENCICLOPÉDIA (ADD/EDIT ATRAÇÃO) ═══════════════════════════ -->
-<div class="mo hid" id="mo-enc">
-  <div class="mc2" style="max-width:620px">
-    <div class="mh"><div class="mt" id="enc-modal-title">Nova Atração</div><button class="mcl" onclick="closeModal('mo-enc')">×</button></div>
-    <div class="mb">
-      <div class="fr">
-        <div class="fg"><label class="fl">Parque *</label>
-          <select class="fc" id="enc-m-parque">
-            <option value="">Selecione...</option>
-          </select>
-        </div>
-        <div class="fg"><label class="fl">Tipo *</label>
-          <select class="fc" id="enc-m-tipo">
-            <option value="coaster">🎢 Montanha-russa</option>
-            <option value="simulador">🎮 Simulador</option>
-            <option value="dark-ride">🌑 Dark Ride</option>
-            <option value="bote">🛶 Bote / Rafting</option>
-            <option value="aquatico">💧 Aquático</option>
-            <option value="show">🎭 Show</option>
-            <option value="desfile">🎉 Desfile</option>
-            <option value="passeio">🌿 Passeio</option>
-            <option value="atividade">🎨 Atividade Especial</option>
-            <option value="meet-greet">👑 Meet & Greet</option>
-            <option value="restaurante-ts">🍽️ Restaurante (Mesa)</option>
-            <option value="restaurante-qs">🍔 Restaurante (Quick Service)</option>
-          </select>
-        </div>
-      </div>
-      <div class="fg"><label class="fl">Nome *</label><input class="fc" id="enc-m-nome" placeholder="Nome da atração"></div>
-      <div class="fr">
-        <div class="fg"><label class="fl">Intensidade (1-5)</label>
-          <select class="fc" id="enc-m-inten">
-            <option value="1">🟢 1 — Muito Leve</option>
-            <option value="2">🟡 2 — Leve</option>
-            <option value="3">🟠 3 — Moderada</option>
-            <option value="4">🔴 4 — Intensa</option>
-            <option value="5">🔴 5 — Muito Intensa</option>
-          </select>
-        </div>
-        <div class="fg"><label class="fl">Altura Mínima (cm)</label>
-          <input class="fc" id="enc-m-req" type="number" placeholder="Ex: 102 (ou vazio)">
-        </div>
-      </div>
-      <div class="fr">
-        <div class="fg"><label class="fl">Lightning Lane / Express</label>
-          <select class="fc" id="enc-m-ll">
-            <option value="">Sem LL / Fila normal</option>
-            <option value="single">LL Single Pass</option>
-            <option value="multi-t1">LL Multi Pass — Tier 1</option>
-            <option value="multi-t2">LL Multi Pass — Tier 2</option>
-            <option value="multi">LL Multi Pass (sem tier)</option>
-            <option value="express">Express Pass (Universal)</option>
-          </select>
-        </div>
-        <div class="fg"><label class="fl">Duração</label>
-          <input class="fc" id="enc-m-dur" placeholder="Ex: 4.5 min">
-        </div>
-      </div>
-      <div class="fg"><label class="fl">URL da Foto (opcional)</label>
-        <input class="fc" id="enc-m-foto" placeholder="https://... (URL da imagem)">
-      </div>
-      <div class="fg"><label class="fl">Descrição</label>
-        <textarea class="fc" id="enc-m-desc" placeholder="Descrição da atração para o roteiro..." style="min-height:80px"></textarea>
-      </div>
-      <div class="fg"><label class="fl">Dica do Guia</label>
-        <textarea class="fc" id="enc-m-dica" placeholder="Estratégia, melhor horário, dicas importantes..." style="min-height:60px"></textarea>
-      </div>
-    </div>
-    <div class="mf">
-      <button class="btn btn-red btn-sm hid" id="enc-del-btn" onclick="deleteEncItem()">🗑 Excluir</button>
-      <button class="btn btn-sec" onclick="closeModal('mo-enc')">Cancelar</button>
-      <button class="btn btn-acc" onclick="saveEncItem()">💾 Salvar</button>
     </div>
   </div>
 </div>
@@ -2082,7 +1960,7 @@ Amanhã temos {PROXIMO_PARQUE}? Me falem que preparo tudo novamente!
 // ══════════════════════════════════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════════════════════════════════
-let DB = { grupos:[], roteiros:[], guiamentos:[], avaliacoes:[], templates:[], guias:[], perfis_guias:{}, encItems:[], hiddenItems:[], _lastSaved:null };
+let DB = { grupos:[], roteiros:[], guiamentos:[], avaliacoes:[], templates:[], guias:[], perfis_guias:{}, _lastSaved:null };
 
 // ══════════════════════ KNOWLEDGE BASE — ATRAÇÕES v5.1 — GLOBAL ═══════════════════
 // 143 atrações verificadas — Orlando, California, Paris, Japão, Hong Kong, Xangai
@@ -2133,7 +2011,6 @@ let _fbApp, _fbDb;
 let calDate   = new Date();
 let editId    = { grupo:null, roteiro:null };
 let parkRows  = [];
-let selNPS    = null;
 let charts    = {};
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -2149,7 +2026,6 @@ let charts    = {};
 let _integChannel = null;
 let _editando = false;
 let _pendingRemoteUpdate = null;
-let _encSearchTimer = null;
 
 // Nonces de sessão válidos recebidos do Desenrola Sistema (G-10)
 var _guiNonces = new Set();
@@ -2412,17 +2288,6 @@ const CROWD_DAILY_G = {"2026-01":[{"day":1,"date":"2026-01-01","level":10,"weekd
 
 
 // ── Resolução de array de pax: agora usa window._fichaGrupoAlvo ──
-
-
-
-
-
-function editarPassageiro(idx) { openAddPassageiro(idx); }
-
-
-
-
-
 
 // ══════════════════════════════════════════════════════════════
 // NPS PROFISSIONAL MULTIDIMENSIONAL — Melhoria #4
@@ -2691,7 +2556,6 @@ window.onload = () => {
   const pw = document.getElementById('f-pw');
   if(pw) pw.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(e); });
   initIntegracao();
-  buildNPSButtons();
   // AUTO-FOCUS LOGIN INPUT after page ready
   setTimeout(function(){
     var u = document.getElementById('f-usr');
@@ -2764,6 +2628,7 @@ async function loadUsuariosSistema() {
 }
 
 // SHA-256 puro em JS — funciona em qualquer contexto (file://, http, Wix iframe)
+// [ESPELHADO Sistema ⇄ GuiD — manter idêntico] sync 03/07/2026
 function _sha256Pure(msgBytes) {
   var K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
     0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
@@ -2825,19 +2690,6 @@ async function sha256(str, login) {
   return _sha256Pure(bytes);
 }
 
-
-async function reloadUsuariosSistema() {
-  var btn = document.getElementById('btn-retry-login');
-  if(btn){ btn.textContent = '⏳ Carregando...'; btn.disabled=true; }
-  await loadUsuariosSistema();
-  if(btn){ btn.textContent = '🔄 Recarregar usuários e tentar novamente'; btn.disabled=false; }
-  if(USUARIOS_SISTEMA.length > 0) {
-    g('lerr').textContent = '✅ '+USUARIOS_SISTEMA.length+' usuários carregados! Faça o login.';
-    if(btn) btn.style.display='none';
-  } else {
-    g('lerr').textContent = '⚠️ Ainda sem usuários. Certifique-se de que o Sistema Desenrola foi aberto e o login foi feito lá.';
-  }
-}
 // M-03 SEC: Anti-força-bruta — lockout após 5 tentativas por 15 minutos
 const _GUI_LOCK_PREFIX = 'dg_lk_';
 const _GUI_LOCK_MAX    = 5;
@@ -3295,35 +3147,6 @@ function _checkNotificacaoDiaD(){
     if(el){ el.style.transition='opacity .5s'; el.style.opacity='0'; setTimeout(function(){ if(el.parentNode) el.remove(); },500); }
   }, 20000);
 }
-
-// BACKUP AUTOMÁTICO — GuiD v2.21
-// ══════════════════════════════════════════════════════════════
-async function exportarBackupGuiamento() {
-  const ts = new Date().toISOString().slice(0,19).replace(/[T:]/g,'-');
-  const payload = {
-    versao: 'DesenrolaGuiD-v2.21',
-    exportadoEm: new Date().toISOString(),
-    dados: {}
-  };
-  payload.dados.local = JSON.parse(localStorage.getItem('desenrola_gui_db')||JSON.stringify(DB));
-  if (_fbDb) {
-    try {
-      const snap = await _fbDb.ref('desenrola_v3').once('value');
-      if (snap && snap.exists()) payload.dados.firebase = snap.val();
-    } catch(e) { payload.dados.firebase_erro = e.message; }
-  }
-  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.download = `backup-guiamento-${ts}.json`;
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a); URL.revokeObjectURL(url);
-  toast(`✅ Backup exportado!`);
-  const meta = JSON.parse(localStorage.getItem('_gui_backup_meta')||'{}');
-  meta.ultimoBackup = new Date().toISOString();
-  localStorage.setItem('_gui_backup_meta', JSON.stringify(meta));
-}
-
 
 // ══════════════════════════════════════════════════════════════════════════
 // SINCRONIZAÇÃO GRANULAR DE GRUPOS — evita que dois guias editando grupos
@@ -4096,6 +3919,7 @@ function renderGrupos() {
   }).join('');
 }
 
+// [ESPELHADO Sistema ⇄ GuiD — manter idêntico] sync 03/07/2026
 function debounceCall(key, fn, delay){ clearTimeout(window['_dbT_'+key]); window['_dbT_'+key] = setTimeout(fn, delay||250); }
 function _mgAtualizarRestricoes(){
   var el=document.getElementById('mg-rest'); if(!el) return;
@@ -4439,9 +4263,6 @@ function openRoteiroModal(id=null, grupoPreId=null) {
   openModal('mo-roteiro');
   } catch(err) { console.error('openRoteiroModal error:', err); toast('Erro ao abrir roteiro: '+err.message,'warn'); }
 }
-
-// Stub retrocompat (chamadas antigas)
-function renderAtrOptions(){ roteiroAtualizarLL(); }
 
 // ── Chips de atração LL ──────────────────────────────────────────
 function _rotChip(a, name, checked){
@@ -5021,21 +4842,6 @@ function showCalDetail(date) {
 function calNav(dir) { calDate.setMonth(calDate.getMonth()+dir); renderAgenda(); }
 function calGoToday() { calDate=new Date(); renderAgenda(); }
 
-// ══════════════════════════════════════════════════════════════════════════
-// AVALIAÇÕES
-// ══════════════════════════════════════════════════════════════════════════
-function buildNPSButtons() {
-  g('nps-buttons').innerHTML = Array.from({length:11},(_,i)=>{
-    const cls = i<=6?'det':i<=8?'neu':'pro';
-    return `<div class="nps-n ${cls}" onclick="selectNPS(${i})">${i}</div>`;
-  }).join('');
-}
-
-function selectNPS(n) {
-  selNPS = n; g('av-nps').value = n;
-  document.querySelectorAll('.nps-n').forEach((el,i) => el.classList.toggle('sel',i===n));
-}
-
 function duplicateTpl(id) {
   const tpls = getTemplates();
   const tpl = tpls.find(t => t.id === id);
@@ -5179,7 +4985,6 @@ function renderRelatorios() {
 // ENCICLOPÉDIA DE ATRAÇÕES
 // ══════════════════════════════════════════════════════════════════════════
 let encTab = 'enciclopedia';
-let encEditId = null;
 
 const KB_CACHE_PREFIX = 'desenrola_kb_cache_v1';
 let _kbDb = null;
@@ -5236,6 +5041,9 @@ function kbApplyOverrides(dataObj, overrides, incluirOcultos) {
   return out;
 }
 
+// ═══ BLOCO ESPELHADO: BIBLIOTECA KB (Sistema ⇄ GuiD) ═══════════════════
+// Sincronizado em 03/07/2026 — Sistema v3.40 ⇄ GuiD v2.22
+// REGRA: qualquer alteração nas funções kb* deve ser replicada no arquivo irmão.
 // ── Busca uma categoria+destino específicos, com cache local versionado ──
 // category: 'attraction'|'hotel'|'restaurant'|'shop'|'character_meet'|'show'|'water_attraction'|'park'|'utility'
 // destinoSlug: um dos 14 slugs (ex: 'walt-disney-world', 'disney-cruise-line')
@@ -5791,21 +5599,6 @@ async function kbPopulateDestinoSelect(){
   sel.innerHTML = html;
 }
 
-
-function _matchTipo(cat, filter){
-  const m = {coaster:'roller_coaster',simulador:'simulator','dark-ride':'dark_ride',
-             bote:'water_ride',aquatico:'water_ride',show:'show',desfile:'parade',passeio:'walk'};
-  return cat && cat.includes(m[filter]||filter);
-}
-
-function _matchAlt(alt, filter){
-  if(filter==='0') return !alt || alt===0;
-  if(filter==='97') return alt>0 && alt<=102;
-  if(filter==='107') return alt>=107 && alt<=112;
-  if(filter==='112') return alt>=112;
-  return true;
-}
-
 function togglePassageiroDetails(){
   const sec = document.getElementById('pax-details-section');
   const icon = document.getElementById('pax-toggle-icon');
@@ -5863,70 +5656,6 @@ function checkAltAlert(idx, altVal){
 
 function getPaxFromFields(){
   return (window._paxData||[]).map(p=>({...p}));
-}
-
-function updateParkFilter(){
-  const dest = (g('enc-destino')?.value)||'';
-  const sel = g('enc-parque'); if(!sel) return;
-  // Show/hide optgroups based on destination
-  Array.from(sel.querySelectorAll('optgroup,option')).forEach(el=>{
-    if(el.tagName==='OPTGROUP') el.style.display='';
-    else if(el.value) {
-      const pkDest = {MK:'Orlando',EPCOT:'Orlando',HS:'Orlando',AK:'Orlando',
-        USF:'Orlando',IOA:'Orlando',EU:'Orlando',SW:'Orlando',BG:'Orlando',DC:'Orlando',LL:'Orlando',
-        DL:'California',DCA:'California',DLP:'Paris',DAW:'Paris',TDL:'Japao',TDS:'Japao',
-        HKD:'Hong Kong',SDL:'Xangai'}[el.value]||'';
-      el.style.display = (!dest || pkDest===dest) ? '' : 'none';
-    }
-  });
-  if(dest && sel.value) {
-    const pkDest = {MK:'Orlando',EPCOT:'Orlando',HS:'Orlando',AK:'Orlando',
-      USF:'Orlando',IOA:'Orlando',EU:'Orlando',SW:'Orlando',BG:'Orlando',DC:'Orlando',
-      DL:'California',DCA:'California',DLP:'Paris',DAW:'Paris',TDL:'Japao',TDS:'Japao',
-      HKD:'Hong Kong',SDL:'Xangai'}[sel.value]||'';
-    if(pkDest !== dest) sel.value = '';
-  }
-}
-
-function addToRoteiro(atr){
-  toast('Atração adicionada ao roteiro: '+atr.nome, 'success');
-  // Find active roteiro and add
-  const rId = g('rdv-roteiro-select')?.value;
-  if(rId && DB.roteiros){
-    const r = DB.roteiros.find(x=>x.id===parseInt(rId));
-    if(r){
-      if(!r.atracoes) r.atracoes = [];
-      r.atracoes.push({nome:atr.nome, parque:atr.parque, pk:atr.pk, llmp:atr.llmp, llsp:atr.llsp, alt:atr.alt});
-      saveLocal();
-    }
-  }
-}
-
-
-
-function openEncModal(id='', secao='atracao') {
-  encEditId = id||null;
-  const existing = (DB.encItems||[]).find(x=>x.id===id);
-  g('enc-modal-title').textContent = existing ? 'Editar Item' : 'Novo Item';
-  g('enc-m-nome').value    = existing?.n||'';
-  g('enc-m-parque').value  = existing?.parque||'';
-  g('enc-m-tipo').value    = existing?.tipo||'coaster';
-  g('enc-m-inten').value   = existing?.intensidade||'2';
-  g('enc-m-req').value     = existing?.req||'';
-  g('enc-m-ll').value      = existing?.ll||'';
-  g('enc-m-dur').value     = existing?.duracao||'';
-  g('enc-m-foto').value    = existing?.foto||'';
-  g('enc-m-desc').value    = existing?.descricao||'';
-  g('enc-m-dica').value    = existing?.dica||'';
-  // fill parque select
-  const sel = g('enc-m-parque');
-  if(sel && sel.options.length<=1) {
-    Object.entries(PARQUES).forEach(([k,v])=>{ const o=document.createElement('option');o.value=k;o.textContent=v.emoji+' '+v.nome;sel.appendChild(o); });
-  }
-  if(existing) sel.value = existing.parque;
-  const delBtn = g('enc-del-btn');
-  if(delBtn) delBtn.classList.toggle('hid', !existing);
-  openModal('mo-enc');
 }
 
 async function exportRoteiroPDF(rId) {
@@ -6026,33 +5755,6 @@ async function exportRoteiroPDF(rId) {
   win.document.close();
 }
 
-function abrirJanelaRoteiro(html) {
-  const w = window.open('','_blank','width=900,height=1200');
-  if (!w) { toast('Popup bloqueado. Permita popups e tente novamente','warn'); return; }
-  w.document.write(html);
-  w.document.close();
-  w.document.title = w.document.querySelector('title')?.text || 'Roteiro';
-  setTimeout(() => { w.focus(); w.print(); }, 800);
-}
-
-// ══════════════════════════════════════════════════════════════════════════
-// ROTEIRO MODAL — Preencher datalists de restaurantes/shows/atividades
-// ══════════════════════════════════════════════════════════════════════════
-async function fillRoteiroDataLists(pk) {
-  if(!pk) return;
-  const { restaurantes, shows, personagens } = await kbGetParkSuggestions(pk);
-  const dlR = g('mr-rest-list'); if(dlR) dlR.innerHTML=restaurantes.map(r=>`<option value="${esc(r.n)}">`).join('');
-  const dlS = g('mr-shows-list'); if(dlS) dlS.innerHTML=shows.map(s=>`<option value="${esc(s.n)}">`).join('');
-  const dlA = g('mr-atv-list'); if(dlA) dlA.innerHTML=personagens.map(a=>`<option value="${esc(a.n)}">`).join('');
-  // Mostrar botão PDF se editando roteiro existente
-  const pdfBtn = g('mr-pdf-btn'); if(pdfBtn) pdfBtn.style.display = editId.roteiro ? 'inline-flex' : 'none';
-}
-
-
-// ══════════════════════════════════════════════════════════════════════════
-// ESTACIONAMENTO (para PDF)
-// ══════════════════════════════════════════════════════════════════════════
-
 // ── LOJAS (não aparecem no Dia D nem no Roteiro) ─────────────────────
 const LOJAS = {
   MK:[
@@ -6110,78 +5812,6 @@ const LOJAS = {
   ],
 };
 
-// ── SERVIÇOS ÚTEIS (não aparecem no Dia D nem no Roteiro) ─────────────
-const SERVICOS = {
-  MK:[
-    {n:"Guest Relations",local:"Town Square - entrada",icone:"❓",dica:"Duvidas, suporte, trocas de ingressos | Sempre util checar no inicio do dia",desc:"Atendimento ao visitante para duvidas, suporte e ingressos.",link:"https://disneyworld.disney.go.com/guest-services/guest-relations/" },
-    {n:"Baby Care Center",local:"Perto do First Aid / Main Street",icone:"👶",dica:"Amamentacao, troca de fraldas, micro-ondas | Ar condicionado",desc:"Espaco para alimentacao, troca de fraldas e cuidados com bebes.",link:"https://disneyworld.disney.go.com/guest-services/baby-care-centers/" },
-    {n:"First Aid",local:"Main Street U.S.A.",icone:"🏥",dica:"Enfermeiros disponiveis | Medicamentos basicos | Primeiros socorros",desc:"Atendimento basico de saude realizado por enfermeiros.",link:"https://disneyworld.disney.go.com/guest-services/first-aid/" },
-    {n:"Lockers",local:"Proximo a entrada do parque",icone:"🔒",dica:"Armarios para aluguel | Util para mochilas pesadas",desc:"Armarios para aluguel proximos a entrada do parque.",link:"https://disneyworld.disney.go.com/guest-services/locker-rentals/" },
-    {n:"Rider Switch",local:"Atracoes com restricao de altura",icone:"🔄",dica:"Adultos revezam sem a crianca enfrentar fila novamente",desc:"Servico que permite revezamento em atracoes sem que a crianca enfrente a fila.",link:"https://disneyworld.disney.go.com/guest-services/rider-switch/" },
-    {n:"DAS (Disability Access Service)",local:"Guest Relations - entrada",icone:"♿",dica:"Para visitantes com necessidades especiais | Solicitar no app ou no balcao",desc:"Servico destinado a visitantes elegiveis que necessitam de adaptacoes.",link:"https://disneyworld.disney.go.com/guest-services/disability-access-service/" },
-    {n:"PhotoPass",local:"Distribuido pelo parque",icone:"📷",dica:"Fotografos Disney em pontos estrategicos | Escanear MagicBand ou app",desc:"Servico oficial de fotografos da Disney distribuidos pelo parque.",link:"https://disneyworld.disney.go.com/photopass/" },
-    {n:"Memory Maker",local:"Pacote digital",icone:"🎞️",dica:"Baixar TODAS as fotos do PhotoPass | Comprar antes com desconto",desc:"Pacote que permite baixar todas as fotos e videos registrados pelo PhotoPass.",link:"https://disneyworld.disney.go.com/memory-maker/" },
-  ],
-  EPCOT:[
-    {n:"Guest Relations",local:"Entrada do parque - Main Entrance",icone:"❓",dica:"Proximo ao Spaceship Earth | Duvidas, ingressos e suporte",desc:"Atendimento ao visitante para duvidas, suporte e ingressos.",link:"https://disneyworld.disney.go.com/guest-services/guest-relations/" },
-    {n:"Baby Care Center",local:"Odyssey Events Pavilion",icone:"👶",dica:"Proximo ao World Celebration | Amamentacao e cuidados",desc:"Espaco para cuidados com bebes.",link:"https://disneyworld.disney.go.com/guest-services/baby-care-centers/" },
-    {n:"First Aid",local:"Proximo ao Odyssey / World Discovery",icone:"🏥",dica:"Enfermeiros disponiveis",desc:"Atendimento basico de saude.",link:"https://disneyworld.disney.go.com/guest-services/first-aid/" },
-    {n:"Lockers",local:"Proximo a entrada do parque",icone:"🔒",dica:"Armarios para aluguel | Util durante shows noturnos",desc:"Armarios para aluguel.",link:"https://disneyworld.disney.go.com/guest-services/locker-rentals/" },
-    {n:"Rider Switch",local:"Atracoes com restricao",icone:"🔄",dica:"Disponivel em Mission: SPACE, Test Track, Guardians",desc:"Servico de revezamento em atracoes.",link:"https://disneyworld.disney.go.com/guest-services/rider-switch/" },
-    {n:"DAS",local:"Guest Relations - entrada",icone:"♿",dica:"Solicitar no app ou no balcao Guest Relations",desc:"Servico de adaptacoes para acesso as atracoes.",link:"https://disneyworld.disney.go.com/guest-services/disability-access-service/" },
-    {n:"PhotoPass",local:"Pontos estrategicos do parque",icone:"📷",dica:"Otimas fotos na frente do Spaceship Earth e no World Showcase",desc:"Fotografos oficiais Disney distribuidos pelo parque.",link:"https://disneyworld.disney.go.com/photopass/" },
-    {n:"Memory Maker",local:"Pacote digital",icone:"🎞️",dica:"Inclui fotos e videos de todos os parques | Comprar antes",desc:"Pacote de fotos e videos do PhotoPass.",link:"https://disneyworld.disney.go.com/memory-maker/" },
-  ],
-  HS:[
-    {n:"Guest Relations",local:"Entrada do parque - Hollywood Blvd",icone:"❓",dica:"Logo na entrada | Duvidas, ingressos e suporte",desc:"Atendimento ao visitante para duvidas, suporte e ingressos.",link:"https://disneyworld.disney.go.com/guest-services/guest-relations/" },
-    {n:"Baby Care Center",local:"Proximo a entrada - Hollywood Blvd",icone:"👶",dica:"Amamentacao e cuidados com bebes",desc:"Espaco para cuidados com bebes.",link:"https://disneyworld.disney.go.com/guest-services/baby-care-centers/" },
-    {n:"First Aid",local:"Hollywood Blvd - proximo a entrada",icone:"🏥",dica:"Enfermeiros disponiveis",desc:"Atendimento basico de saude.",link:"https://disneyworld.disney.go.com/guest-services/first-aid/" },
-    {n:"Lockers",local:"Proximo a entrada do parque",icone:"🔒",dica:"Armarios para aluguel | Util para shows como Fantasmic!",desc:"Armarios para aluguel.",link:"https://disneyworld.disney.go.com/guest-services/locker-rentals/" },
-    {n:"Rider Switch",local:"Atracoes com restricao",icone:"🔄",dica:"Tower of Terror, Rock n Roller Coaster, Slinky Dog",desc:"Servico de revezamento em atracoes.",link:"https://disneyworld.disney.go.com/guest-services/rider-switch/" },
-    {n:"DAS",local:"Guest Relations - entrada",icone:"♿",dica:"Solicitar no app ou no balcao Guest Relations",desc:"Servico de adaptacoes para acesso as atracoes.",link:"https://disneyworld.disney.go.com/guest-services/disability-access-service/" },
-    {n:"PhotoPass",local:"Distribuido pelo parque",icone:"📷",dica:"Fotos epicas em Galaxy's Edge e na Tower of Terror",desc:"Fotografos oficiais Disney.",link:"https://disneyworld.disney.go.com/photopass/" },
-    {n:"Memory Maker",local:"Pacote digital",icone:"🎞️",dica:"Inclui fotos nos simuladores como Star Wars e Star Tours",desc:"Pacote de fotos e videos do PhotoPass.",link:"https://disneyworld.disney.go.com/memory-maker/" },
-  ],
-  AK:[
-    {n:"Guest Relations",local:"Oasis - entrada do parque",icone:"❓",dica:"Proximo a entrada pelo Oasis | Duvidas, ingressos e suporte",desc:"Atendimento ao visitante para duvidas, suporte e ingressos.",link:"https://disneyworld.disney.go.com/guest-services/guest-relations/" },
-    {n:"Baby Care Center",local:"Discovery Island",icone:"👶",dica:"Perto do Tree of Life | Amamentacao e cuidados com bebes",desc:"Espaco para cuidados com bebes.",link:"https://disneyworld.disney.go.com/guest-services/baby-care-centers/" },
-    {n:"First Aid",local:"Discovery Island",icone:"🏥",dica:"Enfermeiros disponiveis | Proximo ao Discovery Island",desc:"Atendimento basico de saude.",link:"https://disneyworld.disney.go.com/guest-services/first-aid/" },
-    {n:"Lockers",local:"Proximo a entrada do parque",icone:"🔒",dica:"Util para o Kali River Rapids (molha!) e Safaris",desc:"Armarios para aluguel.",link:"https://disneyworld.disney.go.com/guest-services/locker-rentals/" },
-    {n:"Rider Switch",local:"Atracoes com restricao",icone:"🔄",dica:"Expedition Everest, Flight of Passage, Kali River Rapids",desc:"Servico de revezamento em atracoes.",link:"https://disneyworld.disney.go.com/guest-services/rider-switch/" },
-    {n:"DAS",local:"Guest Relations - entrada",icone:"♿",dica:"Solicitar no app ou no balcao Guest Relations",desc:"Servico de adaptacoes para acesso as atracoes.",link:"https://disneyworld.disney.go.com/guest-services/disability-access-service/" },
-    {n:"PhotoPass",local:"Distribuido pelo parque",icone:"📷",dica:"Fotos incriveis no Kilimanjaro Safaris e em Pandora",desc:"Fotografos oficiais Disney.",link:"https://disneyworld.disney.go.com/photopass/" },
-    {n:"Memory Maker",local:"Pacote digital",icone:"🎞️",dica:"Inclui fotos no Flight of Passage e no Expedition Everest",desc:"Pacote de fotos e videos do PhotoPass.",link:"https://disneyworld.disney.go.com/memory-maker/" },
-  ],
-
-  USO:[
-    {n:"Guest Services",local:"Entrada - Hollywood",icone:"❓",dica:"Duvidas, ingressos, Express Pass e suporte",desc:"Atendimento ao visitante.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
-    {n:"Family Services",local:"Proximo a entrada",icone:"👶",dica:"Espaco para familias com bebes",desc:"Area para familias com bebes.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
-    {n:"First Aid",local:"Hollywood Blvd",icone:"🏥",dica:"Atendimento medico basico | Enfermeiros disponiveis",desc:"Atendimento medico basico.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
-    {n:"Lockers",local:"Entrada e atracoes selecionadas",icone:"🔒",dica:"Obrigatorios em algumas atracoes (Rip Ride Rockit, etc.)",desc:"Armarios para aluguel.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
-    {n:"Child Swap",local:"Atracoes com restricao",icone:"🔄",dica:"Revezamento para familias com criancas pequenas",desc:"Sistema de revezamento para familias.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
-    {n:"Attraction Assistance Pass",local:"Guest Services - entrada",icone:"♿",dica:"Programa de acessibilidade da Universal",desc:"Programa de acessibilidade da Universal.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/accessibility-information" },
-  ],
-  IOA:[
-    {n:"Guest Services",local:"Port of Entry - entrada",icone:"❓",dica:"Duvidas, ingressos, Express Pass e suporte",desc:"Atendimento ao visitante.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
-    {n:"Family Services",local:"Port of Entry",icone:"👶",dica:"Espaco para familias com bebes",desc:"Area para familias com bebes.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
-    {n:"First Aid",local:"Port of Entry",icone:"🏥",dica:"Atendimento medico basico",desc:"Atendimento medico basico.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
-    {n:"Lockers",local:"Entrada e atracoes selecionadas",icone:"🔒",dica:"Obrigatorios em Hagrid's, Hulk, VelociCoaster | Locker Day Use disponivel",desc:"Armarios para aluguel.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
-    {n:"Child Swap",local:"Atracoes com restricao",icone:"🔄",dica:"Hagrid's, VelociCoaster, Hulk Coaster",desc:"Sistema de revezamento para familias.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
-    {n:"Attraction Assistance Pass",local:"Guest Services - entrada",icone:"♿",dica:"Programa de acessibilidade | Solicitar na entrada",desc:"Programa de acessibilidade da Universal.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/accessibility-information" },
-  ],
-  EU:[
-    {n:"Guest Services",local:"Celestial Park - entrada",icone:"❓",dica:"Duvidas, ingressos, Express Pass | Novo parque 2025",desc:"Atendimento ao visitante.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
-    {n:"Family Services",local:"Celestial Park",icone:"👶",dica:"Espaco para familias com bebes",desc:"Area para familias com bebes.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
-    {n:"First Aid",local:"Celestial Park",icone:"🏥",dica:"Atendimento medico basico",desc:"Atendimento medico basico.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
-    {n:"Lockers",local:"Entrada e atracoes selecionadas",icone:"🔒",dica:"Obrigatorios em Stardust Racers e Battle at Ministry",desc:"Armarios para aluguel.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
-    {n:"Child Swap",local:"Atracoes com restricao",icone:"🔄",dica:"Stardust Racers, Battle at Ministry",desc:"Sistema de revezamento para familias.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/guest-services" },
-    {n:"Attraction Assistance Pass",local:"Guest Services - entrada",icone:"♿",dica:"Programa de acessibilidade | Solicitar na entrada",desc:"Programa de acessibilidade da Universal.",link:"https://www.universalorlando.com/web/en/us/plan-your-visit/accessibility-information" },
-  ],
-};
-
-
-
-
 // ── FESTIVAIS (não aparecem no Dia D nem no Roteiro) ─────────────────
 const FESTIVAIS = {
   EPCOT:[
@@ -6190,45 +5820,6 @@ const FESTIVAIS = {
     {n:"EPCOT International Food & Wine Festival",   periodo:"Jul–Nov",  dica:"O maior festival gastronômico da Disney | Pratos de países do mundo todo | Concerts Series incluído",desc:"O maior festival gastronômico da Disney, reunindo pratos e bebidas de diversos países.",link:"https://disneyworld.disney.go.com/events-tours/epcot/epcot-international-food-and-wine-festival/",icone:"🍷" },
     {n:"EPCOT International Festival of the Holidays",periodo:"Nov–Dez", dica:"Celebração natalina com culinária típica | Contadores de histórias de cada país | Decoração especial",desc:"Celebração natalina com culinária típica, contadores de histórias e apresentações culturais.",link:"https://disneyworld.disney.go.com/events-tours/epcot/epcot-international-festival-of-the-holidays/",icone:"🎄" },
   ],
-};
-
-const PARKING = {
-  MK:  {nome:'Transportation & Ticket Center',preco:'Standard: ~$30/dia · Preferencial: ~$45/dia',
-        maps:'https://maps.google.com/?q=Walt+Disney+World+Transportation+Ticket+Center+Parking+Orlando+FL',
-        dica:'Estacionamento compartilhado entre MK e EPCOT. Do TTC, pegue o Monorail (~15 min) ou o Ferry (~20 min) até a entrada do Magic Kingdom. Ônibus Disney operam 24h.'},
-  EPCOT:{nome:'EPCOT Parking Plaza',preco:'Standard: ~$30/dia · Preferencial: ~$45/dia',
-        maps:'https://maps.google.com/?q=EPCOT+Parking+Walt+Disney+World+Orlando+FL',
-        dica:'Estacionamento próprio do EPCOT com acesso fácil ao Main Entrance. Compartilhado com o TTC se chegar pela frente do MK. Trams internos disponíveis.'},
-  HS:  {nome:'Hollywood Studios Parking Lot',preco:'Standard: ~$30/dia · Preferencial: ~$45/dia',
-        maps:'https://maps.google.com/?q=Hollywood+Studios+Parking+Walt+Disney+World+Orlando+FL',
-        dica:'Estacionamento próprio bem próximo da entrada. Tram disponível para quem estacionar longe. Fácil acesso pela US-192.'},
-  AK:  {nome:'Animal Kingdom Parking Lot',preco:'Standard: ~$30/dia · Preferencial: ~$45/dia',
-        maps:'https://maps.google.com/?q=Animal+Kingdom+Parking+Walt+Disney+World+Orlando+FL',
-        dica:'Seções do estacionamento têm nomes de animais — fotografe onde parou! Tram disponível.'},
-  USO: {nome:'Universal Studios Florida Parking Garage',preco:'General: $30-45/dia · Prime: $50-65/dia',
-        maps:'https://maps.google.com/?q=Universal+Studios+Florida+Parking+Garage+Orlando+FL',
-        dica:'Garagem coberta compartilhada entre USO e IOA. Prime Parking fica mais perto da entrada do CityWalk. Válido para ambos os parques no mesmo dia.'},
-  IOA: {nome:'Universal Orlando Parking Garage',preco:'General: $30-45/dia · Prime: $50-65/dia',
-        maps:'https://maps.google.com/?q=Universal+Orlando+Parking+Garage+FL',
-        dica:'Mesmo complexo de garagem de USO — um único estacionamento serve ambos os parques. Acesse pela Kirkman Road (Universal Blvd).'},
-  EU:  {nome:'Epic Universe Parking Complex',preco:'General: ~$30-45/dia · Prime: ~$50+/dia',
-        maps:'https://maps.google.com/?q=Epic+Universe+Universal+Orlando+Parking',
-        dica:'Novo complexo ao sul de Universal Orlando (2025). Estacionamento próprio com acesso direto ao parque. Verificar preços atuais no site Universal.'},
-  SEA: {nome:'SeaWorld Orlando Parking',preco:'Standard: ~$30/dia · Preferencial: ~$35/dia',
-        maps:'https://maps.google.com/?q=SeaWorld+Orlando+Parking+FL',
-        dica:'Estacionamento aberto amplo. Chegar cedo para vagas mais próximas da entrada principal.'},
-  BGT: {nome:'Busch Gardens Tampa Parking',preco:'Standard: ~$30/dia · Preferencial: ~$35/dia',
-        maps:'https://maps.google.com/?q=Busch+Gardens+Tampa+Parking+FL',
-        dica:'Estacionamento externo ao redor do parque. Trams disponíveis nos dias movimentados.'},
-  BB:  {nome:'Blizzard Beach Parking',preco:'Incluso para hóspedes Disney · ~$30/dia para demais',
-        maps:'https://maps.google.com/?q=Blizzard+Beach+Disney+Parking+FL',
-        dica:'Estacionamento pequeno e gratuito para hóspedes de hotel Disney. Chegar cedo nos dias quentes — pode lotar!'},
-  TL:  {nome:'Typhoon Lagoon Parking',preco:'Incluso para hóspedes Disney · ~$30/dia para demais',
-        maps:'https://maps.google.com/?q=Typhoon+Lagoon+Disney+Parking+FL',
-        dica:'Próximo ao Disney Springs. Estacionamento conveniente com caminhada curta até a entrada.'},
-  KSC: {nome:'Kennedy Space Center Visitor Complex',preco:'✅ GRATUITO — incluso no ingresso!',
-        maps:'https://maps.google.com/?q=Kennedy+Space+Center+Visitor+Complex+Parking+FL',
-        dica:'Estacionamento gratuito e amplo no complexo. Curta caminhada até a entrada principal.'}
 };
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -6808,6 +6399,14 @@ function fillGuiaSelects() {
     if(cur) sel.value=cur;
   });
 }
+
+// ── Observabilidade (v2.22): nenhum erro morre em silêncio — espelho do Sistema ──
+window.addEventListener('error', function(ev){
+  try{ toast('❌ Erro: '+(ev.message||'desconhecido')+(ev.lineno?' (L'+ev.lineno+')':''),'error'); }catch(e){}
+});
+window.addEventListener('unhandledrejection', function(ev){
+  try{ var m=ev.reason&&(ev.reason.message||ev.reason); toast('❌ Erro assíncrono: '+m,'error'); }catch(e){}
+});
 </script>
 <!-- ═══ MODAL: ATRAÇÃO ══════════════════════════════════════════════════ -->
 
